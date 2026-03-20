@@ -1,0 +1,8 @@
+/* Example theme customization */
+.bg-primary {
+  @apply bg-blue-600 text-white;
+}
+
+.text-primary {
+  @apply text-blue-600;
+}

@@ -1,0 +1,34 @@
+.error-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #fef2f2;
+  text-align: center;
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #ef4444; /* Red */
+}
+
+.error-message {
+  font-size: 1.5rem;
+  margin: 1rem 0;
+  color: #991b1b; /* Dark red */
+}
+
+.error-link {
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.error-link:hover {
+  background-color: #b91c1c;
+}

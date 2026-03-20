@@ -1,0 +1,16 @@
+.report-list {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  list-style: none;
+}
+
+.report-list li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.report-list li:last-child {
+  border-bottom: none;
+}
