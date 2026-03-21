@@ -1,18 +1,16 @@
 import React from 'react';
-import StudentLayout from '../../layouts/StudentLayout';
-import './MainGate.css';
 
 export default function MainGate() {
   const passes = ['Entry Pass', 'Exit Pass', 'Visitor Pass'];
 
   return (
-    <StudentLayout>
+    <div className="p-8 max-w-6xl mx-auto animate-fadeIn">
       <h1 className="text-2xl font-bold mb-4">Main Gate Pass</h1>
-      <ul className="pass-list">
+      <ul className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
         {passes.map((p, i) => (
-          <li key={i}>{p}</li>
+          <li key={i} className="py-2 border-b border-slate-100 last:border-0">{p}</li>
         ))}
       </ul>
-    </StudentLayout>
+    </div>
   );
 }

@@ -1,34 +1,43 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { FaUserGraduate, FaChalkboardTeacher, FaEnvelope, FaLock } from "react-icons/fa";
-import "./Login.css";
+import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaEnvelope, FaLock, FaArrowRight } from "react-icons/fa";
+import "./AuthPage.css";
 
 export default function Login() {
   const { login, loading } = useAuth();
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleLogin = (e) => {
+  const isCollegeEmail = (value) => /^[a-zA-Z0-9._%+-]+@kpriet\.ac\.in$/i.test(value);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // The login function in AuthContext expects credentials. 
-    // We are passing role as well, though the backend might deduce it or we use it for client-side hint. 
-    // Assuming backend handles role validation or just credential check.
-    login({ email, password, role });
+
+    if (!isCollegeEmail(email.trim())) {
+      setError("Only @kpriet.ac.in email is allowed");
+      return;
+    }
+
+    setError("");
+    await login({ email: email.trim().toLowerCase(), password, role });
   };
 
   return (
-    <div className="login-wrapper">
-      <div className="login-card">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-          <p className="text-gray-500">Sign in to your KPR ERP account</p>
+    <div className="auth-shell">
+      <div className="auth-orb auth-orb-one" />
+      <div className="auth-orb auth-orb-two" />
+      <div className="auth-card">
+        <div className="auth-header">
+          <p className="auth-chip">KPRIET Combined Admin Panel</p>
+          <h2>Welcome Back</h2>
+          <p>Sign in with your institutional account to continue.</p>
         </div>
 
-        {/* Role Toggle */}
         <div className="role-toggle-container">
-          <div className="role-toggle">
+          <div className="role-toggle" role="tablist" aria-label="Select role">
             <button
               className={`role-btn ${role === "student" ? "active" : ""}`}
               onClick={() => setRole("student")}
@@ -45,16 +54,23 @@ export default function Login() {
               <FaChalkboardTeacher className="mb-1 text-xl" />
               <span>Faculty</span>
             </button>
+            <button
+              className={`role-btn ${role === "admin" ? "active" : ""}`}
+              onClick={() => setRole("admin")}
+              type="button"
+            >
+              <FaUserShield className="mb-1 text-xl" />
+              <span>Admin</span>
+            </button>
           </div>
         </div>
 
-        {/* Login Form */}
         <form onSubmit={handleLogin} className="login-form">
           <div className="input-group">
             <FaEnvelope className="input-icon" />
             <input
               type="email"
-              placeholder={role === "student" ? "Student Email" : "Faculty Email"}
+              placeholder="rollno@kpriet.ac.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -74,13 +90,17 @@ export default function Login() {
             />
           </div>
 
+          {error && <p className="auth-error">{error}</p>}
+
+          <p className="auth-help">Only mail IDs ending with @kpriet.ac.in can login.</p>
+
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Signing in..." : "Sign In"} <FaArrowRight />
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} KPR Institute. All rights reserved.
+        <p className="auth-switch">
+          New to CAP? <Link to="/signup">Create an account</Link>
         </p>
       </div>
     </div>
