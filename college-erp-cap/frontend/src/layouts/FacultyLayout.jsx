@@ -9,6 +9,7 @@ export default function FacultyLayout() {
     { name: "Dashboard", path: "/faculty/dashboard" },
     { name: "Attendance Manage", path: "/faculty/attendance" },
     { name: "Period Scheduling", path: "/faculty/schedule" },
+    { name: "Timetable Scheduler", path: "/faculty/timetable-scheduler" },
     { name: "Reports", path: "/faculty/reports" },
   ];
 

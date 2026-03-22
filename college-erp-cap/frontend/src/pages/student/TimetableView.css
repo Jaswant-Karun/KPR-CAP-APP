@@ -4,6 +4,41 @@
   flex-wrap: wrap;
 }
 
+.today-box {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+}
+
+.period-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.period-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #eef2ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+}
+
+.time-chip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e40af;
+  background: #dbeafe;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
 .timetable-day {
   background-color: white;
   padding: 1rem;

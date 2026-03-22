@@ -5,6 +5,7 @@ import Dashboard from "../pages/faculty/Dashboard";
 import AttendanceManage from "../pages/faculty/AttendanceManage";
 import PeriodScheduling from "../pages/faculty/PeriodScheduling";
 import Reports from "../pages/faculty/Reports";
+import TimetableScheduler from "../pages/faculty/TimetableScheduler";
 
 export default function FacultyRoutes() {
   return (
@@ -13,6 +14,7 @@ export default function FacultyRoutes() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="attendance" element={<AttendanceManage />} />
         <Route path="schedule" element={<PeriodScheduling />} />
+        <Route path="timetable-scheduler" element={<TimetableScheduler />} />
         <Route path="reports" element={<Reports />} />
       </Route>
     </Routes>

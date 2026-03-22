@@ -1,75 +1,118 @@
-import React, { useState, useContext } from 'react';
-import { AuthContext } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { getFullProfile } from "../../services/studentService";
+import "./Profile.css";
 
 export default function Profile() {
-  const { user, updateUser } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    rollNo: user?.rollNo || '24CB023' // Default if missing
-  });
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        setLoading(true);
+        const data = await getFullProfile(token);
+        setProfile(data);
+        setError("");
+      } catch (err) {
+        setError(err.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+    loadProfile();
+  }, [token]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateUser(formData);
-    alert("Profile Updated Successfully!");
-    navigate('/student/dashboard');
-  };
+  if (loading) {
+    return <div className="profile-page-state">Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div className="profile-page-state profile-error">{error}</div>;
+  }
+
+  if (!profile) {
+    return <div className="profile-page-state">No profile data available</div>;
+  }
+
+  const infoRows = (obj) =>
+    Object.entries(obj).map(([key, value]) => (
+      <div className="profile-row" key={key}>
+        <span>{key.replace(/([A-Z])/g, " $1").trim()}</span>
+        <strong>{Array.isArray(value) ? value.join(", ") : String(value)}</strong>
+      </div>
+    ));
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Edit Profile</h1>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
-            <input
-              type="text"
-              name="rollNo"
-              value={formData.rollNo}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="e.g. 24CB023"
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="mt-4 bg-[#1e3a5f] text-white py-2 rounded-lg font-semibold hover:bg-[#162c4b] transition-colors"
-          >
-            Save Changes
+    <div className="profile-cyber-page">
+      <section className="profile-summary profile-panel">
+        <div className="profile-summary-header">
+          <h3>Profile</h3>
+          <button type="button" className="profile-home-btn" onClick={() => navigate("/student/dashboard")}>
+            Home
           </button>
+        </div>
+        <h2>{profile.profile.name}</h2>
+        <p>{profile.profile.email}</p>
+        <div className="profile-badges">
+          <span>{profile.profile.status.role}</span>
+          <span>{profile.profile.status.activity}</span>
+          <span>{profile.profile.status.userType}</span>
+        </div>
+      </section>
 
-          <button
-            type="button"
-            onClick={() => navigate('/student/dashboard')}
-            className="text-sm text-gray-500 hover:text-gray-700 text-center"
-          >
-            Cancel
-          </button>
-        </form>
-      </div>
+      <section className="profile-panel">
+        <h3>Personal Details</h3>
+        {infoRows(profile.personalDetails)}
+      </section>
+
+      <section className="profile-panel">
+        <h3>Contact Details</h3>
+        {infoRows(profile.contactDetails)}
+      </section>
+
+      <section className="profile-panel">
+        <h3>Academic Details</h3>
+        {infoRows(profile.academicDetails)}
+      </section>
+
+      <section className="profile-panel">
+        <h3>Admission Details</h3>
+        {infoRows(profile.admissionDetails)}
+      </section>
+
+      <section className="profile-panel profile-full">
+        <h3>Mentor Details</h3>
+        <div className="mentor-grid">
+          <div>
+            <h4>Mentor</h4>
+            {infoRows(profile.mentorDetails.mentor)}
+          </div>
+          <div>
+            <h4>Chief Mentor</h4>
+            {infoRows(profile.mentorDetails.chiefMentor)}
+          </div>
+          <div>
+            <h4>Section Head</h4>
+            {infoRows(profile.mentorDetails.sectionHead)}
+          </div>
+        </div>
+      </section>
+
+      <section className="profile-panel">
+        <h3>System Details</h3>
+        {infoRows(profile.systemDetails)}
+      </section>
+
+      <section className="profile-panel">
+        <h3>Permissions</h3>
+        {infoRows(profile.permissions)}
+      </section>
     </div>
   );
 }

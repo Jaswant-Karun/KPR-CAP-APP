@@ -1,6 +1,7 @@
 // src/services/studentService.js
 import { apiRequest } from "./api";
 
+export const getFullProfile = (token) => apiRequest("/student/profile", "GET", null, token);
 export const getStudentProfile = (studentId, token) => apiRequest(`/student/${studentId}`, "GET", null, token);
 export const getAttendance = (studentId, token) => apiRequest(`/student/${studentId}/attendance`, "GET", null, token);
 export const getTimetable = (studentId, token) => apiRequest(`/student/${studentId}/timetable`, "GET", null, token);

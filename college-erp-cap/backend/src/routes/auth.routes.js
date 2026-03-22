@@ -8,6 +8,8 @@ const {
 } = require("../validations/auth.validation");
 const { signToken } = require("../utils/jwt");
 
+const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
+
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, role = "student", rollNo, department } = req.body;
@@ -33,7 +35,18 @@ router.post("/signup", async (req, res) => {
     }
 
     const allowedRoles = ["student", "faculty", "admin"];
-    const safeRole = allowedRoles.includes(role) ? role : "student";
+    let safeRole = allowedRoles.includes(role) ? role : "student";
+
+    // Enforce a single unique admin login identity.
+    if (safeRole === "admin" && normalizedEmail !== UNIQUE_ADMIN_EMAIL) {
+      return res.status(403).json({
+        message: `Only ${UNIQUE_ADMIN_EMAIL} can be registered as admin`,
+      });
+    }
+
+    if (normalizedEmail === UNIQUE_ADMIN_EMAIL) {
+      safeRole = "admin";
+    }
 
     const localPart = normalizedEmail.split("@")[0];
     if (rollNo && localPart !== String(rollNo).trim().toLowerCase()) {

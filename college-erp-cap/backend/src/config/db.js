@@ -69,7 +69,7 @@ const createSchema = async () => {
 const defaultUsers = [
   {
     name: "Admin User",
-    email: "admin@kpriet.ac.in",
+    email: "kpr0123@kpriet.ac.in",
     role: "admin",
     roll_no: "ADM001",
     department: "Administration",
@@ -92,10 +92,16 @@ const defaultUsers = [
 
 const seedDefaults = async () => {
   const seedPassword = process.env.DEFAULT_USER_PASSWORD || "Password@123";
+  const uniqueAdminPassword = process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser";
   const passwordHash = await bcrypt.hash(seedPassword, 10);
+  const uniqueAdminPasswordHash = await bcrypt.hash(uniqueAdminPassword, 10);
 
   if (dbState.mode === "postgres") {
     for (const user of defaultUsers) {
+      const userPasswordHash = user.email === "kpr0123@kpriet.ac.in"
+        ? uniqueAdminPasswordHash
+        : passwordHash;
+
       await pool.query(
         `
           INSERT INTO users (name, email, password_hash, role, roll_no, department)
@@ -106,7 +112,7 @@ const seedDefaults = async () => {
         [
           user.name,
           user.email,
-          passwordHash,
+          userPasswordHash,
           user.role,
           user.roll_no,
           user.department,
@@ -120,7 +126,7 @@ const seedDefaults = async () => {
     memoryStore.users = defaultUsers.map((user, index) => ({
       ...user,
       id: index + 1,
-      password_hash: passwordHash,
+      password_hash: user.email === "kpr0123@kpriet.ac.in" ? uniqueAdminPasswordHash : passwordHash,
     }));
   }
 };
