@@ -1,13 +1,24 @@
 const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
 
+// Create a temporary pool to connect to the default 'postgres' database
+// This is used only to create the target database if it doesn't exist
+const adminPool = new Pool({
+  host: process.env.PG_HOST || "localhost",
+  port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
+  user: process.env.PG_USER || "postgres",
+  password: process.env.PG_PASSWORD || "postgres",
+  database: "postgres", // Always connect to 'postgres' database for admin operations
+  ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
+});
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   host: process.env.PG_HOST || "localhost",
   port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
   user: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "college_erp",
+  database: process.env.PG_DATABASE || "kpr_erp",
   ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
@@ -133,11 +144,41 @@ const seedDefaults = async () => {
 
 const connectDB = async () => {
   try {
+    const dbName = process.env.PG_DATABASE || "kpr_erp";
+    
+    // Step 1: Ensure the database exists
+    try {
+      const checkDb = await adminPool.query(
+        "SELECT 1 FROM pg_database WHERE datname = $1",
+        [dbName]
+      );
+      
+      if (checkDb.rows.length === 0) {
+        console.log(`📦 Creating database: ${dbName}...`);
+        await adminPool.query(`CREATE DATABASE ${dbName}`);
+        console.log(`✅ Database ${dbName} created`);
+      } else {
+        console.log(`✅ Database ${dbName} exists`);
+      }
+    } catch (dbCheckError) {
+      console.warn(`⚠️  Could not verify database existence: ${dbCheckError.message}`);
+    } finally {
+      try {
+        await adminPool.end();
+      } catch (e) {
+        // Ignore error on pool close
+      }
+    }
+    
+    // Step 2: Connect to the target database
     await pool.query("SELECT 1");
+    console.log("✅ Connected to PostgreSQL");
+    
+    // Step 3: Create schema and seed data
     await createSchema();
     dbState.mode = "postgres";
     await seedDefaults();
-    console.log("✅ PostgreSQL Connected");
+    console.log("✅ Database schema initialized");
   } catch (error) {
     console.error("❌ PostgreSQL Connection Error:");
     console.error("   Code:", error.code);

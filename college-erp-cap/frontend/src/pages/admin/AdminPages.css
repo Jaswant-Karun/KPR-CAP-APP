@@ -1,0 +1,138 @@
+.admin-page {
+  padding: 1.2rem;
+  color: #eaf0ff;
+}
+
+.admin-page-title {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.08rem;
+}
+
+.admin-page-subtitle {
+  margin: 0.3rem 0 1.1rem;
+  color: rgba(210, 223, 255, 0.72);
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.admin-stat-card {
+  border: 1px solid rgba(0, 196, 255, 0.22);
+  background: linear-gradient(180deg, rgba(9, 12, 20, 0.88), rgba(8, 10, 17, 0.84));
+  border-radius: 0.55rem;
+  padding: 1rem;
+}
+
+.admin-stat-label {
+  color: rgba(210, 223, 255, 0.72);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+}
+
+.admin-stat-value {
+  margin-top: 0.35rem;
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #00c4ff;
+}
+
+.admin-panel {
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 0, 115, 0.24);
+  background: linear-gradient(180deg, rgba(5, 7, 12, 0.85), rgba(9, 10, 18, 0.84));
+  border-radius: 0.55rem;
+  padding: 1rem;
+}
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.admin-input,
+.admin-select {
+  background: rgba(9, 12, 18, 0.88);
+  border: 1px solid rgba(0, 196, 255, 0.25);
+  color: #eaf0ff;
+  border-radius: 0.4rem;
+  padding: 0.6rem 0.75rem;
+  min-width: 180px;
+}
+
+.admin-btn {
+  border: 1px solid rgba(0, 196, 255, 0.4);
+  background: rgba(0, 196, 255, 0.12);
+  color: #9de8ff;
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.8rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.admin-btn:hover {
+  background: rgba(0, 196, 255, 0.2);
+}
+
+.admin-btn.warn {
+  border-color: rgba(255, 0, 115, 0.45);
+  color: #ff9fcb;
+  background: rgba(255, 0, 115, 0.12);
+}
+
+.admin-btn.warn:hover {
+  background: rgba(255, 0, 115, 0.2);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid rgba(0, 196, 255, 0.14);
+  text-align: left;
+  padding: 0.72rem;
+  font-size: 0.92rem;
+}
+
+.admin-table th {
+  color: rgba(214, 228, 255, 0.9);
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.08rem;
+}
+
+.admin-badge {
+  display: inline-block;
+  border: 1px solid rgba(255, 0, 115, 0.4);
+  color: #ff9fcb;
+  background: rgba(255, 0, 115, 0.1);
+  padding: 0.2rem 0.45rem;
+  border-radius: 0.3rem;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.admin-message {
+  margin-top: 0.75rem;
+  color: #9de8ff;
+}
+
+.admin-flex {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

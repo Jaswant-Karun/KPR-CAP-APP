@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const { getUserByEmail, createUser } = require("../config/db");
+const auth = require("../middleware/auth.middleware");
+const { getCurrentUser, logout } = require("../controllers/authController");
 const {
   normalizeEmail,
   isAllowedCollegeEmail,
@@ -132,5 +134,8 @@ router.post("/login", async (req, res) => {
     return res.status(500).json({ message: "Login failed", error: error.message });
   }
 });
+
+router.get("/me", auth, getCurrentUser);
+router.post("/logout", auth, logout);
 
 module.exports = router;

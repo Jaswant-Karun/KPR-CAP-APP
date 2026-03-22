@@ -1,0 +1,118 @@
+.admin-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 280px;
+  background: linear-gradient(180deg, rgba(5, 6, 11, 0.96), rgba(9, 11, 18, 0.94));
+  border-right: 1px solid rgba(255, 0, 115, 0.22);
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 100;
+  padding-top: 5.5rem;
+}
+
+.admin-sidebar-nav {
+  padding: 1rem 0;
+}
+
+.admin-menu-group {
+  border-bottom: 1px solid rgba(0, 196, 255, 0.08);
+}
+
+.admin-menu-parent {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.2rem;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all 0.25s ease;
+  color: #dce2ff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.admin-menu-parent:hover {
+  background: rgba(255, 0, 115, 0.12);
+  color: #ffd3e8;
+  border-left: 3px solid #ff0b7b;
+  padding-left: calc(1.2rem - 3px);
+  box-shadow: inset 0 0 12px rgba(255, 0, 115, 0.15);
+}
+
+.admin-menu-icon {
+  color: #00c4ff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-menu-title {
+  flex: 1;
+  text-align: left;
+}
+
+.admin-menu-toggle {
+  color: rgba(0, 196, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.admin-sidebar-children {
+  background: rgba(0, 196, 255, 0.04);
+  border-left: 2px solid rgba(255, 0, 115, 0.2);
+  animation: adminSlideDown 0.2s ease;
+}
+
+@keyframes adminSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-child-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.7rem 1.2rem 0.7rem calc(1.2rem + 0.75rem + 15px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: rgba(220, 226, 255, 0.78);
+  font-size: 0.88rem;
+  border-left: 2px solid transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.admin-child-item:hover,
+.admin-child-item.active {
+  background: rgba(0, 196, 255, 0.12);
+  color: #00c4ff;
+  border-left-color: #00c4ff;
+  box-shadow: inset 0 0 8px rgba(0, 196, 255, 0.2);
+  padding-left: calc(1.2rem + 0.75rem + 20px);
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    width: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-sidebar {
+    display: none;
+  }
+}
