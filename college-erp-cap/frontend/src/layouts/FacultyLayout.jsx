@@ -1,38 +1,44 @@
 import React from "react";
-import { Outlet, Link } from "react-router-dom";
-import Navbar from "../components/common/Navbar";
-import Footer from "../components/common/Footer";
+import { Outlet, useNavigate } from "react-router-dom";
+import { FaSignOutAlt } from "react-icons/fa";
+import { useAuth } from "../hooks/useAuth";
+import FacultySidebar from "../components/FacultySidebar";
+import "./StudentLayout.css";
 
 export default function FacultyLayout() {
-  // Example: custom sidebar menu for faculty
-  const facultyMenu = [
-    { name: "Dashboard", path: "/faculty/dashboard" },
-    { name: "Attendance Manage", path: "/faculty/attendance" },
-    { name: "Period Scheduling", path: "/faculty/schedule" },
-    { name: "Timetable Scheduler", path: "/faculty/timetable-scheduler" },
-    { name: "Reports", path: "/faculty/reports" },
-  ];
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <aside className="w-64 bg-gray-100 min-h-screen p-4">
-          <ul className="flex flex-col gap-2">
-            {facultyMenu.map((item) => (
-              <li key={item.path}>
-                <Link to={item.path} className="hover:text-blue-600">
-                  {item.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </aside>
-        <main className="flex-1 p-6">
+    <div className="student-shell">
+      <div className="student-shell-grid" aria-hidden="true" />
+
+      <header className="student-topbar">
+        <div className="student-brand-wrap">
+          <p className="student-brand">
+            KPRIET <span>PORTAL</span>
+          </p>
+          <p className="student-brand-sub">Faculty Management Console</p>
+        </div>
+
+        <button type="button" className="student-logout-btn" onClick={handleLogout}>
+          <FaSignOutAlt />
+          <span>Logout</span>
+        </button>
+      </header>
+
+      <FacultySidebar />
+
+      <main className="student-content-wrap">
+        <div className="student-content-card">
           <Outlet />
-        </main>
-      </div>
-      <Footer />
+        </div>
+      </main>
     </div>
   );
 }

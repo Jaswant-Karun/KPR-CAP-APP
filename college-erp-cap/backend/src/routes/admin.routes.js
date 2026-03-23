@@ -8,6 +8,9 @@ const {
 	deleteStudent,
 	getAllFaculty,
 	getFacultyById,
+	getFacultyControlledStudents,
+	getFacultyControlMapForAdmin,
+	setFacultyControlMapForAdmin,
 	editFacultyDetails,
 	deleteFaculty,
 	getAdminDashboardStats,
@@ -39,6 +42,9 @@ router.delete("/students/:studentId", deleteStudent);
 // Faculty management (admin-only)
 router.get("/faculty", getAllFaculty);
 router.get("/faculty/:facultyId", getFacultyById);
+router.get("/faculty/:facultyId/students", getFacultyControlledStudents);
+router.get("/faculty/:facultyId/control-map", getFacultyControlMapForAdmin);
+router.post("/faculty/:facultyId/control-map", setFacultyControlMapForAdmin);
 router.put("/faculty/:facultyId", editFacultyDetails);
 router.delete("/faculty/:facultyId", deleteFaculty);
 

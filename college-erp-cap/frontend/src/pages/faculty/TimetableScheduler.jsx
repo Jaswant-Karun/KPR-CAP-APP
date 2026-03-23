@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { getWeeklyTimetable, saveWeeklyTimetable } from "../../services/timetableService";
+import { FACULTY_DEFAULT_TIMETABLE } from "../../utils/facultyDefaultTimetable";
 import "./TimetableScheduler.css";
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -18,6 +19,7 @@ const emptyRow = () => ({
 export default function TimetableScheduler() {
   const { user, token } = useAuth();
   const [rows, setRows] = useState([emptyRow()]);
+  const [activeDay, setActiveDay] = useState("all");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -57,7 +59,11 @@ export default function TimetableScheduler() {
   }, [user?.id, token]);
 
   const addRow = () => {
-    setRows((prev) => [...prev, emptyRow()]);
+    const nextRow = emptyRow();
+    if (activeDay !== "all") {
+      nextRow.dayOfWeek = Number(activeDay);
+    }
+    setRows((prev) => [...prev, nextRow]);
   };
 
   const removeRow = (index) => {
@@ -79,6 +85,16 @@ export default function TimetableScheduler() {
         periodNo: Number(row.periodNo),
       }));
   }, [rows]);
+
+  const visibleRows = useMemo(() => {
+    if (activeDay === "all") return rows;
+    return rows.filter((row) => Number(row.dayOfWeek) === Number(activeDay));
+  }, [activeDay, rows]);
+
+  const handleLoadProvidedTimetable = () => {
+    setRows(FACULTY_DEFAULT_TIMETABLE);
+    setMessage("Timetable from your provided sheet is loaded. You can edit and save any day/period.");
+  };
 
   const handleSave = async () => {
     if (!user?.id || !token) return;
@@ -105,15 +121,29 @@ export default function TimetableScheduler() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-2">Automatic Timetable Scheduler</h1>
-      <p className="text-gray-500 mb-4">Enter full weekly timetable. The system automatically serves the right day schedule.</p>
+    <div className="faculty-page-wrap timetable-page-wrap">
+      <h1 className="faculty-title">Editable Timetable Scheduler</h1>
+      <p className="faculty-subtitle">Schedule each day period-wise and edit anytime. Students will get day-wise timetable automatically.</p>
 
-      {message && <p className="mb-3 text-sm text-blue-700">{message}</p>}
+      {message && <p className="timetable-message">{message}</p>}
       {loading && <p>Loading...</p>}
 
       {!loading && (
         <>
+          <div className="timetable-toolbar">
+            <label>
+              Editing Day
+              <select value={activeDay} onChange={(e) => setActiveDay(e.target.value)}>
+                <option value="all">All Days</option>
+                {DAYS.map((day, dayIndex) => (
+                  <option key={day} value={dayIndex}>
+                    {day}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
           <table className="timetable-table">
             <thead>
               <tr>
@@ -128,7 +158,10 @@ export default function TimetableScheduler() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, index) => (
+              {visibleRows.map((row) => {
+                const index = rows.indexOf(row);
+
+                return (
                 <tr key={`${row.dayOfWeek}-${row.periodNo}-${index}`}>
                   <td>
                     <select value={row.dayOfWeek} onChange={(e) => updateRow(index, "dayOfWeek", e.target.value)}>
@@ -173,13 +206,17 @@ export default function TimetableScheduler() {
                     </button>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
 
-          <div className="mt-4 flex gap-3">
+          <div className="timetable-action-row">
+            <button type="button" className="primary-btn" onClick={handleLoadProvidedTimetable}>
+              Load Timetable From Sheet
+            </button>
             <button type="button" className="primary-btn" onClick={addRow}>
-              Add Row
+              Add Period
             </button>
             <button type="button" className="primary-btn" onClick={handleSave} disabled={saving}>
               {saving ? "Saving..." : "Save Weekly Timetable"}

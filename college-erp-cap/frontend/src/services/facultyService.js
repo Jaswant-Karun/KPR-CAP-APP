@@ -6,3 +6,4 @@ export const getStudents = (facultyId, token) => apiRequest(`/faculty/${facultyI
 export const getTimetable = (facultyId, token) => apiRequest(`/faculty/${facultyId}/timetable`, "GET", null, token);
 export const submitAttendance = (facultyId, data, token) => apiRequest(`/faculty/${facultyId}/attendance`, "POST", data, token);
 export const getReports = (facultyId, token) => apiRequest(`/faculty/${facultyId}/reports`, "GET", null, token);
+export const getFacultyDirectory = (token) => apiRequest("/faculty/list/all", "GET", null, token);

@@ -18,7 +18,7 @@ export default function AppRoutes() {
       <Route
         path="/student/*"
         element={
-          <ProtectedRoute role="student">
+          <ProtectedRoute role={["student", "faculty", "admin"]}>
             <StudentRoutes />
           </ProtectedRoute>
         }
@@ -26,7 +26,7 @@ export default function AppRoutes() {
       <Route
         path="/faculty/*"
         element={
-          <ProtectedRoute role="faculty">
+          <ProtectedRoute role={["faculty", "admin"]}>
             <FacultyRoutes />
           </ProtectedRoute>
         }

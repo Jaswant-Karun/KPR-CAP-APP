@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { getTodayTimetable, getWeeklyTimetable } from "../../services/timetableService";
+import { getFacultyDirectory } from "../../services/facultyService";
 import "./TimetableView.css";
 
 const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -9,8 +10,28 @@ export default function TimetableView() {
   const { user, token } = useAuth();
   const [todayRows, setTodayRows] = useState([]);
   const [weekRows, setWeekRows] = useState([]);
+  const [facultyList, setFacultyList] = useState([]);
+  const [selectedFacultyId, setSelectedFacultyId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadFaculty = async () => {
+      if (!token) return;
+      try {
+        const res = await getFacultyDirectory(token);
+        const list = res?.faculty || [];
+        setFacultyList(list);
+        if (!selectedFacultyId && list.length > 0) {
+          setSelectedFacultyId(String(list[0].id));
+        }
+      } catch {
+        // keep timetable loading functional even if faculty directory fails
+      }
+    };
+
+    loadFaculty();
+  }, [token, selectedFacultyId]);
 
   useEffect(() => {
     const fetchTimetable = async () => {
@@ -24,8 +45,8 @@ export default function TimetableView() {
         setError("");
 
         const [todayRes, weekRes] = await Promise.all([
-          getTodayTimetable("student", user.id, token),
-          getWeeklyTimetable("student", user.id, token),
+          getTodayTimetable("student", user.id, token, selectedFacultyId || undefined),
+          getWeeklyTimetable("student", user.id, token, selectedFacultyId || undefined),
         ]);
 
         setTodayRows(todayRes?.periods || []);
@@ -38,7 +59,7 @@ export default function TimetableView() {
     };
 
     fetchTimetable();
-  }, [user?.id, token]);
+  }, [user?.id, token, selectedFacultyId]);
 
   const groupedByDay = useMemo(() => {
     const map = new Map();
@@ -54,6 +75,27 @@ export default function TimetableView() {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Automatic Day-wise Timetable</h1>
       <p className="text-gray-500 mb-6">Today's schedule is selected automatically based on the current day.</p>
+
+      <div className="mb-5">
+        <label className="text-sm font-semibold text-slate-600">
+          Faculty / Class Timetable
+          <select
+            className="ml-3 border border-slate-300 rounded px-3 py-1.5"
+            value={selectedFacultyId}
+            onChange={(e) => setSelectedFacultyId(e.target.value)}
+          >
+            {facultyList.length === 0 ? (
+              <option value="">Default</option>
+            ) : (
+              facultyList.map((faculty) => (
+                <option key={faculty.id} value={faculty.id}>
+                  {faculty.name} ({faculty.department || "No Dept"})
+                </option>
+              ))
+            )}
+          </select>
+        </label>
+      </div>
 
       {loading && <p>Loading timetable...</p>}
       {error && <p className="text-red-600">{error}</p>}

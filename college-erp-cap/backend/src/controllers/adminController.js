@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const { getFacultyControlMap, setFacultyControlMap } = require("../store/facultyControlStore");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -182,6 +183,106 @@ const getFacultyById = async (req, res) => {
   }
 };
 
+const getFacultyControlledStudents = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    const facultyResult = await pool.query(
+      `SELECT id, name, department FROM users WHERE id = $1 AND role = 'faculty'`,
+      [facultyId]
+    );
+
+    if (facultyResult.rows.length === 0) {
+      return res.status(404).json({ message: "Faculty not found" });
+    }
+
+    const faculty = facultyResult.rows[0];
+    const controlMap = getFacultyControlMap(facultyId);
+
+    let studentsResult;
+    if (controlMap && controlMap.studentIds.length > 0) {
+      studentsResult = await pool.query(
+        `SELECT id, name, email, roll_no, department FROM users
+         WHERE role = 'student' AND id = ANY($1::int[])
+         ORDER BY name ASC`,
+        [controlMap.studentIds]
+      );
+    } else {
+      studentsResult = await pool.query(
+        `SELECT id, name, email, roll_no, department FROM users
+         WHERE role = 'student' AND ($1::text IS NULL OR department = $1)
+         ORDER BY name ASC`,
+        [faculty.department || null]
+      );
+    }
+
+    return res.json({
+      faculty,
+      mapping: controlMap,
+      mappingMode: controlMap ? "explicit-batch-section" : "department-fallback",
+      total: studentsResult.rows.length,
+      students: studentsResult.rows,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch controlled students", error: error.message });
+  }
+};
+
+const getFacultyControlMapForAdmin = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    const faculty = await pool.query(
+      `SELECT id, name, department FROM users WHERE id = $1 AND role = 'faculty'`,
+      [facultyId]
+    );
+
+    if (faculty.rows.length === 0) {
+      return res.status(404).json({ message: "Faculty not found" });
+    }
+
+    return res.json({
+      faculty: faculty.rows[0],
+      mapping: getFacultyControlMap(facultyId),
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch faculty control map", error: error.message });
+  }
+};
+
+const setFacultyControlMapForAdmin = async (req, res) => {
+  try {
+    const { facultyId } = req.params;
+    const { batch, section, studentIds } = req.body || {};
+
+    const faculty = await pool.query(
+      `SELECT id, name, department FROM users WHERE id = $1 AND role = 'faculty'`,
+      [facultyId]
+    );
+
+    if (faculty.rows.length === 0) {
+      return res.status(404).json({ message: "Faculty not found" });
+    }
+
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
+      return res.status(400).json({ message: "studentIds must be a non-empty array" });
+    }
+
+    const saved = setFacultyControlMap({
+      facultyId,
+      batch,
+      section,
+      studentIds,
+    });
+
+    return res.json({
+      message: "Faculty control mapping saved",
+      faculty: faculty.rows[0],
+      mapping: saved,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to save faculty control map", error: error.message });
+  }
+};
+
 const editFacultyDetails = async (req, res) => {
   try {
     const { facultyId } = req.params;
@@ -327,6 +428,9 @@ module.exports = {
   // Faculty
   getAllFaculty,
   getFacultyById,
+  getFacultyControlledStudents,
+  getFacultyControlMapForAdmin,
+  setFacultyControlMapForAdmin,
   editFacultyDetails,
   deleteFaculty,
 

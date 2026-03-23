@@ -2,6 +2,7 @@ const router = require("express").Router();
 const auth = require("../middleware/auth.middleware");
 const allowRoles = require("../middleware/role.middleware");
 const {
+	listFacultyMembers,
   getFacultyProfile,
   getStudentsForFaculty,
   submitAttendance,
@@ -12,6 +13,7 @@ const {
 	getWeekTimetable,
 } = require("../controllers/timetableController");
 
+router.get("/list/all", auth, allowRoles(["student", "faculty", "admin"]), listFacultyMembers);
 router.get("/:facultyId", auth, allowRoles(["faculty", "admin"]), getFacultyProfile);
 router.get("/:facultyId/students", auth, allowRoles(["faculty", "admin"]), getStudentsForFaculty);
 router.post("/:facultyId/attendance", auth, allowRoles(["faculty", "admin"]), submitAttendance);

@@ -6,6 +6,8 @@ const { notFoundHandler, errorHandler } = require("./middleware/error.middleware
 
 const app = express();
 
+const cfacRoutes = require("./routes/cfac.routes");
+
 app.use(cors());
 app.use(express.json());
 
@@ -15,6 +17,7 @@ app.use("/api/faculty", require("./routes/faculty.routes"));
 app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/timetable", require("./routes/timetable.routes"));
 app.use("/api/services", require("./routes/service.routes"));
+app.use("/api/cfac", cfacRoutes);
 app.get("/api/profile", auth, getStudentProfile);
 
 app.get("/", (req, res) => {

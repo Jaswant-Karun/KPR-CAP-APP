@@ -1,6 +1,39 @@
-.card {
-  transition: transform 0.2s;
+.faculty-page-wrap {
+  padding: 1.25rem;
+  color: #e9eeff;
 }
-.card:hover {
-  transform: scale(1.05);
+
+.faculty-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  letter-spacing: 0.04rem;
+}
+
+.faculty-subtitle {
+  margin: 0.65rem 0 1.2rem;
+  color: rgba(220, 226, 255, 0.72);
+}
+
+.faculty-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.faculty-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 196, 255, 0.25);
+  background: rgba(7, 10, 18, 0.9);
+  color: #dce2ff;
+}
+
+.faculty-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 22px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 900px) {
+  .faculty-card-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -2,6 +2,8 @@ const { validateServiceRequest } = require("../validations/student.validation");
 
 const serviceRequests = [];
 let nextServiceRequestId = 1;
+const gatepassRequests = [];
+let nextGatepassId = 1;
 
 const createServiceRequest = (req, res) => {
 	const payload = {
@@ -67,8 +69,72 @@ const updateServiceRequestStatus = (req, res) => {
 	return res.json({ message: "Service request updated", request: target });
 };
 
+const createGatepassRequest = (req, res) => {
+	const payload = req.body || {};
+	if (!payload.reason || !payload.fromDate || !payload.toDate) {
+		return res.status(400).json({ message: "reason, fromDate and toDate are required" });
+	}
+
+	const requestItem = {
+		id: nextGatepassId++,
+		studentId: req.user?.id || null,
+		studentName: payload.studentName || req.user?.email || "Student",
+		rollNo: payload.rollNo || null,
+		reason: String(payload.reason),
+		fromDate: String(payload.fromDate),
+		toDate: String(payload.toDate),
+		status: "pending",
+		approvedBy: null,
+		remarks: payload.remarks || "",
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	};
+
+	gatepassRequests.push(requestItem);
+	return res.status(201).json({ message: "Gatepass request created", gatepass: requestItem });
+};
+
+const listGatepassRequests = (req, res) => {
+	const role = req.user?.role;
+	const userId = req.user?.id;
+	const status = String(req.query?.status || "").trim().toLowerCase();
+
+	let rows = gatepassRequests;
+	if (role === "student") {
+		rows = rows.filter((item) => item.studentId === userId);
+	}
+
+	if (status) {
+		rows = rows.filter((item) => item.status === status);
+	}
+
+	return res.json({ total: rows.length, requests: rows });
+};
+
+const updateGatepassStatus = (req, res) => {
+	const gatepassId = Number(req.params.gatepassId);
+	const status = String(req.body?.status || "").toLowerCase();
+	if (!["approved", "rejected"].includes(status)) {
+		return res.status(400).json({ message: "status must be approved or rejected" });
+	}
+
+	const target = gatepassRequests.find((item) => item.id === gatepassId);
+	if (!target) {
+		return res.status(404).json({ message: "Gatepass request not found" });
+	}
+
+	target.status = status;
+	target.remarks = req.body?.remarks || target.remarks;
+	target.approvedBy = req.user?.id || null;
+	target.updatedAt = new Date().toISOString();
+	return res.json({ message: "Gatepass request updated", gatepass: target });
+};
+
 module.exports = {
 	createServiceRequest,
 	listServiceRequests,
 	updateServiceRequestStatus,
+	createGatepassRequest,
+	listGatepassRequests,
+	updateGatepassStatus,
 };

@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const { getFacultyControlMap } = require("../store/facultyControlStore");
 
 const pool = new Pool({
 	connectionString: process.env.DATABASE_URL,
@@ -30,20 +31,46 @@ const getFacultyProfile = async (req, res) => {
 	}
 };
 
+const listFacultyMembers = async (req, res) => {
+	try {
+		const result = await pool.query(
+			`SELECT id, name, email, roll_no, department FROM users WHERE role = 'faculty' ORDER BY name ASC`
+		);
+		return res.json({ total: result.rows.length, faculty: result.rows });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to fetch faculty directory", error: error.message });
+	}
+};
+
 const getStudentsForFaculty = async (req, res) => {
 	try {
+		const facultyId = Number(req.params.facultyId || req.user?.id);
 		const faculty = await pool.query(
 			`SELECT department FROM users WHERE id = $1 AND role = 'faculty'`,
-			[Number(req.params.facultyId || req.user?.id)]
+			[facultyId]
 		);
 
 		const department = faculty.rows[0]?.department;
-		const result = await pool.query(
-			`SELECT id, name, email, roll_no, department FROM users WHERE role = 'student' AND ($1::text IS NULL OR department = $1) ORDER BY name ASC`,
-			[department || null]
-		);
+		const controlMap = getFacultyControlMap(facultyId);
 
-		return res.json({ total: result.rows.length, students: result.rows });
+		let result;
+		if (controlMap && controlMap.studentIds.length > 0) {
+			result = await pool.query(
+				`SELECT id, name, email, roll_no, department FROM users WHERE role = 'student' AND id = ANY($1::int[]) ORDER BY name ASC`,
+				[controlMap.studentIds]
+			);
+		} else {
+			result = await pool.query(
+				`SELECT id, name, email, roll_no, department FROM users WHERE role = 'student' AND ($1::text IS NULL OR department = $1) ORDER BY name ASC`,
+				[department || null]
+			);
+		}
+
+		return res.json({
+			total: result.rows.length,
+			mapping: controlMap,
+			students: result.rows,
+		});
 	} catch (error) {
 		return res.status(500).json({ message: "Failed to fetch students", error: error.message });
 	}
@@ -59,6 +86,8 @@ const submitAttendance = (req, res) => {
 		id: attendanceStore.length + 1,
 		facultyId: Number(req.params.facultyId || req.user?.id),
 		studentId: Number(payload.studentId),
+		rollNo: payload.rollNo ? String(payload.rollNo).toUpperCase() : null,
+		studentName: payload.studentName ? String(payload.studentName).toUpperCase() : null,
 		date: String(payload.date),
 		status: String(payload.status).toLowerCase(),
 		subject: payload.subject || "General",
@@ -75,9 +104,13 @@ const getFacultyReports = (req, res) => {
 	return res.json({ totalAttendanceEntries: rows.length, attendance: rows });
 };
 
+const getAttendanceEntries = () => attendanceStore;
+
 module.exports = {
+	listFacultyMembers,
 	getFacultyProfile,
 	getStudentsForFaculty,
 	submitAttendance,
 	getFacultyReports,
+	getAttendanceEntries,
 };

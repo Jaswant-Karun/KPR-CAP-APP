@@ -38,6 +38,8 @@ const adminMenu = [
     icon: FaUsers,
     children: [
       { title: "Admin Full Control", path: "/admin/dashboard" },
+      { title: "Open Student Module", path: "/student/dashboard" },
+      { title: "Open Faculty Module", path: "/faculty/dashboard" },
       { title: "Institution Units", path: "/admin/departments" },
     ],
   },

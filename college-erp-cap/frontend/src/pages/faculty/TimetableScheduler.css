@@ -1,36 +1,55 @@
+.faculty-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  letter-spacing: 0.04rem;
+  color: #e9eeff;
+}
+
+.faculty-subtitle {
+  margin: 0.65rem 0 1.2rem;
+  color: rgba(220, 226, 255, 0.72);
+}
+
 .timetable-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background: rgba(8, 11, 20, 0.95);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  box-shadow: 0 0 0 1px rgba(0, 196, 255, 0.2);
 }
 
 .timetable-table th,
 .timetable-table td {
-  border: 1px solid #ddd;
+  border: 1px solid rgba(0, 196, 255, 0.14);
   padding: 12px;
   text-align: center;
+  color: #dce2ff;
 }
 
 .timetable-table th {
-  background-color: #f3f4f6;
+  background: rgba(255, 0, 115, 0.12);
+  color: #ffd3e8;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+  font-size: 0.75rem;
 }
 
 .timetable-table input,
 .timetable-table select {
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(0, 196, 255, 0.34);
+  background: rgba(8, 12, 22, 0.92);
+  color: #e9eeff;
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 13px;
 }
 
 .primary-btn {
-  background: #1d4ed8;
-  color: #ffffff;
-  border: none;
+  border: 1px solid rgba(255, 0, 115, 0.42);
+  background: rgba(14, 18, 30, 0.95);
+  color: #ffd3e8;
   border-radius: 8px;
   padding: 10px 16px;
   cursor: pointer;
@@ -42,10 +61,48 @@
 }
 
 .danger-btn {
-  background: #dc2626;
+  background: rgba(153, 27, 27, 0.82);
   color: #ffffff;
-  border: none;
+  border: 1px solid rgba(248, 113, 113, 0.5);
   border-radius: 6px;
   padding: 8px 10px;
   cursor: pointer;
+}
+
+.timetable-page-wrap {
+  padding: 1.25rem;
+}
+
+.timetable-message {
+  color: #7dd3fc;
+  font-size: 0.92rem;
+  margin-bottom: 0.75rem;
+}
+
+.timetable-toolbar {
+  margin-bottom: 0.9rem;
+}
+
+.timetable-toolbar label {
+  color: #dce2ff;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.timetable-action-row {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 800px) {
+  .timetable-table {
+    display: block;
+    overflow-x: auto;
+  }
 }

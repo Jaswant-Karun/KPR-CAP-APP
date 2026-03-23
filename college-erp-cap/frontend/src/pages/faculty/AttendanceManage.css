@@ -1,19 +1,202 @@
+.attendance-page-wrap {
+  padding: 1.25rem;
+}
+
+.faculty-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 2rem);
+  letter-spacing: 0.04rem;
+  color: #e9eeff;
+}
+
+.faculty-subtitle {
+  margin: 0.65rem 0 1.2rem;
+  color: rgba(220, 226, 255, 0.72);
+}
+
+.class-editor-wrap {
+  border: 1px solid rgba(0, 196, 255, 0.24);
+  background: rgba(8, 11, 20, 0.95);
+  border-radius: 0.45rem;
+  padding: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.class-editor-title {
+  margin: 0 0 0.55rem;
+  color: #b9ecff;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+.class-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.class-editor-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #dce2ff;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+}
+
+.attendance-toolbar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
+}
+
+.attendance-toolbar label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #dce2ff;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+}
+
+.attendance-toolbar input,
+.attendance-toolbar select,
+.class-editor-grid input,
+.attendance-table select {
+  border: 1px solid rgba(0, 196, 255, 0.34);
+  background: rgba(8, 12, 22, 0.92);
+  color: #e9eeff;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.35rem;
+}
+
+.student-inline-input {
+  width: 100%;
+  border: 1px solid rgba(0, 196, 255, 0.34);
+  background: rgba(8, 12, 22, 0.92);
+  color: #e9eeff;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.35rem;
+}
+
+.attendance-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.attendance-chip {
+  border: 1px solid rgba(0, 196, 255, 0.32);
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(8, 11, 20, 0.95);
+  color: #dce2ff;
+  font-size: 0.83rem;
+}
+
+.attendance-chip.present {
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #99f6b0;
+}
+
+.attendance-chip.absent {
+  border-color: rgba(248, 113, 113, 0.5);
+  color: #fca5a5;
+}
+
+.attendance-message {
+  margin: 0.4rem 0 0.9rem;
+  color: #7dd3fc;
+  font-size: 0.92rem;
+}
+
 .attendance-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  border-radius: 8px;
+  background: rgba(8, 11, 20, 0.95);
+  border: 1px solid rgba(0, 196, 255, 0.25);
+  border-radius: 0.45rem;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
 }
 
 .attendance-table th,
 .attendance-table td {
-  border: 1px solid #ddd;
-  padding: 12px;
+  border: 1px solid rgba(0, 196, 255, 0.14);
+  padding: 0.65rem;
   text-align: center;
+  color: #dce2ff;
 }
 
 .attendance-table th {
-  background-color: #f3f4f6;
+  background: rgba(255, 0, 115, 0.12);
+  color: #ffd3e8;
+  text-transform: uppercase;
+  letter-spacing: 0.04rem;
+  font-size: 0.76rem;
+}
+
+.attendance-submit-wrap {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.remove-student-btn {
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  background: rgba(153, 27, 27, 0.82);
+  color: #ffffff;
+  border-radius: 0.35rem;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+}
+
+.remove-student-btn:hover {
+  filter: brightness(1.1);
+}
+
+.primary-btn,
+.secondary-btn {
+  border: 1px solid rgba(255, 0, 115, 0.42);
+  background: rgba(14, 18, 30, 0.95);
+  color: #ffd3e8;
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  border-color: rgba(0, 196, 255, 0.38);
+  color: #b9ecff;
+}
+
+.primary-btn:hover,
+.secondary-btn:hover {
+  filter: brightness(1.12);
+}
+
+@media (max-width: 1024px) {
+  .class-editor-grid {
+    grid-template-columns: repeat(2, minmax(150px, 1fr));
+  }
+
+  .attendance-toolbar {
+    grid-template-columns: repeat(2, minmax(170px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .attendance-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-table {
+    display: block;
+    overflow-x: auto;
+  }
 }
