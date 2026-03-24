@@ -3,8 +3,13 @@ import { apiRequest } from "./api";
 export const createGatepass = (payload, token) =>
   apiRequest("/services/gatepass", "POST", payload, token);
 
-export const getGatepassRequests = (token, status) =>
-  apiRequest(`/services/gatepass${status ? `?status=${encodeURIComponent(status)}` : ""}`, "GET", null, token);
+export const getGatepassRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.status) params.set("status", filters.status);
+  if (filters.studentId) params.set("studentId", String(filters.studentId));
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/gatepass${query}`, "GET", null, token);
+};
 
 export const updateGatepassStatus = (gatepassId, payload, token) =>
   apiRequest(`/services/gatepass/${gatepassId}/status`, "PATCH", payload, token);

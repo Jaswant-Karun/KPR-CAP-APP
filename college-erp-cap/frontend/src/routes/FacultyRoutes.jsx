@@ -14,6 +14,8 @@ import Academics from "../pages/student/Academics";
 import Attendance from "../pages/student/Attendance";
 import Project from "../pages/student/Project";
 import Booking from "../pages/student/Booking";
+import AOServiceSupport from "../pages/student/AOServiceSupport";
+import FusionSpace from "../pages/student/FusionSpace";
 import CFAC from "../pages/student/CFAC";
 import COE from "../pages/student/COE";
 import Common from "../pages/student/Common";
@@ -41,7 +43,10 @@ export default function FacultyRoutes() {
         <Route path="student/academics" element={<Academics />} />
         <Route path="student/attendance" element={<Attendance />} />
         <Route path="student/project" element={<Project />} />
+        <Route path="student/final-year-project" element={<Project />} />
         <Route path="student/booking" element={<Booking />} />
+        <Route path="student/ao-service" element={<AOServiceSupport />} />
+        <Route path="student/fusion-space" element={<FusionSpace />} />
         <Route path="student/cfac" element={<CFAC />} />
         <Route path="student/coe" element={<COE />} />
         <Route path="student/common" element={<Common />} />

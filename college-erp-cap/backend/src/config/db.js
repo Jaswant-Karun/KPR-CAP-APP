@@ -75,6 +75,76 @@ const createSchema = async () => {
       UNIQUE (audience_type, audience_id, day_of_week, period_no)
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS id_card_upload_audit (
+      id SERIAL PRIMARY KEY,
+      student_id VARCHAR(40),
+      uploader_id INT,
+      uploader_role VARCHAR(20),
+      uploader_email VARCHAR(160),
+      uploader_name VARCHAR(120),
+      file_name VARCHAR(255) NOT NULL,
+      file_url TEXT NOT NULL,
+      file_public_id VARCHAR(255),
+      file_provider VARCHAR(50),
+      client_ip VARCHAR(80),
+      user_agent TEXT,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS gatepass_requests (
+      id SERIAL PRIMARY KEY,
+      ticket_no INT NOT NULL UNIQUE,
+      student_id INT,
+      student_name VARCHAR(120),
+      roll_no VARCHAR(40),
+      type VARCHAR(50) NOT NULL DEFAULT 'Day Pass',
+      reason TEXT NOT NULL,
+      from_date TIMESTAMP NOT NULL,
+      to_date TIMESTAMP NOT NULL,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+      approved_by INT,
+      approved_by_name VARCHAR(120),
+      remarks TEXT,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ao_service_bookings (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      student_id INT,
+      student_name VARCHAR(120),
+      service_name VARCHAR(120) NOT NULL,
+      subject TEXT NOT NULL,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS fusion_space_bookings (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      student_id INT,
+      student_name VARCHAR(120),
+      event_name VARCHAR(160) NOT NULL,
+      attendee_count INT NOT NULL DEFAULT 1,
+      cooking_required VARCHAR(10) NOT NULL DEFAULT 'No',
+      event_date VARCHAR(40),
+      duration VARCHAR(80),
+      details TEXT,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
 };
 
 const defaultUsers = [

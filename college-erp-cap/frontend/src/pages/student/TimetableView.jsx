@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { getTodayTimetable, getWeeklyTimetable } from "../../services/timetableService";
 import { getFacultyDirectory } from "../../services/facultyService";
@@ -7,6 +9,7 @@ import "./TimetableView.css";
 const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export default function TimetableView() {
+  const navigate = useNavigate();
   const { user, token } = useAuth();
   const [todayRows, setTodayRows] = useState([]);
   const [weekRows, setWeekRows] = useState([]);
@@ -72,15 +75,18 @@ export default function TimetableView() {
   }, [weekRows]);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-2">Automatic Day-wise Timetable</h1>
-      <p className="text-gray-500 mb-6">Today's schedule is selected automatically based on the current day.</p>
+    <div className="timetable-page">
+      <button type="button" className="feature-back-btn" onClick={() => navigate("/student/dashboard")}>
+        <FaArrowLeft /> Back
+      </button>
+      <h1 className="timetable-title">Automatic Day-wise Timetable</h1>
+      <p className="timetable-subtitle">Today's schedule is selected automatically based on the current day.</p>
 
-      <div className="mb-5">
-        <label className="text-sm font-semibold text-slate-600">
+      <div className="timetable-filter-row">
+        <label className="timetable-filter-label">
           Faculty / Class Timetable
           <select
-            className="ml-3 border border-slate-300 rounded px-3 py-1.5"
+            className="timetable-filter-select"
             value={selectedFacultyId}
             onChange={(e) => setSelectedFacultyId(e.target.value)}
           >
@@ -97,20 +103,21 @@ export default function TimetableView() {
         </label>
       </div>
 
-      {loading && <p>Loading timetable...</p>}
-      {error && <p className="text-red-600">{error}</p>}
+      {loading && <p className="timetable-state">Loading timetable...</p>}
+      {error && <p className="timetable-error">{error}</p>}
 
       {!loading && !error && (
         <>
           <section className="today-box">
-            <h2 className="text-lg font-semibold mb-3">Today's Classes</h2>
+            <h2 className="today-title">Today's Classes</h2>
             {todayRows.length === 0 ? (
-              <p className="text-gray-500">No classes scheduled for today.</p>
+              <p className="timetable-empty">No classes scheduled for today.</p>
             ) : (
               <ul className="period-list">
                 {todayRows.map((row) => (
                   <li key={row.id}>
-                    <strong>P{row.periodNo}</strong> {row.subjectName}
+                    <span className="period-label">P{row.periodNo}</span>
+                    <span className="period-subject">{row.subjectName}</span>
                     <span className="time-chip">{row.startTime || "--"} - {row.endTime || "--"}</span>
                   </li>
                 ))}
@@ -121,11 +128,13 @@ export default function TimetableView() {
           <div className="timetable-grid">
             {Array.from(groupedByDay.entries()).map(([day, rows]) => (
               <div key={day} className="timetable-day">
-                <h2 className="font-bold mb-2">{day}</h2>
-                <ul>
+                <h2 className="timetable-day-title">{day}</h2>
+                <ul className="timetable-day-list">
                   {rows.map((row) => (
                     <li key={row.id}>
-                      P{row.periodNo} - {row.subjectName} ({row.startTime || "--"} - {row.endTime || "--"})
+                      <span className="period-label">P{row.periodNo}</span>
+                      <span className="period-subject">{row.subjectName}</span>
+                      <span className="time-chip">{row.startTime || "--"} - {row.endTime || "--"}</span>
                     </li>
                   ))}
                 </ul>

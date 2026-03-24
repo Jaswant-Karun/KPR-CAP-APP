@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { getAttendance } from "../../services/studentService";
 
 export default function Attendance() {
+    const navigate = useNavigate();
     const { user, token } = useAuth();
     const [summary, setSummary] = useState({ total: 0, present: 0, absent: 0, percentage: 0, entries: [] });
     const [loading, setLoading] = useState(true);
@@ -49,6 +52,9 @@ export default function Attendance() {
 
     return (
         <div className="p-6 max-w-6xl mx-auto">
+            <button type="button" className="feature-back-btn" onClick={() => navigate("/student/dashboard")}>
+                <FaArrowLeft /> Back
+            </button>
             <h1 className="text-2xl font-bold text-slate-100 mb-2">Faculty Published Attendance</h1>
             <p className="text-slate-300 mb-6">This is the attendance marked by faculty for your class.</p>
 

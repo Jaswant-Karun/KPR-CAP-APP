@@ -18,6 +18,7 @@ app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/timetable", require("./routes/timetable.routes"));
 app.use("/api/services", require("./routes/service.routes"));
 app.use("/api/cfac", cfacRoutes);
+app.use("/api/files", require("./routes/files.routes"));
 app.get("/api/profile", auth, getStudentProfile);
 
 app.get("/", (req, res) => {

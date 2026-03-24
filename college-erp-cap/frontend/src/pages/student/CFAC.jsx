@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FaDownload, FaEye, FaHistory, FaSearch, FaTimes, FaEllipsisV, FaCheck } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaDownload, FaEye, FaHistory, FaSearch, FaTimes, FaEllipsisV, FaCheck, FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import {
   createCfacRegistration,
@@ -14,7 +15,9 @@ import "./CFAC.css";
 
 export default function CFAC() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const canManage = user?.role === "admin" || user?.role === "faculty";
+  const courseCodePattern = /^[A-Z0-9]{4,12}$/;
 
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState([]);
@@ -32,6 +35,8 @@ export default function CFAC() {
   const [savingInternals, setSavingInternals] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editTargetId, setEditTargetId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [internalErrors, setInternalErrors] = useState({});
   const [form, setForm] = useState({
     studentId: "",
     ticketNo: "",
@@ -139,6 +144,29 @@ export default function CFAC() {
   const saveInternals = async () => {
     if (!selectedRow || !canManage) return;
 
+    const nextInternalErrors = {};
+    internalsRows.forEach((row, index) => {
+      ["internal1", "internal2", "internal3"].forEach((field) => {
+        const value = row[field];
+        if (value === "" || value === null || typeof value === "undefined") {
+          return;
+        }
+
+        const numericValue = Number(value);
+        if (!Number.isFinite(numericValue) || numericValue < 0 || numericValue > 100) {
+          nextInternalErrors[`${index}-${field}`] = "Enter a mark between 0 and 100.";
+        }
+      });
+    });
+
+    if (Object.keys(nextInternalErrors).length > 0) {
+      setInternalErrors(nextInternalErrors);
+      setError("Fix invalid marks before saving.");
+      return;
+    }
+
+    setInternalErrors({});
+
     try {
       setSavingInternals(true);
       const payload = {
@@ -161,6 +189,7 @@ export default function CFAC() {
 
   const openCreateForm = () => {
     setEditTargetId(null);
+    setFormErrors({});
     setForm({
       studentId: selectedStudentId || "",
       ticketNo: "",
@@ -174,6 +203,7 @@ export default function CFAC() {
 
   const openEditForm = (row) => {
     setEditTargetId(row.id);
+    setFormErrors({});
     setForm({
       studentId: String(row.studentId || ""),
       ticketNo: row.ticket || "",
@@ -185,10 +215,54 @@ export default function CFAC() {
     setFormOpen(true);
   };
 
+  const validateForm = () => {
+    const nextErrors = {};
+    const studentId = Number(form.studentId);
+    const sem = Number(form.sem);
+    const status = String(form.status || "").trim();
+    const acy = String(form.acy || "").trim();
+    const courseCodes = String(form.courseCodesText || "")
+      .split(",")
+      .map((item) => item.trim().toUpperCase())
+      .filter(Boolean);
+
+    if (!Number.isInteger(studentId) || studentId <= 0) {
+      nextErrors.studentId = "Student is required.";
+    }
+
+    if (!status) {
+      nextErrors.status = "Status is required.";
+    }
+
+    if (!acy) {
+      nextErrors.acy = "ACY is required.";
+    }
+
+    if (!Number.isInteger(sem) || sem < 1 || sem > 12) {
+      nextErrors.sem = "Semester must be between 1 and 12.";
+    }
+
+    if (courseCodes.length === 0) {
+      nextErrors.courseCodesText = "At least one course code is required.";
+    } else {
+      const invalidCode = courseCodes.find((code) => !courseCodePattern.test(code));
+      if (invalidCode) {
+        nextErrors.courseCodesText = `Invalid course code: ${invalidCode}`;
+      }
+    }
+
+    setFormErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const submitForm = async () => {
     try {
       setError("");
       setMessage("");
+
+      if (!validateForm()) {
+        return;
+      }
 
       const courseCodes = String(form.courseCodesText || "")
         .split(",")
@@ -228,6 +302,9 @@ export default function CFAC() {
 
   return (
     <div className="cfac-page">
+      <button type="button" className="feature-back-btn" onClick={() => navigate("/student/dashboard")}>
+        <FaArrowLeft /> Back
+      </button>
       <div className="cfac-header">
         <h1>Course Registration</h1>
         <div className="cfac-toolbar-right">
@@ -477,36 +554,78 @@ export default function CFAC() {
                       <td>{item.courseCode}</td>
                       <td>
                         {canManage ? (
-                          <input
-                            type="number"
-                            className="marks-input"
-                            value={item.internal1 ?? ""}
-                            onChange={(event) => updateInternalCell(index, "internal1", event.target.value)}
-                          />
+                          <>
+                            <input
+                              type="number"
+                              className="marks-input"
+                              min="0"
+                              max="100"
+                              value={item.internal1 ?? ""}
+                              onChange={(event) => {
+                                setInternalErrors((prev) => {
+                                  const next = { ...prev };
+                                  delete next[`${index}-internal1`];
+                                  return next;
+                                });
+                                updateInternalCell(index, "internal1", event.target.value);
+                              }}
+                            />
+                            {internalErrors[`${index}-internal1`] && (
+                              <small className="cfac-field-error">{internalErrors[`${index}-internal1`]}</small>
+                            )}
+                          </>
                         ) : (
                           item.internal1 ?? "--"
                         )}
                       </td>
                       <td>
                         {canManage ? (
-                          <input
-                            type="number"
-                            className="marks-input"
-                            value={item.internal2 ?? ""}
-                            onChange={(event) => updateInternalCell(index, "internal2", event.target.value)}
-                          />
+                          <>
+                            <input
+                              type="number"
+                              className="marks-input"
+                              min="0"
+                              max="100"
+                              value={item.internal2 ?? ""}
+                              onChange={(event) => {
+                                setInternalErrors((prev) => {
+                                  const next = { ...prev };
+                                  delete next[`${index}-internal2`];
+                                  return next;
+                                });
+                                updateInternalCell(index, "internal2", event.target.value);
+                              }}
+                            />
+                            {internalErrors[`${index}-internal2`] && (
+                              <small className="cfac-field-error">{internalErrors[`${index}-internal2`]}</small>
+                            )}
+                          </>
                         ) : (
                           item.internal2 ?? "--"
                         )}
                       </td>
                       <td>
                         {canManage ? (
-                          <input
-                            type="number"
-                            className="marks-input"
-                            value={item.internal3 ?? ""}
-                            onChange={(event) => updateInternalCell(index, "internal3", event.target.value)}
-                          />
+                          <>
+                            <input
+                              type="number"
+                              className="marks-input"
+                              min="0"
+                              max="100"
+                              value={item.internal3 ?? ""}
+                              onChange={(event) => {
+                                setInternalErrors((prev) => {
+                                  const next = { ...prev };
+                                  delete next[`${index}-internal3`];
+                                  return next;
+                                });
+                                updateInternalCell(index, "internal3", event.target.value);
+                              }}
+                            />
+                            {internalErrors[`${index}-internal3`] && (
+                              <small className="cfac-field-error">{internalErrors[`${index}-internal3`]}</small>
+                            )}
+                          </>
                         ) : (
                           item.internal3 ?? "--"
                         )}
@@ -545,7 +664,11 @@ export default function CFAC() {
                 Student
                 <select
                   value={form.studentId}
-                  onChange={(event) => setForm((prev) => ({ ...prev, studentId: event.target.value }))}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setForm((prev) => ({ ...prev, studentId: nextValue }));
+                    setFormErrors((prev) => ({ ...prev, studentId: "" }));
+                  }}
                   className="cfac-select"
                 >
                   <option value="">Select student</option>
@@ -555,6 +678,7 @@ export default function CFAC() {
                     </option>
                   ))}
                 </select>
+                {formErrors.studentId && <small className="cfac-field-error">{formErrors.studentId}</small>}
               </label>
 
               <label>
@@ -569,7 +693,11 @@ export default function CFAC() {
                 Status
                 <select
                   value={form.status}
-                  onChange={(event) => setForm((prev) => ({ ...prev, status: event.target.value }))}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setForm((prev) => ({ ...prev, status: nextValue }));
+                    setFormErrors((prev) => ({ ...prev, status: "" }));
+                  }}
                   className="cfac-select"
                 >
                   <option value="Approved">Approved</option>
@@ -577,14 +705,20 @@ export default function CFAC() {
                   <option value="Rejected">Rejected</option>
                   <option value="Draft">Draft</option>
                 </select>
+                {formErrors.status && <small className="cfac-field-error">{formErrors.status}</small>}
               </label>
 
               <label>
                 ACY
                 <input
                   value={form.acy}
-                  onChange={(event) => setForm((prev) => ({ ...prev, acy: event.target.value }))}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setForm((prev) => ({ ...prev, acy: nextValue }));
+                    setFormErrors((prev) => ({ ...prev, acy: "" }));
+                  }}
                 />
+                {formErrors.acy && <small className="cfac-field-error">{formErrors.acy}</small>}
               </label>
 
               <label>
@@ -592,17 +726,29 @@ export default function CFAC() {
                 <input
                   type="number"
                   value={form.sem}
-                  onChange={(event) => setForm((prev) => ({ ...prev, sem: event.target.value }))}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setForm((prev) => ({ ...prev, sem: nextValue }));
+                    setFormErrors((prev) => ({ ...prev, sem: "" }));
+                  }}
                 />
+                {formErrors.sem && <small className="cfac-field-error">{formErrors.sem}</small>}
               </label>
 
               <label className="cfac-form-span">
                 Course Codes (comma separated)
                 <input
                   value={form.courseCodesText}
-                  onChange={(event) => setForm((prev) => ({ ...prev, courseCodesText: event.target.value }))}
+                  onChange={(event) => {
+                    const nextValue = event.target.value;
+                    setForm((prev) => ({ ...prev, courseCodesText: nextValue }));
+                    setFormErrors((prev) => ({ ...prev, courseCodesText: "" }));
+                  }}
                   placeholder="U21AD401, U21CB401"
                 />
+                {formErrors.courseCodesText && (
+                  <small className="cfac-field-error">{formErrors.courseCodesText}</small>
+                )}
               </label>
             </div>
           </div>

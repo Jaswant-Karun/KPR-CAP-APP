@@ -1,48 +1,152 @@
-.timetable-grid {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+.timetable-page {
+  padding: 1.25rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #e2e8f0;
+}
+
+.timetable-title {
+  margin: 0;
+  font-size: 2rem;
+  color: #f8fafc;
+}
+
+.timetable-subtitle {
+  margin: 0.4rem 0 1.15rem;
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.timetable-filter-row {
+  margin-bottom: 1rem;
+}
+
+.timetable-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #cbd5e1;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.timetable-filter-select {
+  border: 1px solid #334155;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  background: #0b1220;
+  color: #e2e8f0;
+  min-width: 320px;
+}
+
+.timetable-state {
+  color: #93c5fd;
+  margin: 0.7rem 0;
+}
+
+.timetable-error {
+  color: #fca5a5;
+  margin: 0.7rem 0;
 }
 
 .today-box {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.04);
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.35);
+}
+
+.today-title {
+  margin: 0 0 0.7rem;
+  color: #e2e8f0;
+  font-size: 1.1rem;
+}
+
+.timetable-empty {
+  color: #94a3b8;
+  margin: 0;
 }
 
 .period-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.period-list li {
-  display: flex;
+.period-list li,
+.timetable-day-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border: 1px solid #eef2ff;
-  border-radius: 8px;
-  padding: 10px 12px;
-  background: #f8fafc;
+  gap: 0.7rem;
+  border: 1px solid rgba(0, 196, 255, 0.22);
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.period-label {
+  font-weight: 700;
+  color: #93c5fd;
+}
+
+.period-subject {
+  color: #e2e8f0;
 }
 
 .time-chip {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1e40af;
-  background: #dbeafe;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #bfdbfe;
+  background: rgba(30, 64, 175, 0.32);
+  border: 1px solid rgba(147, 197, 253, 0.35);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 0.25rem 0.6rem;
+}
+
+.timetable-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.9rem;
 }
 
 .timetable-day {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  flex: 1 1 200px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  background: #0b1220;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  padding: 0.85rem;
+}
+
+.timetable-day-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  color: #f8fafc;
+}
+
+.timetable-day-list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+}
+
+@media (max-width: 720px) {
+  .timetable-page {
+    padding: 0.75rem;
+  }
+
+  .timetable-filter-label {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .timetable-filter-select {
+    min-width: 0;
+    width: 100%;
+  }
 }

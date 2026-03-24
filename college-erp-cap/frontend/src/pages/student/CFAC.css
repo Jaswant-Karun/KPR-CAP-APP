@@ -289,6 +289,12 @@
   color: #cbd5e1;
 }
 
+.cfac-field-error {
+  color: #fca5a5;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
 .cfac-form-grid input,
 .cfac-form-grid select {
   padding: 0.5rem 0.6rem;

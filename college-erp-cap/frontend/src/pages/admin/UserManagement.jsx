@@ -26,6 +26,7 @@ export default function UserManagement() {
   const [mapSection, setMapSection] = useState("");
   const [mappedStudentIds, setMappedStudentIds] = useState([]);
   const [form, setForm] = useState({ name: "", email: "", department: "", rollNo: "" });
+  const [formErrors, setFormErrors] = useState({});
   const [message, setMessage] = useState("");
 
   const load = async () => {
@@ -62,6 +63,7 @@ export default function UserManagement() {
 
   const startEdit = (item) => {
     setEditing(item.id);
+    setFormErrors({});
     setForm({
       name: item.name || "",
       email: item.email || "",
@@ -70,8 +72,47 @@ export default function UserManagement() {
     });
   };
 
+  const validateEditForm = () => {
+    const nextErrors = {};
+    const name = String(form.name || "").trim();
+    const email = String(form.email || "").trim();
+    const department = String(form.department || "").trim();
+    const rollNo = String(form.rollNo || "").trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const rollNoPattern = /^[A-Z0-9-]{4,20}$/i;
+
+    if (!name) {
+      nextErrors.name = "Name is required.";
+    }
+
+    if (!email) {
+      nextErrors.email = "Email is required.";
+    } else if (!emailPattern.test(email)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!department) {
+      nextErrors.department = "Department is required.";
+    }
+
+    if (roleFilter === "student") {
+      if (!rollNo) {
+        nextErrors.rollNo = "Roll No is required for students.";
+      } else if (!rollNoPattern.test(rollNo)) {
+        nextErrors.rollNo = "Roll No can contain letters, numbers, and hyphen only.";
+      }
+    }
+
+    setFormErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
   const saveEdit = async (id) => {
     try {
+      if (!validateEditForm()) {
+        return;
+      }
+
       if (roleFilter === "student") {
         await updateStudent(id, form, token);
       } else {
@@ -192,10 +233,80 @@ export default function UserManagement() {
                 rows.map((item) => (
                   <tr key={item.id}>
                     <td>{item.id}</td>
-                    <td>{editing === item.id ? <input className="admin-input" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} /> : item.name}</td>
-                    <td>{editing === item.id ? <input className="admin-input" value={form.email} onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))} /> : item.email}</td>
-                    <td>{editing === item.id ? <input className="admin-input" value={form.department} onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))} /> : item.department}</td>
-                    <td>{editing === item.id ? <input className="admin-input" value={form.rollNo} onChange={(e) => setForm((p) => ({ ...p, rollNo: e.target.value }))} /> : item.roll_no}</td>
+                    <td>
+                      {editing === item.id ? (
+                        <div className="admin-input-wrap">
+                          <input
+                            className="admin-input"
+                            value={form.name}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setForm((p) => ({ ...p, name: value }));
+                              setFormErrors((p) => ({ ...p, name: "" }));
+                            }}
+                          />
+                          {formErrors.name && <small className="admin-field-error">{formErrors.name}</small>}
+                        </div>
+                      ) : (
+                        item.name
+                      )}
+                    </td>
+                    <td>
+                      {editing === item.id ? (
+                        <div className="admin-input-wrap">
+                          <input
+                            className="admin-input"
+                            value={form.email}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setForm((p) => ({ ...p, email: value }));
+                              setFormErrors((p) => ({ ...p, email: "" }));
+                            }}
+                          />
+                          {formErrors.email && <small className="admin-field-error">{formErrors.email}</small>}
+                        </div>
+                      ) : (
+                        item.email
+                      )}
+                    </td>
+                    <td>
+                      {editing === item.id ? (
+                        <div className="admin-input-wrap">
+                          <input
+                            className="admin-input"
+                            value={form.department}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setForm((p) => ({ ...p, department: value }));
+                              setFormErrors((p) => ({ ...p, department: "" }));
+                            }}
+                          />
+                          {formErrors.department && (
+                            <small className="admin-field-error">{formErrors.department}</small>
+                          )}
+                        </div>
+                      ) : (
+                        item.department
+                      )}
+                    </td>
+                    <td>
+                      {editing === item.id ? (
+                        <div className="admin-input-wrap">
+                          <input
+                            className="admin-input"
+                            value={form.rollNo}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setForm((p) => ({ ...p, rollNo: value }));
+                              setFormErrors((p) => ({ ...p, rollNo: "" }));
+                            }}
+                          />
+                          {formErrors.rollNo && <small className="admin-field-error">{formErrors.rollNo}</small>}
+                        </div>
+                      ) : (
+                        item.roll_no
+                      )}
+                    </td>
                     <td>
                       <div className="admin-flex">
                         {editing === item.id ? (

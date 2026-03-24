@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import "./Dashboard.css";
 import {
   FaBook,
@@ -12,10 +12,24 @@ import {
 } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getCfacStudents } from "../../services/cfacService";
+import { getUploadAudit, uploadFile } from "../../services/fileService";
 
 export default function Dashboard() {
-  const { user } = useContext(AuthContext);
+  const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
+  const isFacultyView = user?.role === "faculty";
+
+  const [wheelRotating, setWheelRotating] = useState(true);
+  const [students, setStudents] = useState([]);
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState("");
+  const [lastUploadedFor, setLastUploadedFor] = useState("");
+  const [auditRows, setAuditRows] = useState([]);
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [auditError, setAuditError] = useState("");
 
   const displayName = user?.name || "JASWANT KARUN S A";
   const displayRollNo = user?.rollNo || "24CB023";
@@ -26,24 +40,86 @@ export default function Dashboard() {
   const dashboardDetails = {
     academic: {
       rollNo: displayRollNo,
-      registerNo: "2403711324421012",
       batch: "II (2024-2028)",
       section: "A",
-      joinYear: 2024,
-    },
-    admission: {
-      admissionType: "R",
-      quota: "GQ",
-      scholarship: "MER",
-      cutOff: 182.5,
-      nationality: "IND",
     },
     mentor: {
       mentorName: "SIVASANKARI S",
       mentorCode: "CB005",
-      mentorPhone: "9600046619",
-      mentorEmail: "sivasankari.s@kpriet.ac.in",
     },
+  };
+
+  useEffect(() => {
+    const loadStudents = async () => {
+      if (!isFacultyView || !token) return;
+
+      try {
+        const response = await getCfacStudents(token);
+        const list = Array.isArray(response?.students) ? response.students : [];
+        setStudents(list);
+      } catch {
+        setStudents([]);
+      }
+    };
+
+    loadStudents();
+  }, [isFacultyView, token]);
+
+  const loadAudit = async () => {
+    if (!isFacultyView || !token) return;
+
+    try {
+      setLoadingAudit(true);
+      setAuditError("");
+      const response = await getUploadAudit(token);
+      const rows = Array.isArray(response?.uploads) ? response.uploads : [];
+      setAuditRows(rows.slice(0, 6));
+    } catch (error) {
+      setAuditError(error?.message || "Unable to load upload audit.");
+      setAuditRows([]);
+    } finally {
+      setLoadingAudit(false);
+    }
+  };
+
+  useEffect(() => {
+    loadAudit();
+  }, [isFacultyView, token]);
+
+  const selectedStudent = useMemo(
+    () => students.find((item) => String(item.id) === String(selectedStudentId)),
+    [students, selectedStudentId]
+  );
+
+  const handleIdUpload = async () => {
+    if (!isFacultyView) {
+      setUploadMessage("Only faculty can upload student ID cards.");
+      return;
+    }
+
+    if (!selectedStudentId) {
+      setUploadMessage("Select a student before uploading.");
+      return;
+    }
+
+    if (!selectedFile) {
+      setUploadMessage("Choose an ID card image file.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setUploadMessage("");
+      await uploadFile(selectedFile, token, selectedStudentId);
+      setLastUploadedFor(selectedStudent?.name || selectedStudent?.roll_no || `Student #${selectedStudentId}`);
+      setUploadMessage("ID card uploaded successfully by faculty.");
+      setSelectedFile(null);
+      await loadAudit();
+    } catch (error) {
+      setUploadMessage(error?.message || "ID card upload failed.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const renderRows = (data) =>
@@ -101,7 +177,15 @@ export default function Dashboard() {
         </section>
 
         <section className="wheel-stage">
-          <div className="radial-wheel">
+          <button
+            type="button"
+            className="wheel-rotate-toggle"
+            onClick={() => setWheelRotating((prev) => !prev)}
+          >
+            {wheelRotating ? "Pause Rotation" : "Rotate Options"}
+          </button>
+
+          <div className={`radial-wheel ${wheelRotating ? "is-rotating" : ""}`}>
             <div className="wheel-core" />
 
             {wheelItems.map((item, index) => {
@@ -125,24 +209,50 @@ export default function Dashboard() {
 
         <section className="cyber-card right-info">
           <h3>Identity Verification</h3>
-          <p>Upload complete</p>
-          <p className="ok-line">ID card accepted</p>
-          <div className="dual-actions">
-            <button type="button">View ID</button>
-            <button type="button">Re-Upload</button>
-          </div>
+          {isFacultyView ? (
+            <>
+              <p>Faculty can upload each student ID card photo.</p>
+              <div className="id-upload-grid">
+                <select
+                  className="id-upload-select"
+                  value={selectedStudentId}
+                  onChange={(event) => setSelectedStudentId(event.target.value)}
+                >
+                  <option value="">Select student</option>
+                  {students.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {(item.roll_no || item.id)} - {item.name}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg"
+                  className="id-upload-file"
+                  onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
+                />
+
+                <button type="button" onClick={handleIdUpload} disabled={uploading}>
+                  {uploading ? "Uploading..." : "Upload ID Card"}
+                </button>
+              </div>
+              {uploadMessage && <p className="ok-line">{uploadMessage}</p>}
+              {lastUploadedFor && <p>Last uploaded for: {lastUploadedFor}</p>}
+            </>
+          ) : (
+            <>
+              <p>ID card upload access is restricted to faculty only.</p>
+              <p className="ok-line">Students cannot upload ID cards.</p>
+            </>
+          )}
         </section>
       </div>
 
-      <div className="details-row">
+      <div className={`details-row ${isFacultyView ? "with-audit" : ""}`}>
         <section className="cyber-card detail-panel">
           <h3>Academic Snapshot</h3>
           {renderRows(dashboardDetails.academic)}
-        </section>
-
-        <section className="cyber-card detail-panel">
-          <h3>Admission Snapshot</h3>
-          {renderRows(dashboardDetails.admission)}
         </section>
 
         <section className="cyber-card detail-panel">
@@ -150,6 +260,35 @@ export default function Dashboard() {
           {renderRows(dashboardDetails.mentor)}
           <button type="button" className="detail-action-btn" onClick={() => navigate("/student/profile")}>Open Full Profile</button>
         </section>
+
+        {isFacultyView && (
+          <section className="cyber-card detail-panel">
+            <div className="audit-header">
+              <h3>Recent ID Uploads</h3>
+              <button type="button" className="detail-action-btn" onClick={loadAudit}>
+                Refresh
+              </button>
+            </div>
+
+            {loadingAudit ? (
+              <p>Loading upload logs...</p>
+            ) : auditError ? (
+              <p>{auditError}</p>
+            ) : auditRows.length === 0 ? (
+              <p>No upload records yet.</p>
+            ) : (
+              <div className="audit-list">
+                {auditRows.map((row) => (
+                  <div className="audit-item" key={row.id}>
+                    <p><span>Student</span><strong>{row.studentId || "--"}</strong></p>
+                    <p><span>Uploader</span><strong>{row.uploadedBy?.name || row.uploadedBy?.email || "Faculty"}</strong></p>
+                    <p><span>Time</span><strong>{new Date(row.uploadedAt).toLocaleString()}</strong></p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,8 @@ import Academics from '../pages/student/Academics';
 import Attendance from '../pages/student/Attendance';
 import Project from '../pages/student/Project';
 import Booking from '../pages/student/Booking';
+import AOServiceSupport from '../pages/student/AOServiceSupport';
+import FusionSpace from '../pages/student/FusionSpace';
 import CFAC from '../pages/student/CFAC';
 import COE from '../pages/student/COE';
 import Common from '../pages/student/Common';
@@ -26,11 +28,15 @@ export default function StudentRoutes() {
         <Route path="academics" element={<Academics />} />
         <Route path="attendance" element={<Attendance />} />
         <Route path="project" element={<Project />} />
+        <Route path="final-year-project" element={<Project />} />
         <Route path="booking" element={<Booking />} />
+        <Route path="ao-service" element={<AOServiceSupport />} />
+        <Route path="fusion-space" element={<FusionSpace />} />
         <Route path="cfac" element={<CFAC />} />
         <Route path="coe" element={<COE />} />
         <Route path="common" element={<Common />} />
         <Route path="iqac" element={<IQAC />} />
+        <Route path="gatepass" element={<MainGate />} />
         <Route path="main-gate" element={<MainGate />} />
         <Route path="ndc" element={<NDC />} />
         <Route path="student-service" element={<StudentService />} />

@@ -85,6 +85,25 @@ async function initializeDatabase() {
     `);
     console.log(`  ✓ timetables table ready`);
 
+    await mainPool.query(`
+      CREATE TABLE IF NOT EXISTS id_card_upload_audit (
+        id SERIAL PRIMARY KEY,
+        student_id VARCHAR(40),
+        uploader_id INT,
+        uploader_role VARCHAR(20),
+        uploader_email VARCHAR(160),
+        uploader_name VARCHAR(120),
+        file_name VARCHAR(255) NOT NULL,
+        file_url TEXT NOT NULL,
+        file_public_id VARCHAR(255),
+        file_provider VARCHAR(50),
+        client_ip VARCHAR(80),
+        user_agent TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      );
+    `);
+    console.log(`  ✓ id_card_upload_audit table ready`);
+
     // Check if default users exist
     const usersCount = await mainPool.query(`SELECT COUNT(*) FROM users`);
     if (usersCount.rows[0].count === 0) {

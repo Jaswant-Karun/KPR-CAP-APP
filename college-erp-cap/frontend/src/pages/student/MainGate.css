@@ -1,16 +1,155 @@
-.pass-list {
-  background-color: white;
+.main-gate-page {
   padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  list-style: none;
+  color: #e5e7eb;
 }
 
-.pass-list li {
-  padding: 0.5rem 0;
-  border-bottom: 1px solid #eee;
+.main-gate-title {
+  margin: 0;
+  font-size: 1.35rem;
+  color: #f8fafc;
 }
 
-.pass-list li:last-child {
-  border-bottom: none;
+.main-gate-subtitle {
+  margin: 0.45rem 0 0.9rem;
+  color: #94a3b8;
+}
+
+.main-gate-card {
+  border: 1px solid #334155;
+  border-radius: 0.55rem;
+  background: #0b1220;
+  padding: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+
+.main-gate-card h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #e2e8f0;
+}
+
+.main-gate-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.main-gate-form-grid label {
+  display: grid;
+  gap: 0.35rem;
+  color: #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.main-gate-form-grid input,
+.main-gate-form-grid select,
+.main-gate-header-row select {
+  border: 1px solid #475569;
+  border-radius: 0.4rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.5rem 0.6rem;
+}
+
+.main-gate-form-grid .full-width {
+  grid-column: span 3;
+}
+
+.main-gate-action-row {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.main-gate-primary-btn {
+  border: 1px solid rgba(0, 196, 255, 0.38);
+  background: #0f172a;
+  color: #b9ecff;
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.85rem;
+  cursor: pointer;
+}
+
+.main-gate-primary-btn:hover {
+  filter: brightness(1.1);
+}
+
+.main-gate-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.main-gate-table-wrap {
+  overflow: auto;
+}
+
+.main-gate-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+}
+
+.main-gate-table th,
+.main-gate-table td {
+  padding: 0.6rem;
+  border-bottom: 1px solid #1e293b;
+  text-align: left;
+  color: #cbd5e1;
+  font-size: 0.84rem;
+}
+
+.main-gate-table th {
+  color: #e2e8f0;
+  background: #111827;
+}
+
+.status-pill {
+  display: inline-block;
+  border-radius: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.status-pill.pending {
+  background: #78350f;
+  color: #fde68a;
+}
+
+.status-pill.approved {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.status-pill.rejected {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.main-gate-message {
+  margin: 0;
+  color: #7dd3fc;
+}
+
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+}
+
+@media (max-width: 980px) {
+  .main-gate-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-gate-form-grid .full-width {
+    grid-column: auto;
+  }
+
+  .main-gate-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

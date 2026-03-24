@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
 import { getFullProfile } from "../../services/studentService";
 import "./Profile.css";
@@ -53,9 +54,14 @@ export default function Profile() {
       <section className="profile-summary profile-panel">
         <div className="profile-summary-header">
           <h3>Profile</h3>
-          <button type="button" className="profile-home-btn" onClick={() => navigate("/student/dashboard")}>
-            Home
-          </button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button type="button" className="feature-back-btn" onClick={() => navigate("/student/dashboard")}>
+              <FaArrowLeft /> Back
+            </button>
+            <button type="button" className="profile-home-btn" onClick={() => navigate("/student/dashboard")}>
+              Home
+            </button>
+          </div>
         </div>
         <h2>{profile.profile.name}</h2>
         <p>{profile.profile.email}</p>
