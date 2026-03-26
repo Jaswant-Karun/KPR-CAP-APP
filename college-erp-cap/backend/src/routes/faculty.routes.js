@@ -1,13 +1,27 @@
 const router = require("express").Router();
 const auth = require("../middleware/auth.middleware");
 const allowRoles = require("../middleware/role.middleware");
+const { normalizeUploadPayload } = require("../middleware/upload.middleware");
+const { uploadStudentIdCardPhoto } = require("../controllers/studentController");
+// Faculty uploads ID card photo for a student
+router.post(
+  "/:facultyId/students/:studentId/id-card-photo",
+  auth,
+  allowRoles(["faculty", "admin"]),
+  normalizeUploadPayload,
+  uploadStudentIdCardPhoto
+);
 const {
 	listFacultyMembers,
-  getFacultyProfile,
-  getStudentsForFaculty,
-  submitAttendance,
-  getFacultyReports,
+	getFacultyProfile,
+	getStudentsForFaculty,
+	submitAttendance,
+	getFacultyReports,
+	uploadIdCardPhoto,
 } = require("../controllers/facultyController");
+// Faculty ID card photo upload
+router.post("/:facultyId/id-card-photo", auth, allowRoles(["faculty", "admin"]), normalizeUploadPayload, uploadIdCardPhoto);
+
 const {
 	getTodayTimetable,
 	getWeekTimetable,
