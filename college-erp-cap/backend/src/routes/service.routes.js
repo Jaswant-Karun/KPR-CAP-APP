@@ -24,7 +24,7 @@ router.post("/requests", allowRoles(["student", "faculty", "admin"]), createServ
 router.get("/requests", allowRoles(["student", "faculty", "admin"]), listServiceRequests);
 router.patch("/requests/:requestId/status", allowRoles(["faculty", "admin"]), updateServiceRequestStatus);
 
-router.post("/gatepass", allowRoles(["student"]), createGatepassRequest);
+router.post("/gatepass", allowRoles(["student", "faculty", "admin"]), createGatepassRequest);
 router.get("/gatepass", allowRoles(["student", "faculty", "admin"]), listGatepassRequests);
 router.patch("/gatepass/:gatepassId/status", allowRoles(["faculty", "admin"]), updateGatepassStatus);
 

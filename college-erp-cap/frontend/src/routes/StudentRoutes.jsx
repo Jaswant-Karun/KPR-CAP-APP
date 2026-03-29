@@ -16,6 +16,9 @@ import MainGate from '../pages/student/MainGate';
 import NDC from '../pages/student/NDC';
 import StudentService from '../pages/student/StudentService';
 import TimetableView from '../pages/student/TimetableView';
+import CourseRegistration from '../pages/CourseRegistration';
+import NominalRoll from '../pages/NominalRoll';
+import NominalRollCourses from '../pages/NominalRollCourses';
 import NotFound from '../pages/error/NotFound';
 import Unauthorized from '../pages/error/Unauthorized';
 
@@ -42,6 +45,9 @@ export default function StudentRoutes() {
         <Route path="student-service" element={<StudentService />} />
         <Route path="user-service" element={<Profile />} />
         <Route path="timetable" element={<TimetableView />} />
+        <Route path="course-registration" element={<CourseRegistration />} />
+        <Route path="nominal-roll" element={<NominalRoll />} />
+        <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
         <Route path="unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
       </Route>

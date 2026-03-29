@@ -9,6 +9,8 @@ export default function Dashboard() {
         totalUsers: 0,
         totalStudents: 0,
         totalFaculty: 0,
+        cb001ControlledStudents: 0,
+        cb001ExpectedStudents: 75,
     });
     const [departmentWise, setDepartmentWise] = useState([]);
     const [error, setError] = useState("");
@@ -48,6 +50,12 @@ export default function Dashboard() {
                 <article className="admin-stat-card">
                     <p className="admin-stat-label">Total Faculty</p>
                     <p className="admin-stat-value">{summary.totalFaculty || 0}</p>
+                </article>
+                <article className="admin-stat-card">
+                    <p className="admin-stat-label">CB001 Controlled Students</p>
+                    <p className="admin-stat-value">
+                        {(summary.cb001ControlledStudents || 0)} / {(summary.cb001ExpectedStudents || 75)}
+                    </p>
                 </article>
             </section>
 

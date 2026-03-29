@@ -7,7 +7,7 @@ const { uploadStudentIdCardPhoto } = require("../controllers/studentController")
 router.post(
   "/:facultyId/students/:studentId/id-card-photo",
   auth,
-  allowRoles(["faculty", "admin"]),
+	allowRoles(["faculty"]),
   normalizeUploadPayload,
   uploadStudentIdCardPhoto
 );
@@ -20,7 +20,7 @@ const {
 	uploadIdCardPhoto,
 } = require("../controllers/facultyController");
 // Faculty ID card photo upload
-router.post("/:facultyId/id-card-photo", auth, allowRoles(["faculty", "admin"]), normalizeUploadPayload, uploadIdCardPhoto);
+router.post("/:facultyId/id-card-photo", auth, allowRoles(["faculty"]), normalizeUploadPayload, uploadIdCardPhoto);
 
 const {
 	getTodayTimetable,

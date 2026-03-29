@@ -1,3 +1,24 @@
+const { getLatestIdCardPhotoByStudentId } = require("./filesController");
+
+// Faculty uploads ID card photo for a student
+const uploadStudentIdCardPhoto = async (req, res) => {
+	try {
+		if (!req.upload) {
+			return res.status(400).json({ message: 'No ID card photo uploaded' });
+		}
+		// Here you would update the student record in DB with the file info
+		// For demo, just return the uploaded file info
+		return res.status(200).json({
+			message: 'Student ID card photo uploaded',
+			idCardPhoto: {
+				url: `/uploads/${req.upload.originalname}`,
+				publicId: req.upload.originalname,
+			},
+		});
+	} catch (error) {
+		return res.status(500).json({ message: 'Failed to upload student ID card photo', error: error.message });
+	}
+};
 const buildProfileData = (authUser = {}) => {
 	const email = authUser.email || "24CB023@kpriet.ac.in";
 	const rollNoFromEmail = email.split("@")[0]?.toUpperCase() || "24CB023";
@@ -80,14 +101,37 @@ const buildProfileData = (authUser = {}) => {
 			role: "Normal User",
 			groups: ["Students"],
 		},
+		idCardPhoto: authUser.idCardPhoto || null,
 	};
 };
 
-const getStudentProfile = (req, res) => {
-	const profileData = buildProfileData(req.user || {});
-	return res.json(profileData);
+const getStudentProfile = async (req, res) => {
+	try {
+		const authUser = req.user || {};
+		const studentId = Number(authUser.id || 0);
+		const idCardPhoto = Number.isInteger(studentId) && studentId > 0
+			? await getLatestIdCardPhotoByStudentId(studentId)
+			: null;
+
+		const profileData = buildProfileData({
+			...authUser,
+			idCardPhoto: idCardPhoto
+				? {
+					url: idCardPhoto.url,
+					publicId: idCardPhoto.publicId,
+					provider: idCardPhoto.provider,
+					updatedAt: idCardPhoto.updatedAt,
+				}
+				: null,
+		});
+
+		return res.json(profileData);
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to load student profile", error: error.message });
+	}
 };
 
 module.exports = {
 	getStudentProfile,
+	uploadStudentIdCardPhoto,
 };

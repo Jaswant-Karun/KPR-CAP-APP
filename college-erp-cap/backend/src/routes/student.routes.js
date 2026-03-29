@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const auth = require("../middleware/auth.middleware");
 const { getStudentProfile } = require("../controllers/studentController");
-const { getUserByEmail } = require("../config/db");
 const { getAttendanceEntries } = require("../controllers/facultyController");
+const { pool } = require("../config/db");
 const {
 	getTodayTimetable,
 	getWeekTimetable,
@@ -20,19 +20,51 @@ const resolveFacultyAudienceId = (req) => {
 
 router.get("/:studentId/attendance", auth, async (req, res) => {
 	try {
-		const student = await getUserByEmail(req.user?.email || "");
-		if (!student) {
-			return res.status(404).json({ message: "Student not found" });
+		const role = String(req.user?.role || "").toLowerCase();
+		const requestedStudentId = Number(req.params.studentId || 0);
+		const tokenUserId = Number(req.user?.id || 0);
+
+		if (!["student", "faculty", "admin"].includes(role)) {
+			return res.status(403).json({ message: "Forbidden" });
 		}
 
-		const rollNo = String(student.roll_no || "").toUpperCase();
-		const studentId = Number(req.params.studentId || req.user?.id);
-		const allEntries = getAttendanceEntries();
-		const entries = allEntries.filter((item) => {
-			const byRoll = rollNo && String(item.rollNo || "").toUpperCase() === rollNo;
-			const byStudentId = Number(item.studentId) === studentId;
-			return byRoll || byStudentId;
+		if ((role === "faculty" || role === "admin") && requestedStudentId <= 0) {
+			return res.status(400).json({ message: "Valid studentId is required" });
+		}
+
+		if (role === "student" && requestedStudentId > 0 && requestedStudentId !== tokenUserId) {
+			return res.status(403).json({ message: "You can only view your own attendance" });
+		}
+
+		const targetStudentId = role === "student" ? tokenUserId : requestedStudentId;
+
+		const entriesById = await getAttendanceEntries({
+			studentId: targetStudentId,
 		});
+
+		let entries = [...entriesById];
+
+		if (role === "student") {
+			const studentRow = await pool.query(
+				`SELECT roll_no FROM users WHERE id = $1 AND role = 'student' LIMIT 1`,
+				[tokenUserId]
+			);
+			const rollNo = String(studentRow.rows[0]?.roll_no || "").trim().toUpperCase();
+
+			if (rollNo) {
+				const entriesByRollNo = await getAttendanceEntries({ rollNo });
+
+				const merged = new Map();
+				[...entriesById, ...entriesByRollNo].forEach((entry) => {
+					const key = String(entry.id || `${entry.date}-${entry.subject}-${entry.studentId}-${entry.facultyId}`);
+					if (!merged.has(key)) {
+						merged.set(key, entry);
+					}
+				});
+
+				entries = Array.from(merged.values()).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+			}
+		}
 
 		const total = entries.length;
 		const present = entries.filter((item) => item.status === "present").length;

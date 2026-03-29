@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Dashboard.css";
 import {
   FaBook,
@@ -12,24 +12,14 @@ import {
 } from "react-icons/fa";
 import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { getCfacStudents } from "../../services/cfacService";
-import { getUploadAudit, uploadFile } from "../../services/fileService";
+import { getFullProfile } from "../../services/studentService";
 
 export default function Dashboard() {
   const { user, token } = useContext(AuthContext);
   const navigate = useNavigate();
-  const isFacultyView = user?.role === "faculty";
 
   const [wheelRotating, setWheelRotating] = useState(true);
-  const [students, setStudents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState("");
-  const [lastUploadedFor, setLastUploadedFor] = useState("");
-  const [auditRows, setAuditRows] = useState([]);
-  const [loadingAudit, setLoadingAudit] = useState(false);
-  const [auditError, setAuditError] = useState("");
+  const [studentProfile, setStudentProfile] = useState(null);
 
   const displayName = user?.name || "JASWANT KARUN S A";
   const displayRollNo = user?.rollNo || "24CB023";
@@ -50,77 +40,21 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    const loadStudents = async () => {
-      if (!isFacultyView || !token) return;
+    const loadProfile = async () => {
+      if (!token) return;
 
       try {
-        const response = await getCfacStudents(token);
-        const list = Array.isArray(response?.students) ? response.students : [];
-        setStudents(list);
+        const profile = await getFullProfile(token);
+        setStudentProfile(profile || null);
       } catch {
-        setStudents([]);
+        setStudentProfile(null);
       }
     };
 
-    loadStudents();
-  }, [isFacultyView, token]);
+    loadProfile();
+  }, [token]);
 
-  const loadAudit = async () => {
-    if (!isFacultyView || !token) return;
-
-    try {
-      setLoadingAudit(true);
-      setAuditError("");
-      const response = await getUploadAudit(token);
-      const rows = Array.isArray(response?.uploads) ? response.uploads : [];
-      setAuditRows(rows.slice(0, 6));
-    } catch (error) {
-      setAuditError(error?.message || "Unable to load upload audit.");
-      setAuditRows([]);
-    } finally {
-      setLoadingAudit(false);
-    }
-  };
-
-  useEffect(() => {
-    loadAudit();
-  }, [isFacultyView, token]);
-
-  const selectedStudent = useMemo(
-    () => students.find((item) => String(item.id) === String(selectedStudentId)),
-    [students, selectedStudentId]
-  );
-
-  const handleIdUpload = async () => {
-    if (!isFacultyView) {
-      setUploadMessage("Only faculty can upload student ID cards.");
-      return;
-    }
-
-    if (!selectedStudentId) {
-      setUploadMessage("Select a student before uploading.");
-      return;
-    }
-
-    if (!selectedFile) {
-      setUploadMessage("Choose an ID card image file.");
-      return;
-    }
-
-    try {
-      setUploading(true);
-      setUploadMessage("");
-      await uploadFile(selectedFile, token, selectedStudentId);
-      setLastUploadedFor(selectedStudent?.name || selectedStudent?.roll_no || `Student #${selectedStudentId}`);
-      setUploadMessage("ID card uploaded successfully by faculty.");
-      setSelectedFile(null);
-      await loadAudit();
-    } catch (error) {
-      setUploadMessage(error?.message || "ID card upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
+  const idCardPhotoUrl = studentProfile?.idCardPhoto?.url || "";
 
   const renderRows = (data) =>
     Object.entries(data).map(([key, value]) => (
@@ -145,11 +79,16 @@ export default function Dashboard() {
     <div className="cyber-dashboard">
       <div className="cyber-profile-strip">
         <div className="id-card">
-          <div className="avatar-badge">{displayInitial}</div>
+          {idCardPhotoUrl ? (
+            <img src={idCardPhotoUrl} alt="Student ID Card" className="id-card-photo" />
+          ) : (
+            <div className="avatar-badge">{displayInitial}</div>
+          )}
           <div>
             <p className="id-name">{displayName}</p>
             <p className="id-roll">ID: {displayRollNo}</p>
             <span className="verified-tag">Verified</span>
+            {!idCardPhotoUrl && <p className="id-card-missing">ID card photo not uploaded yet.</p>}
           </div>
         </div>
 
@@ -209,47 +148,21 @@ export default function Dashboard() {
 
         <section className="cyber-card right-info">
           <h3>Identity Verification</h3>
-          {isFacultyView ? (
-            <>
-              <p>Faculty can upload each student ID card photo.</p>
-              <div className="id-upload-grid">
-                <select
-                  className="id-upload-select"
-                  value={selectedStudentId}
-                  onChange={(event) => setSelectedStudentId(event.target.value)}
-                >
-                  <option value="">Select student</option>
-                  {students.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {(item.roll_no || item.id)} - {item.name}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/jpg"
-                  className="id-upload-file"
-                  onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-                />
-
-                <button type="button" onClick={handleIdUpload} disabled={uploading}>
-                  {uploading ? "Uploading..." : "Upload ID Card"}
-                </button>
+          <>
+            <p>ID card upload access is restricted to faculty only.</p>
+            {idCardPhotoUrl ? (
+              <div className="id-verification-preview">
+                <img src={idCardPhotoUrl} alt="Uploaded student ID card" className="id-verification-photo" />
+                <p className="ok-line">ID card photo uploaded by faculty.</p>
               </div>
-              {uploadMessage && <p className="ok-line">{uploadMessage}</p>}
-              {lastUploadedFor && <p>Last uploaded for: {lastUploadedFor}</p>}
-            </>
-          ) : (
-            <>
-              <p>ID card upload access is restricted to faculty only.</p>
-              <p className="ok-line">Students cannot upload ID cards.</p>
-            </>
-          )}
+            ) : (
+              <p className="id-verification-empty">ID card photo not uploaded by faculty yet.</p>
+            )}
+          </>
         </section>
       </div>
 
-      <div className={`details-row ${isFacultyView ? "with-audit" : ""}`}>
+      <div className="details-row">
         <section className="cyber-card detail-panel">
           <h3>Academic Snapshot</h3>
           {renderRows(dashboardDetails.academic)}
@@ -260,35 +173,6 @@ export default function Dashboard() {
           {renderRows(dashboardDetails.mentor)}
           <button type="button" className="detail-action-btn" onClick={() => navigate("/student/profile")}>Open Full Profile</button>
         </section>
-
-        {isFacultyView && (
-          <section className="cyber-card detail-panel">
-            <div className="audit-header">
-              <h3>Recent ID Uploads</h3>
-              <button type="button" className="detail-action-btn" onClick={loadAudit}>
-                Refresh
-              </button>
-            </div>
-
-            {loadingAudit ? (
-              <p>Loading upload logs...</p>
-            ) : auditError ? (
-              <p>{auditError}</p>
-            ) : auditRows.length === 0 ? (
-              <p>No upload records yet.</p>
-            ) : (
-              <div className="audit-list">
-                {auditRows.map((row) => (
-                  <div className="audit-item" key={row.id}>
-                    <p><span>Student</span><strong>{row.studentId || "--"}</strong></p>
-                    <p><span>Uploader</span><strong>{row.uploadedBy?.name || row.uploadedBy?.email || "Faculty"}</strong></p>
-                    <p><span>Time</span><strong>{new Date(row.uploadedAt).toLocaleString()}</strong></p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
       </div>
     </div>
   );

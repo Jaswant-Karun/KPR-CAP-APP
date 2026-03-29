@@ -12,7 +12,7 @@ const env = {
 	PG_PORT: Number(process.env.PG_PORT || 5432),
 	PG_USER: process.env.PG_USER || "postgres",
 	PG_PASSWORD: process.env.PG_PASSWORD || "postgres",
-	PG_DATABASE: process.env.PG_DATABASE || "college_erp",
+	PG_DATABASE: process.env.PG_DATABASE || "kpr_erp",
 	PG_SSL: process.env.PG_SSL === "true",
 	CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || "",
 	CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",

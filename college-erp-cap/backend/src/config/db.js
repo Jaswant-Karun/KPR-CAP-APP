@@ -77,6 +77,22 @@ const createSchema = async () => {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS attendance_entries (
+      id SERIAL PRIMARY KEY,
+      faculty_id INT NOT NULL,
+      student_id INT NOT NULL,
+      roll_no VARCHAR(40),
+      student_name VARCHAR(120),
+      attendance_date DATE NOT NULL,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('present', 'absent', 'on-duty')),
+      subject VARCHAR(120) NOT NULL DEFAULT 'General',
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (faculty_id, student_id, attendance_date, subject)
+    );
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS id_card_upload_audit (
       id SERIAL PRIMARY KEY,
       student_id VARCHAR(40),
@@ -91,6 +107,17 @@ const createSchema = async () => {
       client_ip VARCHAR(80),
       user_agent TEXT,
       created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS student_id_card_photos (
+      student_id INT PRIMARY KEY,
+      file_url TEXT NOT NULL,
+      file_public_id VARCHAR(255),
+      file_provider VARCHAR(50),
+      updated_by INT,
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
   `);
 

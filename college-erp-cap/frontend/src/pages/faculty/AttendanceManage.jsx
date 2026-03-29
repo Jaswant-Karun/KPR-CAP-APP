@@ -1,11 +1,22 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { submitAttendance } from "../../services/facultyService";
-import { FACULTY_CLASS_STUDENTS } from "../../utils/facultyClassStudents";
+import { getAttendanceHistory, submitAttendance } from "../../services/facultyService";
+import { getCfacStudents } from "../../services/cfacService";
 import "./AttendanceManage.css";
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
-const CLASS_LIST_STORAGE_KEY = "facultyClassStudentsEditable";
+const getPreviousDate = (dateValue) => {
+  const date = new Date(`${dateValue}T00:00:00`);
+  date.setDate(date.getDate() - 1);
+  return date.toISOString().slice(0, 10);
+};
+
+const mapStudentsFromApi = (rows = []) =>
+  rows.map((student) => ({
+    studentId: Number(student.id),
+    rollNo: String(student.roll_no || student.id || "").trim().toUpperCase(),
+    name: String(student.name || "").trim().toUpperCase(),
+  }));
 
 export default function AttendanceManage() {
   const { user, token } = useAuth();
@@ -19,59 +30,52 @@ export default function AttendanceManage() {
   const [newStudentName, setNewStudentName] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [historyDate, setHistoryDate] = useState(getTodayDate());
+  const [historyRows, setHistoryRows] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyInfo, setHistoryInfo] = useState("");
 
   useEffect(() => {
-    const saved = localStorage.getItem(CLASS_LIST_STORAGE_KEY);
-    if (!saved) return;
+    const bootstrapStudents = async () => {
+      if (!user?.id || !token) return;
+      await loadClassStudents(true);
+    };
+
+    bootstrapStudents();
+  }, [user?.id, token]);
+
+  const loadClassStudents = async (silent = false) => {
+    if (!token) {
+      if (!silent) setMessage("Login session missing. Please login again.");
+      return;
+    }
 
     try {
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed) || parsed.length === 0) return;
+      const response = await getCfacStudents(token);
+      const mapped = mapStudentsFromApi(Array.isArray(response?.students) ? response.students : []);
 
-      const normalized = parsed.map((student, index) => ({
-        studentId: Number(student.studentId) || index + 1,
-        rollNo: String(student.rollNo || "").trim(),
-        name: String(student.name || "").trim(),
-      }));
+      setStudents(mapped);
+      setStatusById((prev) =>
+        mapped.reduce((acc, student) => {
+          acc[student.studentId] = prev[student.studentId] || "present";
+          return acc;
+        }, {})
+      );
 
-      const defaultStatus = normalized.reduce((acc, student) => {
-        acc[student.studentId] = "present";
-        return acc;
-      }, {});
-
-      setStudents(normalized);
-      setStatusById(defaultStatus);
-      setMessage("Editable class list restored from previous session.");
-    } catch {
-      setMessage("Could not restore saved class list. Use Load My Class Students.");
+      if (!silent) {
+        setMessage(
+          mapped.length > 0
+            ? `Loaded ${mapped.length} students from your controlled class list.`
+            : "No students are assigned to your controlled list."
+        );
+      }
+    } catch (error) {
+      if (!silent) setMessage(error?.message || "Unable to load your controlled students list.");
     }
-  }, []);
-
-  useEffect(() => {
-    if (students.length === 0) return;
-    localStorage.setItem(CLASS_LIST_STORAGE_KEY, JSON.stringify(students));
-  }, [students]);
-
-  const loadClassStudents = () => {
-    const defaultStatus = FACULTY_CLASS_STUDENTS.reduce((acc, student) => {
-      acc[student.studentId] = "present";
-      return acc;
-    }, {});
-
-    setStudents(FACULTY_CLASS_STUDENTS);
-    setStatusById(defaultStatus);
-    setMessage("Class list loaded successfully. You can now mark attendance.");
   };
 
-  const resetToDefaultClassStudents = () => {
-    setStudents(FACULTY_CLASS_STUDENTS);
-    const defaultStatus = FACULTY_CLASS_STUDENTS.reduce((acc, student) => {
-      acc[student.studentId] = statusById[student.studentId] || "present";
-      return acc;
-    }, {});
-    setStatusById(defaultStatus);
-    localStorage.setItem(CLASS_LIST_STORAGE_KEY, JSON.stringify(FACULTY_CLASS_STUDENTS));
-    setMessage("Class list reset to the original 75 students.");
+  const resetToDefaultClassStudents = async () => {
+    await loadClassStudents();
   };
 
   const filteredStudents = useMemo(() => {
@@ -91,6 +95,21 @@ export default function AttendanceManage() {
   );
 
   const absentCount = students.length - presentCount;
+
+  const historyPresent = useMemo(
+    () => historyRows.filter((entry) => entry.status === "present").length,
+    [historyRows]
+  );
+
+  const historyAbsent = useMemo(
+    () => historyRows.filter((entry) => entry.status === "absent").length,
+    [historyRows]
+  );
+
+  const historyOnduty = useMemo(
+    () => historyRows.filter((entry) => entry.status === "on-duty").length,
+    [historyRows]
+  );
 
   const markAll = (status) => {
     const next = students.reduce((acc, student) => {
@@ -221,6 +240,8 @@ export default function AttendanceManage() {
 
       await Promise.all(requests);
       setMessage(`Attendance submitted for ${students.length} students on ${date}.`);
+      setHistoryDate(date);
+      await loadAttendanceHistory(date, { applyToGrid: false, silent: true });
     } catch (err) {
       setMessage(err?.message || "Unable to submit attendance");
     } finally {
@@ -228,10 +249,81 @@ export default function AttendanceManage() {
     }
   };
 
+  const loadAttendanceHistory = async (targetDate, options = {}) => {
+    const { applyToGrid = false, silent = false } = options;
+
+    if (!user?.id || !token) {
+      if (!silent) setHistoryInfo("Login session missing. Please login again.");
+      return;
+    }
+
+    if (!targetDate) {
+      if (!silent) setHistoryInfo("Select a date to view attendance history.");
+      return;
+    }
+
+    try {
+      setHistoryLoading(true);
+      if (!silent) setHistoryInfo("");
+
+      const response = await getAttendanceHistory(user.id, token, { date: targetDate });
+      const rows = Array.isArray(response?.attendance) ? response.attendance : [];
+      setHistoryRows(rows);
+
+      const subjectWithPeriod = `P${periodNo} - ${subject}`;
+      const preferredRows = rows.filter((row) => row.subject === subjectWithPeriod);
+      const rowsToApply = preferredRows.length > 0 ? preferredRows : rows;
+
+      if (applyToGrid && students.length > 0 && rowsToApply.length > 0) {
+        const byStudentId = new Map(rowsToApply.map((row) => [Number(row.studentId), String(row.status || "present")]));
+        setStatusById((prev) => {
+          const next = { ...prev };
+          students.forEach((student) => {
+            const status = byStudentId.get(Number(student.studentId));
+            if (status) {
+              next[student.studentId] = status;
+            }
+          });
+          return next;
+        });
+
+        if (!silent) {
+          const appliedCount = students.filter((student) => byStudentId.has(Number(student.studentId))).length;
+          setHistoryInfo(
+            appliedCount > 0
+              ? `Loaded ${appliedCount} records from ${targetDate} into the current marking grid.`
+              : `History found for ${targetDate}, but no matching students in current class list.`
+          );
+        }
+      } else if (!silent) {
+        setHistoryInfo(
+          rows.length > 0
+            ? `Showing ${rows.length} attendance records for ${targetDate}.`
+            : `No attendance records found for ${targetDate}.`
+        );
+      }
+    } catch (err) {
+      if (!silent) setHistoryInfo(err?.message || "Unable to fetch attendance history.");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleLoadSelectedDay = async (applyToGrid = false) => {
+    await loadAttendanceHistory(historyDate, { applyToGrid });
+  };
+
+  const handleLoadPreviousDay = async () => {
+    const prevDate = getPreviousDate(historyDate || date);
+    setHistoryDate(prevDate);
+    setDate(prevDate);
+    await loadAttendanceHistory(prevDate, { applyToGrid: true });
+  };
+
   return (
     <div className="faculty-page-wrap attendance-page-wrap">
       <h1 className="faculty-title">Attendance Control</h1>
-      <p className="faculty-subtitle">Load your class students and mark attendance for all 75 students.</p>
+      <p className="faculty-subtitle">Load your controlled class students and mark attendance day by day.</p>
 
       <div className="class-editor-wrap">
         <h2 className="class-editor-title">Editable Class List</h2>
@@ -266,13 +358,20 @@ export default function AttendanceManage() {
       </div>
 
       <div className="attendance-toolbar">
-        <button type="button" className="primary-btn" onClick={loadClassStudents}>
-          Load My Class Students (75)
+        <button type="button" className="primary-btn" onClick={() => loadClassStudents()}>
+          Load My Controlled Students
         </button>
 
         <label>
           Date
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setHistoryDate(e.target.value);
+            }}
+          />
         </label>
 
         <label>
@@ -329,6 +428,67 @@ export default function AttendanceManage() {
       </div>
 
       {message && <p className="attendance-message">{message}</p>}
+
+      <div className="attendance-history-wrap">
+        <div className="attendance-history-toolbar">
+          <label>
+            View Past Date
+            <input type="date" value={historyDate} onChange={(e) => setHistoryDate(e.target.value)} />
+          </label>
+
+          <button type="button" className="secondary-btn" onClick={() => handleLoadSelectedDay(false)} disabled={historyLoading}>
+            {historyLoading ? "Loading..." : "View Selected Date"}
+          </button>
+
+          <button type="button" className="secondary-btn" onClick={handleLoadPreviousDay} disabled={historyLoading}>
+            Load Previous Day to Grid
+          </button>
+
+          <button type="button" className="secondary-btn" onClick={() => handleLoadSelectedDay(true)} disabled={historyLoading}>
+            Apply Selected Date to Grid
+          </button>
+        </div>
+
+        <div className="attendance-summary-row attendance-history-summary-row">
+          <div className="attendance-chip">History Total: {historyRows.length}</div>
+          <div className="attendance-chip present">Present: {historyPresent}</div>
+          <div className="attendance-chip absent">Absent: {historyAbsent}</div>
+          <div className="attendance-chip">On Duty: {historyOnduty}</div>
+        </div>
+
+        {historyInfo && <p className="attendance-message">{historyInfo}</p>}
+
+        <div className="attendance-history-table-wrap">
+          <table className="attendance-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject / Period</th>
+                <th>Roll No</th>
+                <th>Name</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historyRows.length === 0 ? (
+                <tr>
+                  <td colSpan="5">No past-day attendance loaded yet.</td>
+                </tr>
+              ) : (
+                historyRows.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.date}</td>
+                    <td>{row.subject}</td>
+                    <td>{row.rollNo || "-"}</td>
+                    <td>{row.studentName || "-"}</td>
+                    <td>{row.status}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <table className="attendance-table">
         <thead>

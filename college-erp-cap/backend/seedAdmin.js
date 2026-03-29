@@ -8,7 +8,7 @@ const pool = new Pool({
   port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
   user: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "college_erp",
+  database: process.env.PG_DATABASE || "kpr_erp",
   ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 

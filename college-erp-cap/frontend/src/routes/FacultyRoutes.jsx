@@ -7,6 +7,7 @@ import PeriodScheduling from "../pages/faculty/PeriodScheduling";
 import Reports from "../pages/faculty/Reports";
 import TimetableScheduler from "../pages/faculty/TimetableScheduler";
 import GatepassApprovals from "../pages/faculty/GatepassApprovals";
+import IdCardUpload from "../pages/faculty/IdCardUpload";
 
 import StudentDashboard from "../pages/student/Dashboard";
 import Profile from "../pages/student/Profile";
@@ -24,6 +25,9 @@ import MainGate from "../pages/student/MainGate";
 import NDC from "../pages/student/NDC";
 import StudentService from "../pages/student/StudentService";
 import TimetableView from "../pages/student/TimetableView";
+import CourseRegistration from "../pages/CourseRegistration";
+import NominalRoll from "../pages/NominalRoll";
+import NominalRollCourses from "../pages/NominalRollCourses";
 import NotFound from "../pages/error/NotFound";
 
 export default function FacultyRoutes() {
@@ -37,6 +41,10 @@ export default function FacultyRoutes() {
         <Route path="timetable-scheduler" element={<TimetableScheduler />} />
         <Route path="reports" element={<Reports />} />
         <Route path="gatepass-approvals" element={<GatepassApprovals />} />
+        <Route path="id-card-upload" element={<IdCardUpload />} />
+        <Route path="course-registration" element={<CourseRegistration />} />
+        <Route path="nominal-roll" element={<NominalRoll />} />
+        <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
 
         <Route path="student/dashboard" element={<StudentDashboard />} />
         <Route path="student/profile" element={<Profile />} />
@@ -55,6 +63,8 @@ export default function FacultyRoutes() {
         <Route path="student/ndc" element={<NDC />} />
         <Route path="student/student-service" element={<StudentService />} />
         <Route path="student/timetable" element={<TimetableView />} />
+        <Route path="student/nominal-roll" element={<NominalRoll />} />
+        <Route path="student/nominal-roll-courses" element={<NominalRollCourses />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

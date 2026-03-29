@@ -1,5 +1,9 @@
 const { Pool } = require("pg");
 const { getFacultyControlMap, setFacultyControlMap } = require("../store/facultyControlStore");
+const { CB001_ROSTER } = require("../data/cb001Roster");
+const { resolveCb001RosterStudentIds } = require("../services/cb001Roster.service");
+
+const CB001_EMAIL = "cb001@kpriet.ac.in";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -7,7 +11,7 @@ const pool = new Pool({
   port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
   user: process.env.PG_USER || "postgres",
   password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "college_erp",
+  database: process.env.PG_DATABASE || "kpr_erp",
   ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
@@ -203,14 +207,14 @@ const getFacultyControlledStudents = async (req, res) => {
       studentsResult = await pool.query(
         `SELECT id, name, email, roll_no, department FROM users
          WHERE role = 'student' AND id = ANY($1::int[])
-         ORDER BY name ASC`,
+         ORDER BY COALESCE(roll_no, ''), name ASC`,
         [controlMap.studentIds]
       );
     } else {
       studentsResult = await pool.query(
         `SELECT id, name, email, roll_no, department FROM users
          WHERE role = 'student' AND ($1::text IS NULL OR department = $1)
-         ORDER BY name ASC`,
+         ORDER BY COALESCE(roll_no, ''), name ASC`,
         [faculty.department || null]
       );
     }
@@ -405,11 +409,24 @@ const getAdminDashboardStats = async (req, res) => {
        ORDER BY department`
     );
 
+    let cb001ControlledStudents = 0;
+    const cb001Faculty = await pool.query(
+      `SELECT id FROM users WHERE role = 'faculty' AND LOWER(email) = $1 LIMIT 1`,
+      [CB001_EMAIL]
+    );
+
+    if (cb001Faculty.rows.length > 0) {
+      const roster = await resolveCb001RosterStudentIds(pool, Number(cb001Faculty.rows[0].id));
+      cb001ControlledStudents = Array.isArray(roster.studentIds) ? roster.studentIds.length : 0;
+    }
+
     res.json({
       summary: {
         totalUsers: parseInt(totalUsers.rows[0].count),
         totalStudents: parseInt(totalStudents.rows[0].count),
         totalFaculty: parseInt(totalFaculty.rows[0].count),
+        cb001ControlledStudents,
+        cb001ExpectedStudents: CB001_ROSTER.length,
       },
       departmentWise: departmentStats.rows,
     });

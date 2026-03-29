@@ -1,5 +1,6 @@
 const { pool } = require("../config/db");
 const { getFacultyControlMap } = require("../store/facultyControlStore");
+const { resolveCb001RosterStudentIds } = require("../services/cb001Roster.service");
 
 let schemaReady = false;
 
@@ -164,18 +165,25 @@ const getInternalMarksRows = async (registrationId) => {
 };
 
 const getAllowedStudentIdsForFaculty = async (facultyId) => {
+	const cb001Roster = await resolveCb001RosterStudentIds(pool, facultyId);
   const controlMap = getFacultyControlMap(facultyId);
-  if (controlMap && Array.isArray(controlMap.studentIds) && controlMap.studentIds.length > 0) {
-    return [...new Set(controlMap.studentIds.map((id) => Number(id)).filter((id) => id > 0))];
-  }
+  const mappedStudentIds = controlMap && Array.isArray(controlMap.studentIds)
+    ? controlMap.studentIds.map((id) => Number(id)).filter((id) => id > 0)
+    : [];
 
-  const faculty = await pool.query(`SELECT department FROM users WHERE id = $1 AND role = 'faculty' LIMIT 1`, [facultyId]);
-  const department = faculty.rows[0]?.department || null;
+  const department = cb001Roster.department || null;
   const students = await pool.query(
     `SELECT id FROM users WHERE role = 'student' AND ($1::text IS NULL OR department = $1)`,
     [department]
   );
-  return students.rows.map((row) => Number(row.id)).filter((id) => !Number.isNaN(id) && id > 0);
+
+  const departmentStudentIds = students.rows
+    .map((row) => Number(row.id))
+    .filter((id) => !Number.isNaN(id) && id > 0);
+
+  const rosterStudentIds = cb001Roster.shouldApply ? cb001Roster.studentIds : [];
+
+  return [...new Set([...departmentStudentIds, ...mappedStudentIds, ...rosterStudentIds])];
 };
 
 const ensureStudentRegistration = async (studentId, studentRollNo, studentName) => {
@@ -272,7 +280,7 @@ const listStudentsForRole = async (req, res) => {
 
     if (req.user?.role === "admin") {
       const students = await pool.query(
-        `SELECT id, name, roll_no, department FROM users WHERE role = 'student' ORDER BY name ASC`
+        `SELECT id, name, roll_no, department FROM users WHERE role = 'student' ORDER BY COALESCE(roll_no, ''), name ASC`
       );
       return res.json({ total: students.rows.length, students: students.rows });
     }
@@ -288,7 +296,7 @@ const listStudentsForRole = async (req, res) => {
         SELECT id, name, roll_no, department
         FROM users
         WHERE role = 'student' AND id = ANY($1::int[])
-        ORDER BY name ASC
+        ORDER BY COALESCE(roll_no, ''), name ASC
       `,
       [allowedStudentIds]
     );

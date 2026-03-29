@@ -41,6 +41,20 @@ const facultyMenu = [
     children: [{ title: "Gatepass Approvals", path: "/faculty/gatepass-approvals" }],
   },
   {
+    title: "ID Card",
+    icon: "reports",
+    children: [{ title: "ID Card Upload", path: "/faculty/id-card-upload" }],
+  },
+  {
+    title: "Courses",
+    icon: "reports",
+    children: [
+      { title: "Course Registration", path: "/faculty/course-registration" },
+      { title: "Nominal Roll", path: "/faculty/nominal-roll" },
+      { title: "Nominal Roll Courses", path: "/faculty/nominal-roll-courses" },
+    ],
+  },
+  {
     title: "Student Features",
     icon: "faculty",
     children: [
@@ -54,6 +68,8 @@ const facultyMenu = [
       { title: "Fusion Space", path: "/faculty/student/fusion-space" },
       { title: "CFAC", path: "/faculty/student/cfac" },
       { title: "COE", path: "/faculty/student/coe" },
+      { title: "1.0 Nominal Roll", path: "/faculty/student/nominal-roll" },
+      { title: "1.1 Nominal Roll Courses", path: "/faculty/student/nominal-roll-courses" },
       { title: "Common", path: "/faculty/student/common" },
       { title: "IQAC", path: "/faculty/student/iqac" },
       { title: "Main Gate", path: "/faculty/student/main-gate" },

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
 import { getAttendance } from "../../services/studentService";
+import { getReports } from "../../services/facultyService";
 
 export default function Attendance() {
     const navigate = useNavigate();
@@ -21,8 +22,25 @@ export default function Attendance() {
             try {
                 setLoading(true);
                 setError("");
-                const response = await getAttendance(user.id, token);
-                setSummary(response || { total: 0, present: 0, absent: 0, percentage: 0, entries: [] });
+
+                if (user?.role === "faculty" || user?.role === "admin") {
+                    const reportResponse = await getReports(user.id, token);
+                    const entries = reportResponse?.attendance || [];
+                    const present = entries.filter((entry) => entry.status === "present").length;
+                    const absent = entries.filter((entry) => entry.status === "absent").length;
+                    const total = entries.length;
+
+                    setSummary({
+                        total,
+                        present,
+                        absent,
+                        percentage: total > 0 ? Number(((present / total) * 100).toFixed(2)) : 0,
+                        entries,
+                    });
+                } else {
+                    const response = await getAttendance(user.id, token);
+                    setSummary(response || { total: 0, present: 0, absent: 0, percentage: 0, entries: [] });
+                }
             } catch (err) {
                 setError(err?.message || "Unable to fetch attendance");
             } finally {
