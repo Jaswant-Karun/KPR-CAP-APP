@@ -1,6 +1,6 @@
 {
-  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
-  "typescript.tsserver.watchOptions": {
+  "js/ts.tsserver.experimental.enableProjectDiagnostics": false,
+  "js/ts.tsserver.watchOptions": {
     "excludeDirectories": [
       "**/node_modules",
       "**/.git"

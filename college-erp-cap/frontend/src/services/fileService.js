@@ -27,7 +27,16 @@ export const uploadFile = async (file, token, studentId) => {
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) throw new Error("File upload failed");
+  if (!res.ok) {
+    let message = "File upload failed";
+    try {
+      const err = await res.json();
+      message = err?.message || message;
+    } catch {
+      // Ignore non-JSON error bodies
+    }
+    throw new Error(message);
+  }
   return await res.json();
 };
 
@@ -61,5 +70,45 @@ export const getUploadAudit = async (token, filters = {}) => {
   });
 
   if (!res.ok) throw new Error("Failed to fetch upload audit");
+  return await res.json();
+};
+
+export const getStudentIdCard = async (studentId, token) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/files/upload/student/${studentId}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    let message = "Failed to fetch student ID card";
+    try {
+      const err = await res.json();
+      message = err?.message || message;
+    } catch {
+      // Ignore non-JSON error bodies
+    }
+    throw new Error(message);
+  }
+
+  return await res.json();
+};
+
+export const deleteStudentIdCard = async (studentId, token) => {
+  const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/files/upload/student/${studentId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    let message = "Failed to delete student ID card";
+    try {
+      const err = await res.json();
+      message = err?.message || message;
+    } catch {
+      // Ignore non-JSON error bodies
+    }
+    throw new Error(message);
+  }
+
   return await res.json();
 };

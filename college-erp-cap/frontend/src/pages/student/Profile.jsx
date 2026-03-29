@@ -41,6 +41,8 @@ export default function Profile() {
     return <div className="profile-page-state">No profile data available</div>;
   }
 
+  const idCardPhotoUrl = profile?.idCardPhoto?.url || "";
+
   const infoRows = (obj) =>
     Object.entries(obj).map(([key, value]) => (
       <div className="profile-row" key={key}>
@@ -65,6 +67,15 @@ export default function Profile() {
         </div>
         <h2>{profile.profile.name}</h2>
         <p>{profile.profile.email}</p>
+
+        <div className="profile-id-card-block">
+          {idCardPhotoUrl ? (
+            <img src={idCardPhotoUrl} alt="Student ID Card" className="profile-id-card-photo" />
+          ) : (
+            <p className="profile-id-card-missing">ID card photo not uploaded by faculty yet.</p>
+          )}
+        </div>
+
         <div className="profile-badges">
           <span>{profile.profile.status.role}</span>
           <span>{profile.profile.status.activity}</span>

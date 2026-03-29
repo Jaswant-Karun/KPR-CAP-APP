@@ -43,6 +43,21 @@
   font-weight: 700;
 }
 
+.id-card-photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 0.55rem;
+  object-fit: cover;
+  border: 2px solid rgba(0, 196, 255, 0.55);
+  box-shadow: 0 0 16px rgba(0, 196, 255, 0.28);
+}
+
+.id-card-missing {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(255, 191, 220, 0.82);
+}
+
 .id-name {
   margin: 0;
   font-size: 1.15rem;
@@ -294,6 +309,26 @@
 .ok-line {
   color: #00e5a0;
   font-weight: 600;
+}
+
+.id-verification-preview {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.id-verification-photo {
+  width: 100%;
+  max-width: 260px;
+  border-radius: 0.55rem;
+  border: 1px solid rgba(0, 196, 255, 0.5);
+  box-shadow: 0 0 16px rgba(0, 196, 255, 0.22);
+  object-fit: cover;
+}
+
+.id-verification-empty {
+  margin-top: 0.7rem;
+  color: rgba(255, 191, 220, 0.82);
 }
 
 .dual-actions {
