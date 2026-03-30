@@ -3,6 +3,7 @@ import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
 import NotFound from "../pages/error/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
+import ButtonSoundInitializer from "../components/common/ButtonSoundInitializer";
 
 import StudentRoutes from "./StudentRoutes";
 import FacultyRoutes from "./FacultyRoutes";
@@ -10,7 +11,9 @@ import AdminRoutes from "./AdminRoutes";
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <>
+      <ButtonSoundInitializer />
+      <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
@@ -42,5 +45,6 @@ export default function AppRoutes() {
 
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   );
 }

@@ -15,6 +15,8 @@ export default function TimetableView() {
   const [weekRows, setWeekRows] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
   const [selectedFacultyId, setSelectedFacultyId] = useState("");
+  const [viewMode, setViewMode] = useState("today");
+  const [currentDay, setCurrentDay] = useState(new Date().getDay());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -52,6 +54,7 @@ export default function TimetableView() {
           getWeeklyTimetable("student", user.id, token, selectedFacultyId || undefined),
         ]);
 
+        setCurrentDay(todayRes?.dayOfWeek ?? new Date().getDay());
         setTodayRows(todayRes?.periods || []);
         setWeekRows(weekRes?.timetable || []);
       } catch (err) {
@@ -62,6 +65,12 @@ export default function TimetableView() {
     };
 
     fetchTimetable();
+
+    const interval = window.setInterval(() => {
+      fetchTimetable();
+    }, 60000);
+
+    return () => window.clearInterval(interval);
   }, [user?.id, token, selectedFacultyId]);
 
   const groupedByDay = useMemo(() => {
@@ -80,7 +89,9 @@ export default function TimetableView() {
         <FaArrowLeft /> Back
       </button>
       <h1 className="timetable-title">Automatic Day-wise Timetable</h1>
-      <p className="timetable-subtitle">Today's schedule is selected automatically based on the current day.</p>
+      <p className="timetable-subtitle">
+        Today's schedule changes automatically by weekday ({DAY_LABELS[currentDay]}).
+      </p>
 
       <div className="timetable-filter-row">
         <label className="timetable-filter-label">
@@ -101,6 +112,23 @@ export default function TimetableView() {
             )}
           </select>
         </label>
+
+        <div className="timetable-view-switch" role="tablist" aria-label="Timetable view mode">
+          <button
+            type="button"
+            className={`switch-btn ${viewMode === "today" ? "active" : ""}`}
+            onClick={() => setViewMode("today")}
+          >
+            Today's Timetable
+          </button>
+          <button
+            type="button"
+            className={`switch-btn ${viewMode === "overall" ? "active" : ""}`}
+            onClick={() => setViewMode("overall")}
+          >
+            Overall Timetable
+          </button>
+        </div>
       </div>
 
       {loading && <p className="timetable-state">Loading timetable...</p>}
@@ -108,29 +136,14 @@ export default function TimetableView() {
 
       {!loading && !error && (
         <>
-          <section className="today-box">
-            <h2 className="today-title">Today's Classes</h2>
-            {todayRows.length === 0 ? (
-              <p className="timetable-empty">No classes scheduled for today.</p>
-            ) : (
-              <ul className="period-list">
-                {todayRows.map((row) => (
-                  <li key={row.id}>
-                    <span className="period-label">P{row.periodNo}</span>
-                    <span className="period-subject">{row.subjectName}</span>
-                    <span className="time-chip">{row.startTime || "--"} - {row.endTime || "--"}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          <div className="timetable-grid">
-            {Array.from(groupedByDay.entries()).map(([day, rows]) => (
-              <div key={day} className="timetable-day">
-                <h2 className="timetable-day-title">{day}</h2>
-                <ul className="timetable-day-list">
-                  {rows.map((row) => (
+          {viewMode === "today" ? (
+            <section className="today-box">
+              <h2 className="today-title">Today's Classes ({DAY_LABELS[currentDay]})</h2>
+              {todayRows.length === 0 ? (
+                <p className="timetable-empty">No classes scheduled for today.</p>
+              ) : (
+                <ul className="period-list">
+                  {todayRows.map((row) => (
                     <li key={row.id}>
                       <span className="period-label">P{row.periodNo}</span>
                       <span className="period-subject">{row.subjectName}</span>
@@ -138,9 +151,26 @@ export default function TimetableView() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            ))}
-          </div>
+              )}
+            </section>
+          ) : (
+            <div className="timetable-grid">
+              {Array.from(groupedByDay.entries()).map(([day, rows]) => (
+                <div key={day} className="timetable-day">
+                  <h2 className="timetable-day-title">{day}</h2>
+                  <ul className="timetable-day-list">
+                    {rows.map((row) => (
+                      <li key={row.id}>
+                        <span className="period-label">P{row.periodNo}</span>
+                        <span className="period-subject">{row.subjectName}</span>
+                        <span className="time-chip">{row.startTime || "--"} - {row.endTime || "--"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

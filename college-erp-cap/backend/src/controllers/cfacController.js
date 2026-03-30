@@ -156,7 +156,7 @@ const getInternalMarksRows = async (registrationId) => {
   );
 
   return rows.rows.map((item) => ({
-    courseCode: item.course_code,
+    courseCode: normalizeCourseCodes([item.course_code])[0] || item.course_code,
     internal1: item.internal1 === null ? null : Number(item.internal1),
     internal2: item.internal2 === null ? null : Number(item.internal2),
     internal3: item.internal3 === null ? null : Number(item.internal3),
@@ -247,6 +247,7 @@ const mapRegistration = (row) => ({
   scr: row.scr,
   acr: row.acr,
   tcr: row.tcr,
+  registeredCourseCount: Number(row.registered_course_count || 0),
   courseCodes: row.course_codes || [],
 });
 
@@ -345,16 +346,49 @@ const listRegistrations = async (req, res) => {
     let result;
     if (role === "student") {
       result = await pool.query(
-        `SELECT * FROM cfac_registrations WHERE student_id = $1 ORDER BY id DESC`,
+        `
+          SELECT r.*, COALESCE(ec.registered_count, 0) AS registered_course_count
+          FROM cfac_registrations r
+          LEFT JOIN (
+            SELECT student_id, COUNT(*)::int AS registered_count
+            FROM course_enrollments
+            WHERE status = 'registered'
+            GROUP BY student_id
+          ) ec ON ec.student_id = r.student_id
+          WHERE r.student_id = $1
+          ORDER BY r.id DESC
+        `,
         [defaultStudentId]
       );
     } else if (!Number.isNaN(requestedStudentId) && requestedStudentId > 0) {
       result = await pool.query(
-        `SELECT * FROM cfac_registrations WHERE student_id = $1 ORDER BY id DESC`,
+        `
+          SELECT r.*, COALESCE(ec.registered_count, 0) AS registered_course_count
+          FROM cfac_registrations r
+          LEFT JOIN (
+            SELECT student_id, COUNT(*)::int AS registered_count
+            FROM course_enrollments
+            WHERE status = 'registered'
+            GROUP BY student_id
+          ) ec ON ec.student_id = r.student_id
+          WHERE r.student_id = $1
+          ORDER BY r.id DESC
+        `,
         [requestedStudentId]
       );
     } else {
-      result = await pool.query(`SELECT * FROM cfac_registrations ORDER BY id DESC LIMIT 100`);
+      result = await pool.query(`
+        SELECT r.*, COALESCE(ec.registered_count, 0) AS registered_course_count
+        FROM cfac_registrations r
+        LEFT JOIN (
+          SELECT student_id, COUNT(*)::int AS registered_count
+          FROM course_enrollments
+          WHERE status = 'registered'
+          GROUP BY student_id
+        ) ec ON ec.student_id = r.student_id
+        ORDER BY r.id DESC
+        LIMIT 100
+      `);
     }
 
     return res.json({

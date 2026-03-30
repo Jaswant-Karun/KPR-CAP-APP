@@ -2,23 +2,57 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FiCheck, FiClock, FiDownload, FiEye, FiFilter, FiMoreVertical, FiSearch } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
+import { getCfacRegistrations } from "../services/cfacService";
 import { nominalRollHistoryByTicket, nominalRollStudents } from "./nominalRollData";
 import "./NominalRoll.css";
 
 export default function NominalRoll() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [nominalRows, setNominalRows] = useState([]);
   const [openMenuFor, setOpenMenuFor] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [historyRows, setHistoryRows] = useState([]);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [error, setError] = useState("");
   const menuRef = useRef(null);
 
   const isStudent = user?.role === "student";
   const isFacultyStudentView = location.pathname.startsWith("/faculty/student");
   const basePath = isStudent ? "/student" : isFacultyStudentView ? "/faculty/student" : "/faculty";
+
+  useEffect(() => {
+    const loadNominalRows = async () => {
+      if (!token) return;
+      try {
+        setError("");
+        const response = await getCfacRegistrations(token);
+        const rows = (response?.registrations || []).map((row) => ({
+          id: row.id,
+          ticket: String(row.ticket || row.id),
+          status: String(row.status || "Approved").toLowerCase(),
+          rollNo: row.studentRollNo || user?.rollNo || String(user?.email || "").split("@")[0]?.toUpperCase() || "--",
+          name: row.studentName || user?.name || "Student",
+          regNo: row.studentRollNo || user?.rollNo || "--",
+          acy: row.acy || "--",
+          batch: `Sem ${row.sem || "--"}`,
+          percent: Number(row.registeredCourseCount || 0),
+          hallTicketStatus: "ready",
+          gender: "--",
+          semester: row.sem || 0,
+          registeredCourseCount: Number(row.registeredCourseCount || 0),
+        }));
+        setNominalRows(rows);
+      } catch (err) {
+        setNominalRows([]);
+        setError(err?.message || "Failed to load nominal roll data");
+      }
+    };
+
+    loadNominalRows();
+  }, [token, user?.email, user?.name, user?.rollNo]);
 
   useEffect(() => {
     const handleClick = (event) => {
@@ -33,9 +67,8 @@ export default function NominalRoll() {
 
   const filteredRows = useMemo(() => {
     const search = query.trim().toLowerCase();
-    const studentRows = isStudent
-      ? nominalRollStudents.filter((item) => item.rollNo === (user?.rollNo || nominalRollStudents[0].rollNo))
-      : nominalRollStudents;
+    const sourceRows = nominalRows.length > 0 ? nominalRows : nominalRollStudents;
+    const studentRows = isStudent ? sourceRows : sourceRows;
 
     if (!search) return studentRows;
 
@@ -47,7 +80,7 @@ export default function NominalRoll() {
         item.regNo.toLowerCase().includes(search)
       );
     });
-  }, [isStudent, query, user?.rollNo]);
+  }, [isStudent, nominalRows, query]);
 
   useEffect(() => {
     if (filteredRows.length === 0) {
@@ -111,6 +144,8 @@ export default function NominalRoll() {
         </div>
       </div>
 
+      {error && <p className="report-error">{error}</p>}
+
       <div className="nominal-toolbar">
         <div className="nominal-search">
           <FiSearch />
@@ -171,8 +206,8 @@ export default function NominalRoll() {
           <div className="profile-row"><span>Reg No.</span><strong>{activeStudent?.regNo || "--"}</strong></div>
           <div className="profile-row"><span>Batch</span><strong>{activeStudent?.batch || "--"}</strong></div>
           <div className="profile-row"><span>Gender</span><strong>{activeStudent?.gender || "--"}</strong></div>
-          <div className="profile-row"><span>Total Courses</span><strong>13</strong></div>
-          <div className="nominal-progress-track"><div className="nominal-progress-fill" style={{ width: `${(activeStudent?.percent || 0) * 6}%` }} /></div>
+          <div className="profile-row"><span>Total Courses</span><strong>{activeStudent?.registeredCourseCount ?? activeStudent?.percent ?? 0}</strong></div>
+          <div className="nominal-progress-track"><div className="nominal-progress-fill" style={{ width: `${Math.min(Number(activeStudent?.registeredCourseCount ?? activeStudent?.percent ?? 0) * 8, 100)}%` }} /></div>
         </aside>
 
         <section className="nominal-table-wrap" ref={menuRef}>

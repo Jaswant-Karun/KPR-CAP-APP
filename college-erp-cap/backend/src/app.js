@@ -8,6 +8,9 @@ const { notFoundHandler, errorHandler } = require("./middleware/error.middleware
 const app = express();
 
 const cfacRoutes = require("./routes/cfac.routes");
+const courseRoutes = require("./routes/course.routes");
+const internalMarkCourseRoutes = require("./routes/internalMarkCourse.routes");
+const departmentRoutes = require("./routes/department.routes");
 
 app.use(cors());
 app.use(express.json({ limit: "15mb" }));
@@ -21,6 +24,9 @@ app.use("/api/admin", require("./routes/admin.routes"));
 app.use("/api/timetable", require("./routes/timetable.routes"));
 app.use("/api/services", require("./routes/service.routes"));
 app.use("/api/cfac", cfacRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/internal-mark-courses", internalMarkCourseRoutes);
+app.use("/api/departments", departmentRoutes);
 app.use("/api/files", require("./routes/files.routes"));
 app.get("/api/profile", auth, getStudentProfile);
 

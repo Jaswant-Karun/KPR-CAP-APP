@@ -1,0 +1,343 @@
+/* ============================================
+   THEME CSS VARIABLES AND STYLING
+   ============================================ */
+
+/* Default Dark Theme - Original UI */
+:root[data-theme="dark"],
+html[data-theme="dark"],
+body,
+html.dark-mode {
+  /* Keep original dark colors - no changes */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a2e;
+  --bg-tertiary: #0b1220;
+  --bg-card: rgba(9, 12, 20, 0.88);
+  --bg-input: rgba(9, 12, 18, 0.88);
+
+  --text-primary: #eaf0ff;
+  --text-secondary: rgba(210, 223, 255, 0.72);
+  --text-tertiary: #94a3b8;
+
+  --border-primary: rgba(0, 196, 255, 0.22);
+  --border-secondary: rgba(0, 196, 255, 0.25);
+  --border-tertiary: rgba(255, 0, 115, 0.24);
+
+  --color-primary: #00c4ff;
+  --color-primary-light: #9de8ff;
+  --color-accent: #ff0073;
+  --color-accent-light: #ff9fcb;
+
+  --button-bg: rgba(0, 196, 255, 0.12);
+  --button-bg-hover: rgba(0, 196, 255, 0.2);
+  --button-text: #9de8ff;
+
+  --gradient-primary: linear-gradient(180deg, rgba(9, 12, 20, 0.88), rgba(8, 10, 17, 0.84));
+  --gradient-secondary: linear-gradient(180deg, rgba(5, 7, 12, 0.85), rgba(9, 10, 18, 0.84));
+}
+
+/* Light Theme - Simple Color Inversion */
+:root[data-theme="light"],
+html[data-theme="light"],
+html.light-mode {
+  /* Inverted colors: black ↔ white */
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #e5e5e5;
+  --bg-tertiary: #f4eedf;
+  --bg-card: rgba(246, 243, 235, 0.88);
+  --bg-input: rgba(246, 243, 237, 0.88);
+
+  --text-primary: #150f00;
+  --text-secondary: rgba(45, 32, 0, 0.72);
+  --text-tertiary: #6b5c47;
+
+  --border-primary: rgba(255, 59, 0, 0.22);
+  --border-secondary: rgba(255, 59, 0, 0.25);
+  --border-tertiary: rgba(0, 255, 142, 0.24);
+
+  --color-primary: #ff3b00;
+  --color-primary-light: #662017;
+  --color-accent: #00ff8c;
+  --color-accent-light: #006643;
+
+  --button-bg: rgba(255, 59, 0, 0.12);
+  --button-bg-hover: rgba(255, 59, 0, 0.2);
+  --button-text: #662017;
+
+  --gradient-primary: linear-gradient(180deg, rgba(246, 243, 235, 0.88), rgba(245, 242, 234, 0.84));
+  --gradient-secondary: linear-gradient(180deg, rgba(250, 248, 243, 0.85), rgba(246, 243, 237, 0.84));
+}
+
+/* Body and Root Styling */
+html,
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Apply theme to all common elements */
+.admin-page {
+  color: var(--text-primary);
+}
+
+.admin-page-title {
+  color: var(--text-primary);
+}
+
+.admin-page-subtitle {
+  color: var(--text-secondary);
+}
+
+.admin-stat-card {
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card);
+  transition: all 0.3s ease;
+}
+
+.admin-stat-label {
+  color: var(--text-secondary);
+}
+
+.admin-stat-value {
+  color: var(--color-primary);
+}
+
+.admin-panel {
+  border: 1px solid var(--border-tertiary);
+  background: var(--bg-card);
+}
+
+.admin-input,
+.admin-select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.admin-input:focus,
+.admin-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.1);
+}
+
+.admin-btn {
+  border: 1px solid var(--border-secondary);
+  background: var(--button-bg);
+  color: var(--button-text);
+  transition: all 0.2s ease;
+}
+
+.admin-btn:hover {
+  background: var(--button-bg-hover);
+  border-color: var(--color-primary);
+}
+
+.admin-btn.warn {
+  border-color: rgba(255, 51, 102, 0.4);
+  color: #ff3366;
+  background: rgba(255, 51, 102, 0.08);
+}
+
+.admin-btn.warn:hover {
+  background: rgba(255, 51, 102, 0.15);
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+}
+
+.admin-table th {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.admin-badge {
+  border: 1px solid rgba(255, 51, 102, 0.3);
+  color: #ff3366;
+  background: rgba(255, 51, 102, 0.08);
+}
+
+.admin-message {
+  color: var(--color-primary-light);
+}
+
+/* Card styles for dashboard */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Form styles */
+input,
+textarea,
+select {
+  background: var(--bg-input);
+  border: 1px solid var(--border-secondary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* Link styles */
+a {
+  color: var(--color-primary);
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-light);
+}
+
+/* Button styles */
+button {
+  transition: all 0.2s ease;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Table styles */
+table {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+th {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+tr:hover {
+  background: var(--bg-tertiary);
+}
+
+/* Modal / Dialog styles */
+.modal,
+.dialog,
+.overlay {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Alert styles */
+.alert,
+.notification {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+/* Navbar styles */
+.navbar,
+.header {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.navbar a,
+.header a {
+  color: var(--text-primary);
+}
+
+.navbar a:hover,
+.header a:hover {
+  color: var(--color-primary);
+}
+
+/* Sidebar styles */
+.sidebar,
+.menu {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.sidebar a,
+.menu a,
+.sidebar button,
+.menu button {
+  color: var(--text-primary);
+}
+
+.sidebar a:hover,
+.menu a:hover,
+.sidebar button:hover,
+.menu button:hover {
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
+}
+
+.sidebar a.active,
+.menu a.active {
+  background: var(--bg-tertiary);
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Dashboard styles */
+.dashboard {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Page container */
+.page-container,
+.container {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Scrollbar styling for dark/light mode */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Smooth theme transition */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Prevent transition on specific elements during initial load */
+.no-theme-transition {
+  transition: none !important;
+}

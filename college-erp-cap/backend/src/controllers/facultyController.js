@@ -94,7 +94,24 @@ const getStudentsForFaculty = async (req, res) => {
 		let result = { rows: [] };
 		if (mergedStudentIds.length > 0) {
 			result = await pool.query(
-				`SELECT id, name, email, roll_no, department FROM users WHERE role = 'student' AND id = ANY($1::int[]) ORDER BY COALESCE(roll_no, ''), name ASC`,
+				`
+					SELECT 
+						u.id, 
+						u.name, 
+						u.email, 
+						u.roll_no,
+						COALESCE(cfac.student_roll_no, u.roll_no) AS actual_roll_no,
+						u.department 
+					FROM users u
+					LEFT JOIN (
+						SELECT DISTINCT ON (student_id) student_id, student_roll_no 
+						FROM cfac_registrations 
+						WHERE student_roll_no IS NOT NULL
+						ORDER BY student_id, id DESC
+					) cfac ON u.id = cfac.student_id
+					WHERE u.role = 'student' AND u.id = ANY($1::int[]) 
+					ORDER BY COALESCE(COALESCE(cfac.student_roll_no, u.roll_no), ''), u.name ASC
+				`,
 				[mergedStudentIds]
 			);
 		}
@@ -102,7 +119,13 @@ const getStudentsForFaculty = async (req, res) => {
 		return res.json({
 			total: result.rows.length,
 			mapping: controlMap,
-			students: result.rows,
+			students: result.rows.map(row => ({
+				id: row.id,
+				name: row.name,
+				email: row.email,
+				roll_no: row.actual_roll_no || row.roll_no,
+				department: row.department
+			})),
 		});
 	} catch (error) {
 		return res.status(500).json({ message: "Failed to fetch students", error: error.message });
