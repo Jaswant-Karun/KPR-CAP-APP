@@ -51,6 +51,27 @@ const adminMenu = [
       { title: "Curriculum and Settings", path: "/admin/courses" },
     ],
   },
+  {
+    title: "Student Sidebar Controls",
+    icon: FaUsers,
+    children: [
+      { title: "3.2 Student Attendance Control", path: "/admin/academics-attendance-control" },
+      { title: "4.0 Final Year Project Control", path: "/admin/final-year-project-control" },
+      { title: "AO Service Support Approvals", path: "/admin/ao-service-approvals" },
+      { title: "Fusion Space Approvals", path: "/admin/fusion-space-approvals" },
+      { title: "CFAC Course Registrations", path: "/admin/cfac-course-registrations" },
+      { title: "1.0 Nominal Roll Control", path: "/admin/nominal-roll-approvals" },
+      { title: "1.1 Nominal Roll Courses Control", path: "/admin/nominal-roll-course-approvals" },
+      { title: "1.2 Waiver Approvals", path: "/admin/waiver-approvals" },
+      { title: "Common Service Requests", path: "/admin/common-service-approvals" },
+      { title: "IQAC Feedback Controls", path: "/admin/feedback-approvals" },
+      { title: "1. Gatepass Approvals", path: "/admin/main-gate-requests" },
+      { title: "NDC Achievement Upload Reviews", path: "/admin/ndc-achievement-approvals" },
+      { title: "Bonafide Approvals", path: "/admin/bonafide-approvals" },
+      { title: "Hostel Application Approvals", path: "/admin/hostel-app-approvals" },
+      { title: "Hostel Permission Approvals", path: "/admin/hostel-permission-approvals" },
+    ],
+  },
 ];
 
 export default function AdminSidebar() {

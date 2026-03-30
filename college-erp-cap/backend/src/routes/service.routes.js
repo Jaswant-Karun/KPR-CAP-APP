@@ -16,6 +16,8 @@ const {
 	listFusionBookings,
 	deleteFusionBooking,
 	updateFusionBookingStatus,
+	listWaiverRequests,
+	updateWaiverRequestStatus,
 } = require("../controllers/serviceController");
 
 router.use(auth);
@@ -37,5 +39,8 @@ router.post("/fusion-bookings", allowRoles(["student", "faculty", "admin"]), cre
 router.get("/fusion-bookings", allowRoles(["student", "faculty", "admin"]), listFusionBookings);
 router.delete("/fusion-bookings/:bookingId", allowRoles(["student", "faculty", "admin"]), deleteFusionBooking);
 router.patch("/fusion-bookings/:bookingId/status", allowRoles(["faculty", "admin"]), updateFusionBookingStatus);
+
+router.get("/waivers", allowRoles(["student", "faculty", "admin"]), listWaiverRequests);
+router.patch("/waivers/:waiverId/status", allowRoles(["faculty", "admin"]), updateWaiverRequestStatus);
 
 module.exports = router;

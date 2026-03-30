@@ -19,6 +19,7 @@ import TimetableView from '../pages/student/TimetableView';
 import CourseRegistration from '../pages/CourseRegistration';
 import NominalRoll from '../pages/NominalRoll';
 import NominalRollCourses from '../pages/NominalRollCourses';
+import Waiver from '../pages/Waiver';
 import NotFound from '../pages/error/NotFound';
 import Unauthorized from '../pages/error/Unauthorized';
 
@@ -48,6 +49,7 @@ export default function StudentRoutes() {
         <Route path="course-registration" element={<CourseRegistration />} />
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
+        <Route path="waiver" element={<Waiver />} />
         <Route path="unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
       </Route>

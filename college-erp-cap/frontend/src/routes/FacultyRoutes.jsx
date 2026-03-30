@@ -8,26 +8,17 @@ import Reports from "../pages/faculty/Reports";
 import TimetableScheduler from "../pages/faculty/TimetableScheduler";
 import GatepassApprovals from "../pages/faculty/GatepassApprovals";
 import IdCardUpload from "../pages/faculty/IdCardUpload";
+import InternalMarks from "../pages/faculty/InternalMarks";
+import ServiceRequestsApproval from "../pages/faculty/ServiceRequestsApproval";
+import StudentUploadsApproval from "../pages/faculty/StudentUploadsApproval";
+import AoServiceApprovals from "../pages/faculty/AoServiceApprovals";
+import FusionSpaceApprovals from "../pages/faculty/FusionSpaceApprovals";
+import FacultyCourseMgmt from "../pages/faculty/FacultyCourseMgmt";
 
-import StudentDashboard from "../pages/student/Dashboard";
-import Profile from "../pages/student/Profile";
-import Academics from "../pages/student/Academics";
-import Attendance from "../pages/student/Attendance";
-import Project from "../pages/student/Project";
-import Booking from "../pages/student/Booking";
-import AOServiceSupport from "../pages/student/AOServiceSupport";
-import FusionSpace from "../pages/student/FusionSpace";
-import CFAC from "../pages/student/CFAC";
-import COE from "../pages/student/COE";
-import Common from "../pages/student/Common";
-import IQAC from "../pages/student/IQAC";
-import MainGate from "../pages/student/MainGate";
-import NDC from "../pages/student/NDC";
-import StudentService from "../pages/student/StudentService";
-import TimetableView from "../pages/student/TimetableView";
 import CourseRegistration from "../pages/CourseRegistration";
 import NominalRoll from "../pages/NominalRoll";
 import NominalRollCourses from "../pages/NominalRollCourses";
+import Waiver from "../pages/Waiver";
 import NotFound from "../pages/error/NotFound";
 
 export default function FacultyRoutes() {
@@ -42,29 +33,36 @@ export default function FacultyRoutes() {
         <Route path="reports" element={<Reports />} />
         <Route path="gatepass-approvals" element={<GatepassApprovals />} />
         <Route path="id-card-upload" element={<IdCardUpload />} />
+        <Route path="internal-marks" element={<InternalMarks />} />
+        <Route path="service-requests-approval" element={<ServiceRequestsApproval />} />
+        <Route path="student-uploads-approval" element={<StudentUploadsApproval />} />
+        <Route path="booking-service-requests" element={<ServiceRequestsApproval />} />
+        <Route path="cfac-course-registrations" element={<CourseRegistration />} />
+        <Route path="coe-requests" element={<NominalRoll />} />
+        <Route path="common-service-requests" element={<ServiceRequestsApproval />} />
+        <Route path="iqac-feedback-requests" element={<ServiceRequestsApproval />} />
+        <Route path="main-gate-requests" element={<GatepassApprovals />} />
+        <Route path="ndc-upload-reviews" element={<StudentUploadsApproval />} />
+        <Route path="student-service-requests" element={<ServiceRequestsApproval />} />
+        <Route path="user-service-requests" element={<ServiceRequestsApproval />} />
+        <Route path="academics-attendance-control" element={<AttendanceManage />} />
+        <Route path="final-year-project-control" element={<ServiceRequestsApproval />} />
+        <Route path="ao-service-approvals" element={<AoServiceApprovals />} />
+        <Route path="fusion-space-approvals" element={<FusionSpaceApprovals />} />
+        <Route path="course-management" element={<FacultyCourseMgmt />} />
+        <Route path="nominal-roll-approvals" element={<NominalRoll />} />
+        <Route path="nominal-roll-course-approvals" element={<NominalRollCourses />} />
+        <Route path="waiver-approvals" element={<Waiver />} />
+        <Route path="common-service-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="feedback-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="ndc-achievement-approvals" element={<StudentUploadsApproval />} />
+        <Route path="bonafide-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="hostel-app-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
         <Route path="course-registration" element={<CourseRegistration />} />
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
-
-        <Route path="student/dashboard" element={<StudentDashboard />} />
-        <Route path="student/profile" element={<Profile />} />
-        <Route path="student/academics" element={<Academics />} />
-        <Route path="student/attendance" element={<Attendance />} />
-        <Route path="student/project" element={<Project />} />
-        <Route path="student/final-year-project" element={<Project />} />
-        <Route path="student/booking" element={<Booking />} />
-        <Route path="student/ao-service" element={<AOServiceSupport />} />
-        <Route path="student/fusion-space" element={<FusionSpace />} />
-        <Route path="student/cfac" element={<CFAC />} />
-        <Route path="student/coe" element={<COE />} />
-        <Route path="student/common" element={<Common />} />
-        <Route path="student/iqac" element={<IQAC />} />
-        <Route path="student/main-gate" element={<MainGate />} />
-        <Route path="student/ndc" element={<NDC />} />
-        <Route path="student/student-service" element={<StudentService />} />
-        <Route path="student/timetable" element={<TimetableView />} />
-        <Route path="student/nominal-roll" element={<NominalRoll />} />
-        <Route path="student/nominal-roll-courses" element={<NominalRollCourses />} />
+        <Route path="waiver" element={<Waiver />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

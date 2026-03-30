@@ -59,6 +59,19 @@ const createSchema = async () => {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS departments (
+      id SERIAL PRIMARY KEY,
+      code VARCHAR(20) NOT NULL UNIQUE,
+      name VARCHAR(160) NOT NULL UNIQUE,
+      short_name VARCHAR(40),
+      description TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS timetables (
       id SERIAL PRIMARY KEY,
       audience_type VARCHAR(20) NOT NULL CHECK (audience_type IN ('student', 'faculty')),
@@ -172,6 +185,77 @@ const createSchema = async () => {
       updated_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS waiver_requests (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected', 'in-review')) DEFAULT 'pending',
+      student_id INT,
+      student_name VARCHAR(120),
+      serial_no VARCHAR(40),
+      acy VARCHAR(30),
+      sem VARCHAR(20),
+      waiver_type VARCHAR(80),
+      courses TEXT,
+      grade VARCHAR(20),
+      point NUMERIC(5,2),
+      credit INT,
+      department VARCHAR(80),
+      batch VARCHAR(30),
+      section VARCHAR(20),
+      is_active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS courses (
+      id SERIAL PRIMARY KEY,
+      code VARCHAR(40) NOT NULL UNIQUE,
+      name VARCHAR(160) NOT NULL,
+      credits INT NOT NULL DEFAULT 3,
+      semester INT,
+      category VARCHAR(40),
+      faculty_id INT,
+      faculty_name VARCHAR(120),
+      department VARCHAR(80) NOT NULL,
+      capacity INT NOT NULL DEFAULT 60,
+      description TEXT,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS course_enrollments (
+      id SERIAL PRIMARY KEY,
+      course_id INT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+      student_id INT NOT NULL,
+      student_name VARCHAR(120),
+      student_roll_no VARCHAR(40),
+      status VARCHAR(30) NOT NULL DEFAULT 'registered' CHECK (status IN ('registered', 'dropped', 'completed')),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (course_id, student_id)
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS internal_mark_courses (
+      id SERIAL PRIMARY KEY,
+      code VARCHAR(40) NOT NULL,
+      name VARCHAR(160) NOT NULL,
+      max_marks INT NOT NULL DEFAULT 25,
+      department VARCHAR(80),
+      faculty_id INT,
+      faculty_name VARCHAR(120),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (faculty_id, code)
+    );
+  `);
 };
 
 const defaultUsers = [
@@ -227,6 +311,60 @@ const seedDefaults = async () => {
         ]
       );
     }
+
+    // Seed departments
+    const departments = [
+      { code: "CSB", name: "Computer Science and Business Systems", short_name: "CSB" },
+      { code: "CSE", name: "Computer Science and Engineering", short_name: "CSE" },
+      { code: "AIDS", name: "Artificial Intelligence and Data Science", short_name: "AIDS" },
+      { code: "AIML", name: "Artificial Intelligence and Machine Learning", short_name: "AIML" },
+      { code: "IT", name: "Information Technology", short_name: "IT" },
+      { code: "ECE", name: "Electronics and Communication Engineering", short_name: "ECE" },
+      { code: "EEE", name: "Electrical and Electronics Engineering", short_name: "EEE" },
+      { code: "CHE", name: "Chemical Engineering", short_name: "CHE" },
+      { code: "CE", name: "Civil Engineering", short_name: "CE" },
+      { code: "ME", name: "Mechanical Engineering", short_name: "ME" },
+      { code: "MECH", name: "Mechatronics Engineering", short_name: "MECH" },
+      { code: "BME", name: "Biomedical Engineering", short_name: "BME" },
+      { code: "CYS", name: "Cybersecurity Engineering", short_name: "CYS" },
+    ];
+
+    for (const dept of departments) {
+      await pool.query(
+        `
+          INSERT INTO departments (code, name, short_name, is_active)
+          VALUES ($1, $2, $3, TRUE)
+          ON CONFLICT (code) DO NOTHING;
+        `,
+        [dept.code, dept.name, dept.short_name]
+      );
+    }
+
+    const studentResult = await pool.query(
+      "SELECT id, name, roll_no, department FROM users WHERE email = $1 LIMIT 1",
+      ["student@kpriet.ac.in"]
+    );
+
+    const defaultStudent = studentResult.rows[0] || {};
+    const defaultStudentId = defaultStudent.id || null;
+    const defaultStudentName = defaultStudent.name || "Student User";
+    const defaultSerial = defaultStudent.roll_no || "24CB023";
+    const defaultDepartment = defaultStudent.department || "CSE";
+
+    await pool.query(
+      `
+        INSERT INTO waiver_requests
+          (ticket_no, status, student_id, student_name, serial_no, acy, sem, waiver_type, courses, grade, point, credit, department, batch, section, is_active, created_at, updated_at)
+        VALUES
+          ('WVR-2401', 'approved', $1, $2, $3, '2025-2026', 'III', 'Tuition', 'CS301, CS302', 'A', 8.90, 4, $4, '2024-2028', 'A', TRUE, NOW(), NOW()),
+          ('WVR-2402', 'in-review', $1, $2, $3, '2025-2026', 'III', 'Exam', 'MA302', 'B+', 8.00, 3, $4, '2024-2028', 'A', TRUE, NOW(), NOW()),
+          ('WVR-2392', 'pending', NULL, 'Nivetha R', '23CB066', '2024-2025', 'V', 'Arrear', 'CS501', 'B', 7.50, 3, 'CSE', '2023-2027', 'B', TRUE, NOW(), NOW()),
+          ('WVR-2358', 'rejected', NULL, 'Karthik P', '22EC041', '2023-2024', 'VI', 'Condonation', 'EC604', 'C+', 6.80, 2, 'ECE', '2022-2026', 'C', FALSE, NOW(), NOW())
+        ON CONFLICT (ticket_no) DO NOTHING;
+      `,
+      [defaultStudentId, defaultStudentName, defaultSerial, defaultDepartment]
+    );
+
     return;
   }
 

@@ -6,8 +6,8 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: college_erp
+      POSTGRES_PASSWORD: Admin@123
+      POSTGRES_DB: kpr_erp
     ports:
       - "5433:5432"
     volumes:
