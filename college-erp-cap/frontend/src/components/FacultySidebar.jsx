@@ -66,6 +66,7 @@ const facultyMenu = [
       { title: "1.0 Nominal Roll Control", path: "/faculty/nominal-roll-approvals" },
       { title: "1.1 Nominal Roll Courses Control", path: "/faculty/nominal-roll-course-approvals" },
       { title: "1.2 Waiver Approvals", path: "/faculty/waiver-approvals" },
+      { title: "2.1 Hall Ticket Verification", path: "/faculty/hall-ticket-verify" },
       { title: "Common Service Requests", path: "/faculty/common-service-approvals" },
       { title: "IQAC Feedback Controls", path: "/faculty/feedback-approvals" },
       { title: "1. Gatepass Approvals", path: "/faculty/gatepass-approvals" },

@@ -63,6 +63,7 @@ const adminMenu = [
       { title: "1.0 Nominal Roll Control", path: "/admin/nominal-roll-approvals" },
       { title: "1.1 Nominal Roll Courses Control", path: "/admin/nominal-roll-course-approvals" },
       { title: "1.2 Waiver Approvals", path: "/admin/waiver-approvals" },
+      { title: "2.1 Hall Ticket Control", path: "/admin/hall-ticket-control" },
       { title: "Common Service Requests", path: "/admin/common-service-approvals" },
       { title: "IQAC Feedback Controls", path: "/admin/feedback-approvals" },
       { title: "1. Gatepass Approvals", path: "/admin/main-gate-requests" },

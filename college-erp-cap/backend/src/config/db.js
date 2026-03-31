@@ -26,6 +26,16 @@ const dbState = {
   mode: "postgres",
 };
 
+const DEFAULT_SYSTEM_SETTINGS = {
+  allowStudentSignup: true,
+  allowFacultySignup: true,
+  enforceStrongPassword: true,
+  maintenanceMode: false,
+  buttonSoundEnabled: true,
+  appTheme: "dark",
+  defaultDepartment: "CSE",
+};
+
 const memoryStore = {
   users: [],
   timetables: [],
@@ -135,6 +145,50 @@ const createSchema = async () => {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS hall_tickets (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      student_id INT NOT NULL,
+      student_name VARCHAR(120),
+      roll_no VARCHAR(40),
+      resident_type VARCHAR(20) NOT NULL DEFAULT 'day-scholar' CHECK (resident_type IN ('day-scholar', 'hosteller')),
+      file_name VARCHAR(255) NOT NULL,
+      file_url TEXT NOT NULL,
+      file_public_id VARCHAR(255),
+      file_provider VARCHAR(50),
+      uploaded_by INT,
+      uploaded_by_name VARCHAR(120),
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'verified', 'rejected')) DEFAULT 'pending',
+      remarks TEXT,
+      verified_by INT,
+      verified_by_name VARCHAR(120),
+      verified_at TIMESTAMP,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    ALTER TABLE hall_tickets
+    ADD COLUMN IF NOT EXISTS resident_type VARCHAR(20) NOT NULL DEFAULT 'day-scholar';
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS hall_ticket_audit (
+      id SERIAL PRIMARY KEY,
+      hall_ticket_id INT,
+      ticket_no VARCHAR(40),
+      student_id INT,
+      action VARCHAR(30) NOT NULL,
+      actor_id INT,
+      actor_role VARCHAR(20),
+      actor_name VARCHAR(120),
+      remarks TEXT,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS gatepass_requests (
       id SERIAL PRIMARY KEY,
       ticket_no INT NOT NULL UNIQUE,
@@ -142,6 +196,7 @@ const createSchema = async () => {
       student_name VARCHAR(120),
       roll_no VARCHAR(40),
       type VARCHAR(50) NOT NULL DEFAULT 'Day Pass',
+      pass_category VARCHAR(20) NOT NULL DEFAULT 'day-scholar',
       reason TEXT NOT NULL,
       from_date TIMESTAMP NOT NULL,
       to_date TIMESTAMP NOT NULL,
@@ -152,6 +207,11 @@ const createSchema = async () => {
       created_at TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
+  `);
+
+  await pool.query(`
+    ALTER TABLE gatepass_requests
+    ADD COLUMN IF NOT EXISTS pass_category VARCHAR(20) NOT NULL DEFAULT 'day-scholar';
   `);
 
   await pool.query(`
@@ -256,6 +316,14 @@ const createSchema = async () => {
       UNIQUE (faculty_id, code)
     );
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS system_settings (
+      key VARCHAR(80) PRIMARY KEY,
+      value JSONB NOT NULL,
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
 };
 
 const defaultUsers = [
@@ -311,6 +379,16 @@ const seedDefaults = async () => {
         ]
       );
     }
+
+    await pool.query(
+      `
+        INSERT INTO system_settings (key, value)
+        VALUES ($1, $2::jsonb)
+        ON CONFLICT (key)
+        DO NOTHING;
+      `,
+      ["global", JSON.stringify(DEFAULT_SYSTEM_SETTINGS)]
+    );
 
     // Seed departments
     const departments = [

@@ -15,6 +15,15 @@ const toDisplay = (value) => {
 };
 
 export default function MainGate() {
+  return <StudentPassRequestPage mode="gatepass" category="day-scholar" />;
+}
+
+export function StudentPassRequestPage({
+  mode = "gatepass",
+  category = "day-scholar",
+  titleOverride,
+  subtitleOverride,
+}) {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const [fromDate, setFromDate] = useState(`${today()}T09:00`);
@@ -27,10 +36,24 @@ export default function MainGate() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const normalizedCategory = String(category || "day-scholar").toLowerCase();
+  const passType = mode === "free-outing" ? "Free Outing" : "Gate Pass";
+  const fallbackTitle = mode === "free-outing" ? "Free Outing" : "Gatepass";
+  const fallbackSubtitle =
+    mode === "free-outing"
+      ? "Hosteller students can submit free outing requests and track approval."
+      : "Submit gatepass request to faculty and track approval status.";
+  const pageTitle = titleOverride || fallbackTitle;
+  const pageSubtitle = subtitleOverride || fallbackSubtitle;
+
   const loadGatepass = async () => {
     try {
       setLoading(true);
-      const res = await getGatepassRequests(token, { status: statusFilter || undefined });
+      const res = await getGatepassRequests(token, {
+        status: statusFilter || undefined,
+        type: passType,
+        passCategory: normalizedCategory,
+      });
       setRows(res?.requests || []);
     } catch (err) {
       setMessage(err?.message || "Failed to load gatepass requests");
@@ -57,7 +80,8 @@ export default function MainGate() {
           fromDate,
           toDate,
           reason: `${reasonType}: ${reason}`,
-          type: "Day Pass",
+          type: passType,
+          passCategory: normalizedCategory,
           remarks,
           studentName: user?.name,
           rollNo: user?.rollNo,
@@ -66,7 +90,7 @@ export default function MainGate() {
       );
       setReason("");
       setRemarks("");
-      setMessage("Gatepass request sent for faculty approval.");
+      setMessage(`${pageTitle} request sent for faculty approval.`);
       await loadGatepass();
     } catch (err) {
       setMessage(err?.message || "Failed to create gatepass request");
@@ -78,11 +102,11 @@ export default function MainGate() {
       <button type="button" className="feature-back-btn" onClick={() => navigate("/student/dashboard")}>
         <FaArrowLeft /> Back
       </button>
-      <h1 className="main-gate-title">Gatepass</h1>
-      <p className="main-gate-subtitle">Submit request to faculty and track approval status.</p>
+      <h1 className="main-gate-title">{pageTitle}</h1>
+      <p className="main-gate-subtitle">{pageSubtitle}</p>
 
       <section className="main-gate-card">
-        <h2>New Gatepass</h2>
+        <h2>New {pageTitle} Request</h2>
         <div className="main-gate-form-grid">
           <label>
             Departure Date & Time
@@ -128,7 +152,7 @@ export default function MainGate() {
 
       <section className="main-gate-card">
         <div className="main-gate-header-row">
-          <h2>My Gatepass Requests</h2>
+          <h2>My {pageTitle} Requests</h2>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">All Status</option>
             <option value="pending">Pending</option>
@@ -156,7 +180,7 @@ export default function MainGate() {
               ) : (
                 rows.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="no-data">No gatepass requests yet.</td>
+                    <td colSpan="6" className="no-data">No {pageTitle.toLowerCase()} requests yet.</td>
                   </tr>
                 ) : (
                   rows.map((row) => (

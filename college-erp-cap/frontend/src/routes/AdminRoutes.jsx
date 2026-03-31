@@ -17,6 +17,7 @@ import Waiver from "../pages/Waiver";
 import AttendanceManage from "../pages/faculty/AttendanceManage";
 import AoServiceApprovals from "../pages/faculty/AoServiceApprovals";
 import FusionSpaceApprovals from "../pages/faculty/FusionSpaceApprovals";
+import HallTicket from "../pages/HallTicket";
 
 export default function AdminRoutes() {
   return (
@@ -44,6 +45,7 @@ export default function AdminRoutes() {
         <Route path="nominal-roll-approvals" element={<NominalRoll />} />
         <Route path="nominal-roll-course-approvals" element={<NominalRollCourses />} />
         <Route path="waiver-approvals" element={<Waiver />} />
+        <Route path="hall-ticket-control" element={<HallTicket mode="admin" />} />
         <Route path="common-service-approvals" element={<ServiceRequestsApproval />} />
         <Route path="feedback-approvals" element={<ServiceRequestsApproval />} />
         <Route path="ndc-achievement-approvals" element={<StudentUploadsApproval />} />

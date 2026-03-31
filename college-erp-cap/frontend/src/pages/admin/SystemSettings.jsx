@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../../hooks/useTheme";
+import { useAuth } from "../../hooks/useAuth";
+import { getSystemSettings, updateSystemSettings } from "../../services/adminService";
 import "./AdminPages.css";
 
 const STORAGE_KEY = "kpr_admin_settings";
@@ -30,9 +32,36 @@ const getInitial = () => {
 };
 
 export default function SystemSettings() {
+  const { token } = useAuth();
   const { toggleTheme } = useTheme();
   const [settings, setSettings] = useState(getInitial);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await getSystemSettings(token);
+        const apiSettings = response?.settings;
+        if (apiSettings) {
+          setSettings((prev) => ({ ...prev, ...apiSettings }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(apiSettings));
+        }
+      } catch (error) {
+        console.warn("Failed to load system settings from backend:", error);
+        setMessage("Unable to load latest settings from server. Showing local fallback values.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [token]);
 
   const toggle = (key) => {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -42,16 +71,43 @@ export default function SystemSettings() {
     setSettings((prev) => ({ ...prev, appTheme: newTheme }));
   };
 
-  const save = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    // Apply theme if it changed
-    if (settings.appTheme) {
-      toggleTheme(settings.appTheme);
+  const save = async () => {
+    if (!token) {
+      setMessage("You are not authenticated. Please log in again.");
+      return;
     }
-    // Emit custom event so other components can update
-    window.dispatchEvent(new Event("admin-settings-updated"));
-    setMessage("System settings saved successfully.");
+
+    try {
+      const response = await updateSystemSettings(settings, token);
+      const savedSettings = response?.settings || settings;
+
+      setSettings(savedSettings);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSettings));
+
+      if (savedSettings.appTheme) {
+        toggleTheme(savedSettings.appTheme);
+      }
+
+      window.dispatchEvent(
+        new CustomEvent("admin-settings-updated", {
+          detail: savedSettings,
+        })
+      );
+
+      setMessage("System settings saved successfully.");
+    } catch (error) {
+      setMessage(error?.message || "Failed to save system settings.");
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="admin-page">
+        <h1 className="admin-page-title">System Settings</h1>
+        <p className="admin-page-subtitle">Loading system settings...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-page">

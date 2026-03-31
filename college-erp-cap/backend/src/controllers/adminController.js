@@ -2,6 +2,11 @@ const { Pool } = require("pg");
 const { getFacultyControlMap, setFacultyControlMap } = require("../store/facultyControlStore");
 const { CB001_ROSTER } = require("../data/cb001Roster");
 const { resolveCb001RosterStudentIds } = require("../services/cb001Roster.service");
+const {
+  getOrCreateSystemSettings,
+  updateSystemSettings: saveSystemSettings,
+  getPublicSystemSettings: fetchPublicSystemSettings,
+} = require("../services/systemSettings.service");
 
 const CB001_EMAIL = "cb001@kpriet.ac.in";
 
@@ -435,6 +440,39 @@ const getAdminDashboardStats = async (req, res) => {
   }
 };
 
+const getSystemSettings = async (req, res) => {
+  try {
+    const settings = await getOrCreateSystemSettings();
+    return res.json({ settings });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch system settings", error: error.message });
+  }
+};
+
+const getPublicSystemSettings = async (req, res) => {
+  try {
+    const settings = await fetchPublicSystemSettings();
+    return res.json({
+      settings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch public system settings", error: error.message });
+  }
+};
+
+const updateSystemSettings = async (req, res) => {
+  try {
+    const nextSettings = await saveSystemSettings(req.body || {});
+
+    return res.json({
+      message: "System settings updated successfully",
+      settings: nextSettings,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update system settings", error: error.message });
+  }
+};
+
 module.exports = {
   // Students
   getAllStudents,
@@ -453,4 +491,9 @@ module.exports = {
 
   // Dashboard
   getAdminDashboardStats,
+
+  // System settings
+  getSystemSettings,
+  getPublicSystemSettings,
+  updateSystemSettings,
 };

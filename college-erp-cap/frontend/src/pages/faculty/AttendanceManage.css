@@ -251,3 +251,83 @@
     overflow-x: auto;
   }
 }
+
+html[data-theme="light"] .faculty-title {
+  color: #173a67;
+}
+
+html[data-theme="light"] .faculty-subtitle,
+html[data-theme="light"] .attendance-toolbar label,
+html[data-theme="light"] .class-editor-grid label,
+html[data-theme="light"] .attendance-history-toolbar label,
+html[data-theme="light"] .attendance-message {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .class-editor-wrap,
+html[data-theme="light"] .attendance-history-wrap,
+html[data-theme="light"] .attendance-table {
+  border-color: #c6d6ea;
+  background: linear-gradient(145deg, #fcfeff, #f0f5fc);
+}
+
+html[data-theme="light"] .class-editor-title {
+  color: #1f4f8a;
+}
+
+html[data-theme="light"] .attendance-toolbar input,
+html[data-theme="light"] .attendance-toolbar select,
+html[data-theme="light"] .class-editor-grid input,
+html[data-theme="light"] .attendance-table select,
+html[data-theme="light"] .student-inline-input,
+html[data-theme="light"] .attendance-history-toolbar input {
+  border-color: #b4c9e3;
+  background: #f7fbff;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .attendance-chip {
+  border-color: #b4c9e3;
+  background: #edf3fb;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .attendance-table th,
+html[data-theme="light"] .attendance-table td {
+  border-color: #d6e1ef;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .attendance-table th {
+  background: #e7eef8;
+  color: #173a67;
+}
+
+html[data-theme="light"] .primary-btn,
+html[data-theme="light"] .secondary-btn {
+  border-color: #b4c9e3;
+  background: #e7eef8;
+  color: #1f4f8a;
+}
+
+html[data-theme="light"] .faculty-title {
+  letter-spacing: 0.02rem;
+}
+
+html[data-theme="light"] .attendance-toolbar label,
+html[data-theme="light"] .class-editor-grid label,
+html[data-theme="light"] .attendance-history-toolbar label,
+html[data-theme="light"] .attendance-table th {
+  font-weight: 600;
+}
+
+html[data-theme="light"] .attendance-table td,
+html[data-theme="light"] .attendance-chip,
+html[data-theme="light"] .attendance-toolbar input,
+html[data-theme="light"] .attendance-toolbar select,
+html[data-theme="light"] .class-editor-grid input,
+html[data-theme="light"] .attendance-history-toolbar input,
+html[data-theme="light"] .student-inline-input {
+  font-weight: 500;
+  line-height: 1.45;
+}

@@ -15,13 +15,19 @@ export default function GatepassApprovals() {
   const [rows, setRows] = useState([]);
   const [message, setMessage] = useState("");
   const [statusFilter, setStatusFilter] = useState("pending");
+  const [passTypeFilter, setPassTypeFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   const [remarkMap, setRemarkMap] = useState({});
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
     try {
       setLoading(true);
-      const res = await getGatepassRequests(token, { status: statusFilter || undefined });
+      const res = await getGatepassRequests(token, {
+        status: statusFilter || undefined,
+        type: passTypeFilter || undefined,
+        passCategory: categoryFilter || undefined,
+      });
       setRows(res?.requests || []);
     } catch (err) {
       setMessage(err?.message || "Failed to load gatepass approvals");
@@ -34,7 +40,7 @@ export default function GatepassApprovals() {
     if (token) {
       load();
     }
-  }, [token, statusFilter]);
+  }, [token, statusFilter, passTypeFilter, categoryFilter]);
 
   const updateStatus = async (gatepassId, status, defaultMessage) => {
     try {
@@ -68,6 +74,25 @@ export default function GatepassApprovals() {
             <option value="">All</option>
           </select>
         </label>
+
+        <label>
+          Request Type
+          <select value={passTypeFilter} onChange={(e) => setPassTypeFilter(e.target.value)}>
+            <option value="">All</option>
+            <option value="gate pass">Gate Pass</option>
+            <option value="free outing">Free Outing</option>
+          </select>
+        </label>
+
+        <label>
+          Student Category
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="">All</option>
+            <option value="day-scholar">Day Scholar</option>
+            <option value="hosteller">Hosteller</option>
+            <option value="lateral">Lateral</option>
+          </select>
+        </label>
       </div>
 
       <div className="gatepass-table-wrap">
@@ -77,6 +102,7 @@ export default function GatepassApprovals() {
               <th>Ticket</th>
               <th>Status</th>
               <th>Type</th>
+              <th>Category</th>
               <th>Student</th>
               <th>Reason</th>
               <th>Departure</th>
@@ -89,11 +115,11 @@ export default function GatepassApprovals() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="10" className="no-data">Loading gatepass requests...</td>
+                <td colSpan="11" className="no-data">Loading gatepass requests...</td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan="10" className="no-data">No gatepass requests found.</td>
+                <td colSpan="11" className="no-data">No gatepass requests found.</td>
               </tr>
             ) : (
               rows.map((row) => (
@@ -103,6 +129,7 @@ export default function GatepassApprovals() {
                     <span className={`status-pill ${row.status}`}>{row.status}</span>
                   </td>
                   <td>{row.type || "Day Pass"}</td>
+                  <td>{row.passCategory || "day-scholar"}</td>
                   <td>
                     <div className="student-name-cell">{row.studentName || "Student"}</div>
                     <div className="student-roll-tag">{row.rollNo || "--"}</div>

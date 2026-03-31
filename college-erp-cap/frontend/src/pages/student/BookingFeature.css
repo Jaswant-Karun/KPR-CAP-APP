@@ -239,3 +239,72 @@
     grid-template-columns: 1fr;
   }
 }
+
+html[data-theme="light"] .booking-feature-page {
+  color: #173a67;
+}
+
+html[data-theme="light"] .booking-feature-card,
+html[data-theme="light"] .booking-feature-modal {
+  border-color: #c6d6ea;
+  background: linear-gradient(145deg, #fcfeff, #f0f5fc);
+}
+
+html[data-theme="light"] .booking-feature-toolbar,
+html[data-theme="light"] .booking-feature-modal-head {
+  border-bottom-color: #d6e1ef;
+}
+
+html[data-theme="light"] .booking-feature-title,
+html[data-theme="light"] .booking-feature-table th,
+html[data-theme="light"] .booking-feature-modal-head h3 {
+  color: #173a67;
+}
+
+html[data-theme="light"] .booking-feature-input,
+html[data-theme="light"] .booking-feature-select,
+html[data-theme="light"] .booking-feature-textarea,
+html[data-theme="light"] .booking-feature-muted-btn,
+html[data-theme="light"] .booking-feature-row-action,
+html[data-theme="light"] .booking-feature-btn {
+  border-color: #b4c9e3;
+  background: #f7fbff;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .booking-feature-search-icon,
+html[data-theme="light"] .booking-feature-empty,
+html[data-theme="light"] .booking-feature-close {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .booking-feature-table th {
+  background: #e7eef8;
+}
+
+html[data-theme="light"] .booking-feature-table th,
+html[data-theme="light"] .booking-feature-table td {
+  border-bottom-color: #d6e1ef;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .booking-feature-form label {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .booking-feature-title {
+  letter-spacing: 0.02rem;
+}
+
+html[data-theme="light"] .booking-feature-form label,
+html[data-theme="light"] .booking-feature-table th {
+  font-weight: 600;
+}
+
+html[data-theme="light"] .booking-feature-table td,
+html[data-theme="light"] .booking-feature-input,
+html[data-theme="light"] .booking-feature-select,
+html[data-theme="light"] .booking-feature-textarea {
+  font-weight: 500;
+  line-height: 1.45;
+}

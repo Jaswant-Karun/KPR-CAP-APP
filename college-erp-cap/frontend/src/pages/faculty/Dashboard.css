@@ -283,3 +283,89 @@
     padding: 0.9rem;
   }
 }
+
+/* Light mode refinement for faculty dashboard */
+html[data-theme="light"] .faculty-page-wrap {
+  --panel-bg: linear-gradient(145deg, #ffffff, #f6fbff);
+  --edge: #c7ddff;
+  --text-primary: #114b9b;
+  --text-muted: #4b72ac;
+  --accent: #2b72d6;
+
+  border: 1px solid #d7e7ff;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(43, 114, 214, 0.1), transparent 34%),
+    radial-gradient(circle at 0% 100%, rgba(74, 145, 255, 0.08), transparent 42%),
+    linear-gradient(180deg, #fbfdff 0%, #f2f8ff 100%);
+  box-shadow: inset 0 0 0 1px rgba(111, 160, 233, 0.14), 0 14px 32px rgba(25, 84, 173, 0.1);
+}
+
+html[data-theme="light"] .faculty-kicker {
+  color: #2b72d6;
+}
+
+html[data-theme="light"] .faculty-day-pill {
+  border: 1px solid #bdd8ff;
+  background: linear-gradient(160deg, #e8f2ff, #dcecff);
+  box-shadow: 0 8px 18px rgba(22, 83, 176, 0.12);
+}
+
+html[data-theme="light"] .faculty-day-label {
+  color: #4e76b0;
+}
+
+html[data-theme="light"] .faculty-day-meta {
+  color: #3766a8;
+}
+
+html[data-theme="light"] .faculty-card {
+  border-color: #c7ddff;
+  background: linear-gradient(145deg, #ffffff, #f5faff);
+  box-shadow: 0 10px 20px rgba(20, 74, 156, 0.08);
+}
+
+html[data-theme="light"] .faculty-card:hover {
+  border-color: #90baff;
+  box-shadow: 0 14px 24px rgba(20, 74, 156, 0.14);
+}
+
+html[data-theme="light"] .faculty-card::after {
+  background: radial-gradient(circle, rgba(68, 136, 235, 0.2), transparent 72%);
+}
+
+html[data-theme="light"] .faculty-card-icon-wrap,
+html[data-theme="light"] .faculty-action-icon-wrap {
+  border-color: #a8c9ff;
+  background: #edf5ff;
+}
+
+html[data-theme="light"] .faculty-card-icon,
+html[data-theme="light"] .faculty-action-icon {
+  color: #2a65bf;
+}
+
+html[data-theme="light"] .faculty-card-label {
+  color: #537ab1;
+}
+
+html[data-theme="light"] .faculty-card-cta,
+html[data-theme="light"] .faculty-action-cta {
+  border-color: #a9cbff;
+  background: #edf5ff;
+  color: #215eba;
+}
+
+html[data-theme="light"] .faculty-action-panel {
+  border: 1px solid #c4dcff;
+  background: linear-gradient(145deg, #f7fbff, #edf5ff);
+}
+
+html[data-theme="light"] .faculty-action-item {
+  border: 1px solid #c4dcff;
+  background: linear-gradient(145deg, #ffffff, #f3f9ff);
+}
+
+html[data-theme="light"] .faculty-action-item:hover {
+  border-color: #8eb8ff;
+  box-shadow: 0 12px 20px rgba(20, 74, 156, 0.14);
+}
