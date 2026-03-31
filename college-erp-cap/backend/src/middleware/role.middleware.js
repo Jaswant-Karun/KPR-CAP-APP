@@ -1,7 +1,9 @@
 const normalizeRole = (role) => {
 	const value = String(role || "").trim().toLowerCase();
 	if (value === "students") return "student";
-	if (value === "faculties") return "faculty";
+	if (["faculties", "faculty-member", "faculty_member", "teacher", "cfac"].includes(value)) {
+		return "faculty";
+	}
 	return value;
 };
 

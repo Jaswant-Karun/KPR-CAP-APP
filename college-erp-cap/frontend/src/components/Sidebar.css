@@ -137,3 +137,42 @@
   background: rgba(255, 0, 115, 0.7);
   box-shadow: 0 0 8px rgba(255, 0, 115, 0.5);
 }
+
+html[data-theme="light"] .sidebar {
+  background: var(--gradient-primary);
+  border-right: 1px solid var(--border-primary);
+}
+
+html[data-theme="light"] .sidebar-menu-group {
+  border-bottom: 1px solid var(--border-primary);
+}
+
+html[data-theme="light"] .sidebar-menu-parent {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .sidebar-menu-parent:hover {
+  background: var(--button-bg);
+  color: var(--color-primary-light);
+  border-left-color: var(--color-primary-light);
+}
+
+html[data-theme="light"] .sidebar-menu-icon,
+html[data-theme="light"] .sidebar-menu-toggle {
+  color: var(--color-primary);
+}
+
+html[data-theme="light"] .sidebar-children {
+  background: var(--bg-secondary);
+  border-left-color: var(--border-secondary);
+}
+
+html[data-theme="light"] .sidebar-child-item {
+  color: var(--text-secondary);
+}
+
+html[data-theme="light"] .sidebar-child-item:hover {
+  background: var(--button-bg);
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
+}

@@ -14,6 +14,9 @@ const {
 	editFacultyDetails,
 	deleteFaculty,
 	getAdminDashboardStats,
+	getSystemSettings,
+	getPublicSystemSettings,
+	updateSystemSettings,
 } = require("../controllers/adminController");
 
 const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
@@ -26,6 +29,9 @@ const enforceUniqueAdminEmail = (req, res, next) => {
 	}
 	return next();
 };
+
+// Public settings for app-wide preferences that all users must consume
+router.get("/settings/public", getPublicSystemSettings);
 
 // Apply authentication + admin role + unique admin email to all admin routes
 router.use(auth, role(["admin"]), enforceUniqueAdminEmail);
@@ -47,5 +53,9 @@ router.get("/faculty/:facultyId/control-map", getFacultyControlMapForAdmin);
 router.post("/faculty/:facultyId/control-map", setFacultyControlMapForAdmin);
 router.put("/faculty/:facultyId", editFacultyDetails);
 router.delete("/faculty/:facultyId", deleteFaculty);
+
+// System settings (admin-only)
+router.get("/settings", getSystemSettings);
+router.put("/settings", updateSystemSettings);
 
 module.exports = router;

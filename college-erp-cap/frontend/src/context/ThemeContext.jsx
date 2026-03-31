@@ -1,70 +1,13 @@
 import React, { createContext, useState, useEffect } from "react";
+import { getPublicSystemSettings } from "../services/adminService";
 
 export const ThemeContext = createContext();
 
-const STORAGE_KEY = "kpr_admin_settings";
 const THEME_KEY = "kpr_app_theme";
+const DEFAULT_THEME = "dark";
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState("dark"); // "dark" or "light"
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const loadTheme = () => {
-      try {
-        // First try to load from admin settings
-        const adminSettings = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        const adminTheme = adminSettings.appTheme;
-
-        if (adminTheme) {
-          setTheme(adminTheme);
-          applyTheme(adminTheme);
-          localStorage.setItem(THEME_KEY, adminTheme);
-          return;
-        }
-
-        // Fallback to theme-specific storage
-        const savedTheme = localStorage.getItem(THEME_KEY) || "dark";
-        setTheme(savedTheme);
-        applyTheme(savedTheme);
-      } catch (error) {
-        console.warn("Failed to load theme setting:", error);
-        setTheme("dark");
-        applyTheme("dark");
-      }
-    };
-
-    loadTheme();
-
-    // Listen for storage changes (when settings are updated in another tab/window)
-    const handleStorageChange = () => {
-      loadTheme();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  // Watch for admin settings updates
-  useEffect(() => {
-    const handleSettingsUpdate = () => {
-      try {
-        const adminSettings = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        const adminTheme = adminSettings.appTheme;
-
-        if (adminTheme && adminTheme !== theme) {
-          setTheme(adminTheme);
-          applyTheme(adminTheme);
-          localStorage.setItem(THEME_KEY, adminTheme);
-        }
-      } catch (error) {
-        console.warn("Failed to reload theme setting:", error);
-      }
-    };
-
-    window.addEventListener("admin-settings-updated", handleSettingsUpdate);
-    return () => window.removeEventListener("admin-settings-updated", handleSettingsUpdate);
-  }, [theme]);
+  const [theme, setTheme] = useState(DEFAULT_THEME);
 
   const applyTheme = (themeMode) => {
     const htmlElement = document.documentElement;
@@ -84,21 +27,53 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
-  const toggleTheme = (newTheme) => {
-    setTheme(newTheme);
-    applyTheme(newTheme);
-    localStorage.setItem(THEME_KEY, newTheme);
+  const applyAndStoreTheme = (themeValue) => {
+    const normalized = themeValue === "light" ? "light" : "dark";
+    setTheme(normalized);
+    applyTheme(normalized);
+    localStorage.setItem(THEME_KEY, normalized);
+  };
 
-    // Update admin settings
-    try {
-      const adminSettings = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      adminSettings.appTheme = newTheme;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(adminSettings));
-      // Emit event for other components to sync
-      window.dispatchEvent(new Event("admin-settings-updated"));
-    } catch (error) {
-      console.warn("Failed to update admin theme setting:", error);
-    }
+  // Load cached theme first to avoid visual flash, then sync from backend.
+  useEffect(() => {
+    const cachedTheme = localStorage.getItem(THEME_KEY);
+    applyAndStoreTheme(cachedTheme || DEFAULT_THEME);
+
+    const syncThemeFromServer = async () => {
+      try {
+        const response = await getPublicSystemSettings();
+        const serverTheme = response?.settings?.appTheme;
+        applyAndStoreTheme(serverTheme || DEFAULT_THEME);
+      } catch (error) {
+        console.warn("Failed to sync theme from server:", error);
+      }
+    };
+
+    syncThemeFromServer();
+
+    const handleStorageChange = () => {
+      const savedTheme = localStorage.getItem(THEME_KEY) || DEFAULT_THEME;
+      applyAndStoreTheme(savedTheme);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  useEffect(() => {
+    const handleSettingsUpdate = (event) => {
+      const updatedTheme = event?.detail?.appTheme;
+      if (updatedTheme) {
+        applyAndStoreTheme(updatedTheme);
+      }
+    };
+
+    window.addEventListener("admin-settings-updated", handleSettingsUpdate);
+    return () => window.removeEventListener("admin-settings-updated", handleSettingsUpdate);
+  }, []);
+
+  const toggleTheme = (newTheme) => {
+    applyAndStoreTheme(newTheme);
   };
 
   return (

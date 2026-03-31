@@ -164,3 +164,55 @@
     display: none;
   }
 }
+
+html[data-theme="light"] .student-shell {
+  background:
+    radial-gradient(circle at 20% 18%, rgba(29, 99, 198, 0.08), transparent 35%),
+    radial-gradient(circle at 82% 15%, rgba(60, 132, 234, 0.08), transparent 30%),
+    var(--gradient-secondary);
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .student-shell-grid {
+  opacity: 0.22;
+  background-image:
+    linear-gradient(rgba(29, 99, 198, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(60, 132, 234, 0.06) 1px, transparent 1px);
+}
+
+html[data-theme="light"] .student-topbar {
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--gradient-primary);
+}
+
+html[data-theme="light"] .student-brand,
+html[data-theme="light"] .student-brand-sub {
+  color: var(--text-primary);
+}
+
+html[data-theme="light"] .student-brand span {
+  color: var(--color-primary-light);
+}
+
+html[data-theme="light"] .student-logout-btn {
+  border-color: var(--border-secondary);
+  background: var(--button-bg);
+  color: var(--button-text);
+}
+
+html[data-theme="light"] .student-logout-btn:hover {
+  background: var(--button-bg-hover);
+  color: var(--color-primary-light);
+}
+
+html[data-theme="light"] .student-content-card {
+  border-color: var(--border-primary);
+  background: var(--gradient-primary);
+  box-shadow: 0 0 0 1px rgba(11, 74, 162, 0.06), 0 10px 24px rgba(25, 72, 145, 0.09);
+}
+
+html[data-theme="light"] .feature-back-btn {
+  background: var(--button-bg);
+  border-color: var(--border-secondary);
+  color: var(--button-text);
+}

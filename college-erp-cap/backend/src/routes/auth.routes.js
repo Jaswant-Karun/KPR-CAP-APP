@@ -9,18 +9,20 @@ const {
   hasStrongPassword,
 } = require("../validations/auth.validation");
 const { signToken } = require("../utils/jwt");
+const { getOrCreateSystemSettings } = require("../services/systemSettings.service");
 
 const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
 
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, role = "student", rollNo, department } = req.body;
+    const systemSettings = await getOrCreateSystemSettings();
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Name, email and password are required" });
     }
 
-    if (!hasStrongPassword(password)) {
+    if (systemSettings.enforceStrongPassword && !hasStrongPassword(password)) {
       return res.status(400).json({
         message: "Password must be at least 8 characters and include uppercase, lowercase, number and special character",
       });
@@ -39,6 +41,14 @@ router.post("/signup", async (req, res) => {
     const allowedRoles = ["student", "faculty", "admin"];
     let safeRole = allowedRoles.includes(role) ? role : "student";
 
+    if (safeRole === "student" && !systemSettings.allowStudentSignup) {
+      return res.status(403).json({ message: "Student signup is currently disabled by admin" });
+    }
+
+    if (safeRole === "faculty" && !systemSettings.allowFacultySignup) {
+      return res.status(403).json({ message: "Faculty signup is currently disabled by admin" });
+    }
+
     // Enforce a single unique admin login identity.
     if (safeRole === "admin" && normalizedEmail !== UNIQUE_ADMIN_EMAIL) {
       return res.status(403).json({
@@ -48,6 +58,10 @@ router.post("/signup", async (req, res) => {
 
     if (normalizedEmail === UNIQUE_ADMIN_EMAIL) {
       safeRole = "admin";
+    }
+
+    if (systemSettings.maintenanceMode && safeRole !== "admin") {
+      return res.status(503).json({ message: "System is under maintenance. Signup is temporarily unavailable." });
     }
 
     const localPart = normalizedEmail.split("@")[0];
@@ -93,6 +107,7 @@ router.post("/signup", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password, role } = req.body;
+    const systemSettings = await getOrCreateSystemSettings();
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
@@ -115,6 +130,10 @@ router.post("/login", async (req, res) => {
 
     if (role && user.role !== role) {
       return res.status(401).json({ message: "Role mismatch" });
+    }
+
+    if (systemSettings.maintenanceMode && user.role !== "admin") {
+      return res.status(503).json({ message: "System is under maintenance. Please try again later." });
     }
 
     const token = signToken({ id: user.id, role: user.role, email: user.email });

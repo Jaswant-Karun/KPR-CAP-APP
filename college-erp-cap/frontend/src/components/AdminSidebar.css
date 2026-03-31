@@ -4,8 +4,8 @@
   top: 0;
   height: 100vh;
   width: 280px;
-  background: linear-gradient(180deg, rgba(5, 6, 11, 0.96), rgba(9, 11, 18, 0.94));
-  border-right: 1px solid rgba(255, 0, 115, 0.22);
+  background: var(--gradient-primary);
+  border-right: 1px solid var(--border-tertiary);
   overflow-y: auto;
   overflow-x: hidden;
   z-index: 100;
@@ -17,7 +17,7 @@
 }
 
 .admin-menu-group {
-  border-bottom: 1px solid rgba(0, 196, 255, 0.08);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .admin-menu-parent {
@@ -30,7 +30,7 @@
   border: none;
   background: transparent;
   transition: all 0.25s ease;
-  color: #dce2ff;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.95rem;
   text-transform: uppercase;
@@ -40,15 +40,15 @@
 }
 
 .admin-menu-parent:hover {
-  background: rgba(255, 0, 115, 0.12);
-  color: #ffd3e8;
-  border-left: 3px solid #ff0b7b;
+  background: var(--button-bg-hover);
+  color: var(--color-accent-light);
+  border-left: 3px solid var(--color-accent);
   padding-left: calc(1.2rem - 3px);
   box-shadow: inset 0 0 12px rgba(255, 0, 115, 0.15);
 }
 
 .admin-menu-icon {
-  color: #00c4ff;
+  color: var(--color-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -60,13 +60,13 @@
 }
 
 .admin-menu-toggle {
-  color: rgba(0, 196, 255, 0.6);
+  color: var(--text-secondary);
   font-size: 0.8rem;
 }
 
 .admin-sidebar-children {
-  background: rgba(0, 196, 255, 0.04);
-  border-left: 2px solid rgba(255, 0, 115, 0.2);
+  background: var(--bg-secondary);
+  border-left: 2px solid var(--border-tertiary);
   animation: adminSlideDown 0.2s ease;
 }
 
@@ -89,7 +89,7 @@
   padding: 0.7rem 1.2rem 0.7rem calc(1.2rem + 0.75rem + 15px);
   cursor: pointer;
   transition: all 0.2s ease;
-  color: rgba(220, 226, 255, 0.78);
+  color: var(--text-secondary);
   font-size: 0.88rem;
   border-left: 2px solid transparent;
   -webkit-user-select: none;
@@ -98,9 +98,9 @@
 
 .admin-child-item:hover,
 .admin-child-item.active {
-  background: rgba(0, 196, 255, 0.12);
-  color: #00c4ff;
-  border-left-color: #00c4ff;
+  background: var(--button-bg);
+  color: var(--color-primary);
+  border-left-color: var(--color-primary);
   box-shadow: inset 0 0 8px rgba(0, 196, 255, 0.2);
   padding-left: calc(1.2rem + 0.75rem + 20px);
 }

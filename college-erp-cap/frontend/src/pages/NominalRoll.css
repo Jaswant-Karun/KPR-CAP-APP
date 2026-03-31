@@ -366,3 +366,85 @@
     flex-direction: column;
   }
 }
+
+html[data-theme="light"] .nominal-page {
+  color: #173a67;
+}
+
+html[data-theme="light"] .nominal-header,
+html[data-theme="light"] .nominal-profile-card,
+html[data-theme="light"] .nominal-table-wrap,
+html[data-theme="light"] .nominal-modal-card,
+html[data-theme="light"] .action-menu {
+  border-color: #c6d6ea;
+  background: linear-gradient(145deg, #fcfeff, #f0f5fc);
+}
+
+html[data-theme="light"] .nominal-header h1,
+html[data-theme="light"] .nominal-profile-card h2,
+html[data-theme="light"] .nominal-table th,
+html[data-theme="light"] .candidate-name,
+html[data-theme="light"] .history-list p {
+  color: #173a67;
+}
+
+html[data-theme="light"] .nominal-header p,
+html[data-theme="light"] .profile-row span,
+html[data-theme="light"] .nominal-search,
+html[data-theme="light"] .nominal-ghost-btn,
+html[data-theme="light"] .no-records,
+html[data-theme="light"] .history-list small {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .profile-row {
+  border-top-color: #d6e1ef;
+}
+
+html[data-theme="light"] .profile-row strong,
+html[data-theme="light"] .nominal-table td,
+html[data-theme="light"] .action-menu button {
+  color: #2c527f;
+}
+
+html[data-theme="light"] .nominal-search,
+html[data-theme="light"] .nominal-ghost-btn,
+html[data-theme="light"] .dots-btn,
+html[data-theme="light"] .nominal-header-meta {
+  border-color: #b4c9e3;
+  background: #f7fbff;
+}
+
+html[data-theme="light"] .nominal-table th {
+  background: #e7eef8;
+}
+
+html[data-theme="light"] .nominal-table th,
+html[data-theme="light"] .nominal-table td {
+  border-bottom-color: #d6e1ef;
+}
+
+html[data-theme="light"] .nominal-table tbody tr.selected-row {
+  background: rgba(47, 106, 179, 0.12);
+}
+
+html[data-theme="light"] .action-menu button:hover {
+  background: #e8eff8;
+}
+
+html[data-theme="light"] .nominal-header h1 {
+  letter-spacing: 0.02rem;
+}
+
+html[data-theme="light"] .nominal-header p,
+html[data-theme="light"] .profile-row span,
+html[data-theme="light"] .nominal-table th {
+  font-weight: 600;
+}
+
+html[data-theme="light"] .nominal-table td,
+html[data-theme="light"] .candidate-name,
+html[data-theme="light"] .profile-row strong {
+  font-weight: 500;
+  line-height: 1.45;
+}

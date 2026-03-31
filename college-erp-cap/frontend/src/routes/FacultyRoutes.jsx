@@ -19,6 +19,7 @@ import CourseRegistration from "../pages/CourseRegistration";
 import NominalRoll from "../pages/NominalRoll";
 import NominalRollCourses from "../pages/NominalRollCourses";
 import Waiver from "../pages/Waiver";
+import HallTicket from "../pages/HallTicket";
 import NotFound from "../pages/error/NotFound";
 
 export default function FacultyRoutes() {
@@ -63,6 +64,7 @@ export default function FacultyRoutes() {
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
         <Route path="waiver" element={<Waiver />} />
+        <Route path="hall-ticket-verify" element={<HallTicket mode="faculty" />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

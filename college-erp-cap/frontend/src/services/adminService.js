@@ -19,3 +19,8 @@ export const updateFaculty = (facultyId, payload, token) =>
   apiRequest(`/admin/faculty/${facultyId}`, "PUT", payload, token);
 export const removeFaculty = (facultyId, token) =>
   apiRequest(`/admin/faculty/${facultyId}`, "DELETE", null, token);
+
+export const getSystemSettings = (token) => apiRequest("/admin/settings", "GET", null, token);
+export const updateSystemSettings = (payload, token) =>
+  apiRequest("/admin/settings", "PUT", payload, token);
+export const getPublicSystemSettings = () => apiRequest("/admin/settings/public", "GET");

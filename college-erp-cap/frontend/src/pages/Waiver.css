@@ -280,3 +280,79 @@
     grid-template-columns: 1fr;
   }
 }
+
+html[data-theme="light"] .waiver-page {
+  color: #173a67;
+}
+
+html[data-theme="light"] .waiver-header,
+html[data-theme="light"] .waiver-filter-panel,
+html[data-theme="light"] .waiver-table-shell {
+  border-color: #c6d6ea;
+  background: linear-gradient(145deg, #fcfeff, #f0f5fc);
+}
+
+html[data-theme="light"] .waiver-header h1,
+html[data-theme="light"] .waiver-table th {
+  color: #173a67;
+}
+
+html[data-theme="light"] .waiver-header p,
+html[data-theme="light"] .waiver-search,
+html[data-theme="light"] .waiver-filter-select-wrap,
+html[data-theme="light"] .waiver-empty {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .waiver-search,
+html[data-theme="light"] .waiver-icon-btn,
+html[data-theme="light"] .waiver-filter-select-wrap,
+html[data-theme="light"] .waiver-active-toggle,
+html[data-theme="light"] .waiver-row-action {
+  border-color: #b4c9e3;
+  background: #f7fbff;
+}
+
+html[data-theme="light"] .waiver-search input,
+html[data-theme="light"] .waiver-filter-select-wrap select,
+html[data-theme="light"] .waiver-active-toggle,
+html[data-theme="light"] .waiver-table td {
+  color: #2c527f;
+}
+
+html[data-theme="light"] .waiver-table th {
+  background: #e7eef8;
+}
+
+html[data-theme="light"] .waiver-table th,
+html[data-theme="light"] .waiver-table td {
+  border-bottom-color: #d6e1ef;
+}
+
+html[data-theme="light"] .waiver-table tbody tr:hover {
+  background: rgba(47, 106, 179, 0.1);
+}
+
+html[data-theme="light"] .waiver-apply-btn,
+html[data-theme="light"] .waiver-clear-btn {
+  border-color: #b4c9e3;
+  background: #e7eef8;
+  color: #1f4f8a;
+}
+
+html[data-theme="light"] .waiver-header h1 {
+  letter-spacing: 0.02rem;
+}
+
+html[data-theme="light"] .waiver-header p,
+html[data-theme="light"] .waiver-filter-item span,
+html[data-theme="light"] .waiver-table th {
+  font-weight: 600;
+}
+
+html[data-theme="light"] .waiver-table td,
+html[data-theme="light"] .waiver-active-toggle,
+html[data-theme="light"] .waiver-row-action {
+  font-weight: 500;
+  line-height: 1.45;
+}

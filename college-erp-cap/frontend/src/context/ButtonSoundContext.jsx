@@ -1,50 +1,15 @@
 import React, { createContext, useState, useEffect } from "react";
+import { usePublicSettings } from "../hooks/usePublicSettings";
 
 export const ButtonSoundContext = createContext();
 
-const STORAGE_KEY = "kpr_admin_settings";
-
 export const ButtonSoundProvider = ({ children }) => {
+  const { settings } = usePublicSettings();
   const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Load sound setting from localStorage on mount
   useEffect(() => {
-    const loadSoundSetting = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        setSoundEnabled(stored.buttonSoundEnabled ?? true);
-      } catch (error) {
-        console.warn("Failed to load button sound setting:", error);
-        setSoundEnabled(true);
-      }
-    };
-
-    loadSoundSetting();
-
-    // Listen for storage changes (when settings are updated in another tab/window)
-    const handleStorageChange = () => {
-      loadSoundSetting();
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  // Watch for changes in admin settings
-  useEffect(() => {
-    const handleSettingsUpdate = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        setSoundEnabled(stored.buttonSoundEnabled ?? true);
-      } catch (error) {
-        console.warn("Failed to reload button sound setting:", error);
-      }
-    };
-
-    // Custom event listener for manual setting updates
-    window.addEventListener("admin-settings-updated", handleSettingsUpdate);
-    return () => window.removeEventListener("admin-settings-updated", handleSettingsUpdate);
-  }, []);
+    setSoundEnabled(settings?.buttonSoundEnabled ?? true);
+  }, [settings?.buttonSoundEnabled]);
 
   const playClickSound = () => {
     if (!soundEnabled) return;

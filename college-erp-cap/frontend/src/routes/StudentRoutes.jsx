@@ -13,6 +13,9 @@ import COE from '../pages/student/COE';
 import Common from '../pages/student/Common';
 import IQAC from '../pages/student/IQAC';
 import MainGate from '../pages/student/MainGate';
+import FreeOuting from '../pages/student/FreeOuting';
+import Latecomers from '../pages/student/Latecomers';
+import LateralGatepass from '../pages/student/LateralGatepass';
 import NDC from '../pages/student/NDC';
 import StudentService from '../pages/student/StudentService';
 import TimetableView from '../pages/student/TimetableView';
@@ -20,6 +23,7 @@ import CourseRegistration from '../pages/CourseRegistration';
 import NominalRoll from '../pages/NominalRoll';
 import NominalRollCourses from '../pages/NominalRollCourses';
 import Waiver from '../pages/Waiver';
+import HallTicket from '../pages/HallTicket';
 import NotFound from '../pages/error/NotFound';
 import Unauthorized from '../pages/error/Unauthorized';
 
@@ -42,6 +46,9 @@ export default function StudentRoutes() {
         <Route path="iqac" element={<IQAC />} />
         <Route path="gatepass" element={<MainGate />} />
         <Route path="main-gate" element={<MainGate />} />
+        <Route path="lateral-gatepass" element={<LateralGatepass />} />
+        <Route path="free-outing" element={<FreeOuting />} />
+        <Route path="latecomers" element={<Latecomers />} />
         <Route path="ndc" element={<NDC />} />
         <Route path="student-service" element={<StudentService />} />
         <Route path="user-service" element={<Profile />} />
@@ -50,6 +57,7 @@ export default function StudentRoutes() {
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
         <Route path="waiver" element={<Waiver />} />
+        <Route path="hall-ticket" element={<HallTicket mode="student" />} />
         <Route path="unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
       </Route>

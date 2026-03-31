@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { usePublicSettings } from "../../hooks/usePublicSettings";
 import {
   FaArrowRight,
   FaBuilding,
@@ -16,6 +17,7 @@ import "./AuthPage.css";
 
 export default function Signup() {
   const { signup, loading } = useAuth();
+  const { settings } = usePublicSettings();
   const [role, setRole] = useState("student");
   const [form, setForm] = useState({
     name: "",
@@ -58,8 +60,22 @@ export default function Signup() {
       return;
     }
 
-    if (!isStrongPassword(form.password)) {
+    const isStrongPasswordEnabled = settings?.enforceStrongPassword ?? true;
+    if (isStrongPasswordEnabled && !isStrongPassword(form.password)) {
       setError("Password must include 8+ chars, uppercase, lowercase, number and special character");
+      return;
+    }
+
+    const isStudentSignupAllowed = settings?.allowStudentSignup ?? true;
+    const isFacultySignupAllowed = settings?.allowFacultySignup ?? true;
+
+    if (role === "student" && !isStudentSignupAllowed) {
+      setError("Student signup is currently disabled by admin");
+      return;
+    }
+
+    if (role === "faculty" && !isFacultySignupAllowed) {
+      setError("Faculty signup is currently disabled by admin");
       return;
     }
 
@@ -91,6 +107,7 @@ export default function Signup() {
               className={`role-btn ${role === "student" ? "active" : ""}`}
               onClick={() => setRole("student")}
               type="button"
+              disabled={!(settings?.allowStudentSignup ?? true)}
             >
               <FaUserGraduate className="mb-1 text-xl" />
               <span>Student</span>
@@ -99,6 +116,7 @@ export default function Signup() {
               className={`role-btn ${role === "faculty" ? "active" : ""}`}
               onClick={() => setRole("faculty")}
               type="button"
+              disabled={!(settings?.allowFacultySignup ?? true)}
             >
               <FaChalkboardTeacher className="mb-1 text-xl" />
               <span>Faculty</span>
@@ -186,7 +204,9 @@ export default function Signup() {
 
           <p className="auth-help">
             Mail must end with @kpriet.ac.in and should begin with the same value as Roll No.
-            Password must include uppercase, lowercase, number and special character.
+            {(settings?.enforceStrongPassword ?? true)
+              ? " Password must include uppercase, lowercase, number and special character."
+              : " Password complexity is currently relaxed by admin."}
           </p>
 
           <button type="submit" className="login-btn" disabled={loading}>
