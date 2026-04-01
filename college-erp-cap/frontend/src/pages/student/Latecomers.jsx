@@ -1,35 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiClock, FiFilter, FiSearch } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
+import { useAuth } from "../../hooks/useAuth";
+import { createLatecomerRequest, getLatecomerRequests } from "../../services/latecomerService";
 import "./Latecomers.css";
-
-const seedRows = [
-  {
-    id: 1,
-    ticket: "LT-24001",
-    code: "LC001",
-    name: "A. Nivetha",
-    email: "24cb001@kpriet.ac.in",
-    phone: "9876543201",
-    department: "CSE",
-    dateTime: "2026-03-31T08:58:00",
-    occ: "Traffic Delay",
-    status: "pending",
-  },
-  {
-    id: 2,
-    ticket: "LT-24002",
-    code: "LC002",
-    name: "R. Karthik",
-    email: "24cb002@kpriet.ac.in",
-    phone: "9876543202",
-    department: "CSE",
-    dateTime: "2026-03-31T09:12:00",
-    occ: "Medical Checkup",
-    status: "approved",
-  },
-];
 
 const toDisplay = (value) => {
   if (!value) return "--";
@@ -40,23 +15,73 @@ const toDisplay = (value) => {
 
 export default function Latecomers() {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [rows, setRows] = useState([]);
+  const [arrivedAt, setArrivedAt] = useState(new Date().toISOString().slice(0, 16));
+  const [reason, setReason] = useState("");
+  const [remarks, setRemarks] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const rows = useMemo(() => {
+  const loadLatecomers = async () => {
+    try {
+      setLoading(true);
+      const res = await getLatecomerRequests(token, {
+        status: statusFilter || undefined,
+      });
+      setRows(res?.requests || []);
+    } catch (err) {
+      setMessage(err?.message || "Failed to load latecomer requests");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      loadLatecomers();
+    }
+  }, [token, statusFilter]);
+
+  const submitRequest = async () => {
+    if (!reason.trim()) {
+      setMessage("Reason is required");
+      return;
+    }
+
+    try {
+      await createLatecomerRequest(
+        {
+          arrivedAt,
+          reason,
+          remarks,
+        },
+        token
+      );
+      setReason("");
+      setRemarks("");
+      setMessage("Latecomer permission request sent to faculty.");
+      await loadLatecomers();
+    } catch (err) {
+      setMessage(err?.message || "Failed to create latecomer request");
+    }
+  };
+
+  const filteredRows = useMemo(() => {
     const text = query.trim().toLowerCase();
-    return seedRows.filter((item) => {
-      const statusOk = statusFilter === "all" ? true : item.status === statusFilter;
+    return rows.filter((item) => {
       const textOk =
         !text ||
-        item.ticket.toLowerCase().includes(text) ||
-        item.code.toLowerCase().includes(text) ||
-        item.name.toLowerCase().includes(text) ||
-        item.department.toLowerCase().includes(text) ||
-        item.occ.toLowerCase().includes(text);
-      return statusOk && textOk;
+        String(item.ticketNo || "").toLowerCase().includes(text) ||
+        String(item.studentName || "").toLowerCase().includes(text) ||
+        String(item.rollNo || "").toLowerCase().includes(text) ||
+        String(item.department || "").toLowerCase().includes(text) ||
+        String(item.reason || "").toLowerCase().includes(text);
+      return textOk;
     });
-  }, [query, statusFilter]);
+  }, [query, rows]);
 
   return (
     <div className="latecomers-page">
@@ -67,12 +92,33 @@ export default function Latecomers() {
       <div className="latecomers-header">
         <div>
           <h1>Latecomers</h1>
-          <p>Track late entry records and current approval state.</p>
+          <p>Send latecomer permission requests to faculty and track approval state.</p>
         </div>
         <div className="latecomers-meta">
-          <FiClock /> {rows.length} Records
+          <FiClock /> {filteredRows.length} Records
         </div>
       </div>
+
+      <section className="latecomers-toolbar" style={{ gridTemplateColumns: "2fr 2fr 1.5fr auto" }}>
+        <input
+          type="datetime-local"
+          value={arrivedAt}
+          onChange={(event) => setArrivedAt(event.target.value)}
+        />
+        <input
+          value={reason}
+          onChange={(event) => setReason(event.target.value)}
+          placeholder="Reason for late arrival"
+        />
+        <input
+          value={remarks}
+          onChange={(event) => setRemarks(event.target.value)}
+          placeholder="Optional remarks"
+        />
+        <button type="button" className="main-gate-primary-btn" onClick={submitRequest}>
+          Send Request
+        </button>
+      </section>
 
       <section className="latecomers-toolbar">
         <div className="latecomers-search">
@@ -87,7 +133,7 @@ export default function Latecomers() {
         <label>
           <FiFilter />
           <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-            <option value="all">All</option>
+            <option value="">All</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
@@ -100,32 +146,32 @@ export default function Latecomers() {
           <thead>
             <tr>
               <th>Ticket</th>
-              <th>Code</th>
               <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
+              <th>Roll No</th>
               <th>Department</th>
-              <th>Date Time</th>
-              <th>OCC</th>
+              <th>Arrived At</th>
+              <th>Reason</th>
               <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 ? (
+            {loading ? (
               <tr>
-                <td colSpan="9" className="no-data">No data available</td>
+                <td colSpan="7" className="no-data">Loading requests...</td>
+              </tr>
+            ) : filteredRows.length === 0 ? (
+              <tr>
+                <td colSpan="7" className="no-data">No latecomer requests available</td>
               </tr>
             ) : (
-              rows.map((row) => (
+              filteredRows.map((row) => (
                 <tr key={row.id}>
-                  <td>{row.ticket}</td>
-                  <td>{row.code}</td>
-                  <td>{row.name}</td>
-                  <td>{row.email}</td>
-                  <td>{row.phone}</td>
+                  <td>{row.ticketNo || row.id}</td>
+                  <td>{row.studentName || "Student"}</td>
+                  <td>{row.rollNo || "--"}</td>
                   <td>{row.department}</td>
-                  <td>{toDisplay(row.dateTime)}</td>
-                  <td>{row.occ}</td>
+                  <td>{toDisplay(row.arrivedAt)}</td>
+                  <td>{row.reason}</td>
                   <td>
                     <span className={`latecomers-status ${row.status}`}>{row.status}</span>
                   </td>
@@ -135,6 +181,8 @@ export default function Latecomers() {
           </tbody>
         </table>
       </section>
+
+      {message && <p className="attendance-message">{message}</p>}
     </div>
   );
 }

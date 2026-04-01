@@ -16,6 +16,9 @@ const {
 	createGatepassRequest,
 	listGatepassRequests,
 	updateGatepassStatus,
+	createLatecomerRequest,
+	listLatecomerRequests,
+	updateLatecomerStatus,
 	createAoBooking,
 	listAoBookings,
 	deleteAoBooking,
@@ -24,6 +27,12 @@ const {
 	listFusionBookings,
 	deleteFusionBooking,
 	updateFusionBookingStatus,
+	createEvent,
+	updateEvent,
+	deleteEvent,
+	listEvents,
+	registerEvent,
+	unregisterEvent,
 	listWaiverRequests,
 	updateWaiverRequestStatus,
 } = require("../controllers/serviceController");
@@ -46,6 +55,10 @@ router.post("/gatepass", allowRoles(["student", "faculty", "admin"]), createGate
 router.get("/gatepass", allowRoles(["student", "faculty", "admin"]), listGatepassRequests);
 router.patch("/gatepass/:gatepassId/status", allowRoles(["faculty", "admin"]), updateGatepassStatus);
 
+router.post("/latecomers", allowRoles(["student"]), createLatecomerRequest);
+router.get("/latecomers", allowRoles(["student", "faculty", "admin"]), listLatecomerRequests);
+router.patch("/latecomers/:requestId/status", allowRoles(["faculty", "admin"]), updateLatecomerStatus);
+
 router.post("/ao-bookings", allowRoles(["student", "faculty", "admin"]), createAoBooking);
 router.get("/ao-bookings", allowRoles(["student", "faculty", "admin"]), listAoBookings);
 router.delete("/ao-bookings/:bookingId", allowRoles(["student", "faculty", "admin"]), deleteAoBooking);
@@ -55,6 +68,13 @@ router.post("/fusion-bookings", allowRoles(["student", "faculty", "admin"]), cre
 router.get("/fusion-bookings", allowRoles(["student", "faculty", "admin"]), listFusionBookings);
 router.delete("/fusion-bookings/:bookingId", allowRoles(["student", "faculty", "admin"]), deleteFusionBooking);
 router.patch("/fusion-bookings/:bookingId/status", allowRoles(["faculty", "admin"]), updateFusionBookingStatus);
+
+router.post("/events", allowRoles(["faculty", "admin"]), normalizeUploadPayload, createEvent);
+router.get("/events", allowRoles(["student", "faculty", "admin"]), listEvents);
+router.patch("/events/:eventId", allowRoles(["faculty", "admin"]), normalizeUploadPayload, updateEvent);
+router.delete("/events/:eventId", allowRoles(["faculty", "admin"]), deleteEvent);
+router.post("/events/:eventId/register", allowRoles(["student"]), registerEvent);
+router.delete("/events/:eventId/register", allowRoles(["student"]), unregisterEvent);
 
 router.get("/waivers", allowRoles(["student", "faculty", "admin"]), listWaiverRequests);
 router.patch("/waivers/:waiverId/status", allowRoles(["faculty", "admin"]), updateWaiverRequestStatus);

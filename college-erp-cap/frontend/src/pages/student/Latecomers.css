@@ -44,6 +44,22 @@
   gap: 0.65rem;
 }
 
+.latecomers-toolbar input,
+.latecomers-toolbar button {
+  border: 1px solid var(--border-secondary);
+  border-radius: 10px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  padding: 0.55rem 0.65rem;
+}
+
+.latecomers-toolbar button {
+  background: var(--accent-primary, #2563eb);
+  border-color: transparent;
+  color: #fff;
+  cursor: pointer;
+}
+
 .latecomers-search {
   flex: 1;
   display: flex;

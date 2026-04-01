@@ -7,6 +7,7 @@ import PeriodScheduling from "../pages/faculty/PeriodScheduling";
 import Reports from "../pages/faculty/Reports";
 import TimetableScheduler from "../pages/faculty/TimetableScheduler";
 import GatepassApprovals from "../pages/faculty/GatepassApprovals";
+import LatecomerApprovals from "../pages/faculty/LatecomerApprovals";
 import IdCardUpload from "../pages/faculty/IdCardUpload";
 import InternalMarks from "../pages/faculty/InternalMarks";
 import ServiceRequestsApproval from "../pages/faculty/ServiceRequestsApproval";
@@ -20,6 +21,8 @@ import NominalRoll from "../pages/NominalRoll";
 import NominalRollCourses from "../pages/NominalRollCourses";
 import Waiver from "../pages/Waiver";
 import HallTicket from "../pages/HallTicket";
+import DigitalAssets from "../pages/DigitalAssets";
+import Events from "../pages/student/Events";
 import NotFound from "../pages/error/NotFound";
 
 export default function FacultyRoutes() {
@@ -33,6 +36,7 @@ export default function FacultyRoutes() {
         <Route path="timetable-scheduler" element={<TimetableScheduler />} />
         <Route path="reports" element={<Reports />} />
         <Route path="gatepass-approvals" element={<GatepassApprovals />} />
+        <Route path="latecomer-approvals" element={<LatecomerApprovals />} />
         <Route path="id-card-upload" element={<IdCardUpload />} />
         <Route path="internal-marks" element={<InternalMarks />} />
         <Route path="service-requests-approval" element={<ServiceRequestsApproval />} />
@@ -60,6 +64,8 @@ export default function FacultyRoutes() {
         <Route path="bonafide-approvals" element={<ServiceRequestsApproval />} />
         <Route path="hostel-app-approvals" element={<ServiceRequestsApproval />} />
         <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="digital-assets" element={<DigitalAssets />} />
+        <Route path="events" element={<Events />} />
         <Route path="course-registration" element={<CourseRegistration />} />
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />

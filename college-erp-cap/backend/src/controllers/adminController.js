@@ -27,7 +27,7 @@ const pool = new Pool({
 const getAllStudents = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, name, email, role, roll_no, department, created_at 
+      `SELECT id, name, email, role, roll_no, department, resident_type, created_at 
        FROM users WHERE role = 'student' ORDER BY created_at DESC`
     );
     res.json({
@@ -43,7 +43,7 @@ const getStudentById = async (req, res) => {
   try {
     const { studentId } = req.params;
     const result = await pool.query(
-      `SELECT id, name, email, role, roll_no, department, created_at 
+      `SELECT id, name, email, role, roll_no, department, resident_type, created_at 
        FROM users WHERE id = $1 AND role = 'student'`,
       [studentId]
     );
@@ -61,7 +61,7 @@ const getStudentById = async (req, res) => {
 const editStudentDetails = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { name, email, department, rollNo } = req.body;
+    const { name, email, department, rollNo, residentType } = req.body;
 
     // Validate student exists
     const student = await pool.query(
@@ -105,6 +105,14 @@ const editStudentDetails = async (req, res) => {
       updateFields.push(`roll_no = $${++paramCount}`);
       values.push(rollNo);
     }
+    if (residentType !== undefined) {
+      const normalizedResidentType = String(residentType).trim().toLowerCase();
+      if (!["day-scholar", "hosteller"].includes(normalizedResidentType)) {
+        return res.status(400).json({ message: "residentType must be day-scholar or hosteller" });
+      }
+      updateFields.push(`resident_type = $${++paramCount}`);
+      values.push(normalizedResidentType);
+    }
 
     if (updateFields.length === 0) {
       return res.status(400).json({ message: "No fields to update" });
@@ -114,7 +122,7 @@ const editStudentDetails = async (req, res) => {
       UPDATE users 
       SET ${updateFields.join(", ")}
       WHERE id = $1 AND role = 'student'
-      RETURNING id, name, email, role, roll_no, department, created_at
+      RETURNING id, name, email, role, roll_no, department, resident_type, created_at
     `;
 
     const result = await pool.query(query, values);

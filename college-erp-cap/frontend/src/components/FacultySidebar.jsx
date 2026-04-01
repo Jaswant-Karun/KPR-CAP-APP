@@ -38,7 +38,10 @@ const facultyMenu = [
   {
     title: "Gatepass Control",
     icon: "attendance",
-    children: [{ title: "Gatepass Approvals", path: "/faculty/gatepass-approvals" }],
+    children: [
+      { title: "Gatepass Approvals", path: "/faculty/gatepass-approvals" },
+      { title: "Latecomer Approvals", path: "/faculty/latecomer-approvals" },
+    ],
   },
   {
     title: "ID Card",
@@ -67,9 +70,12 @@ const facultyMenu = [
       { title: "1.1 Nominal Roll Courses Control", path: "/faculty/nominal-roll-course-approvals" },
       { title: "1.2 Waiver Approvals", path: "/faculty/waiver-approvals" },
       { title: "2.1 Hall Ticket Verification", path: "/faculty/hall-ticket-verify" },
+      { title: "2.2 Digital Assets", path: "/faculty/digital-assets" },
+      { title: "2.3 Event List & Registrations", path: "/faculty/events" },
       { title: "Common Service Requests", path: "/faculty/common-service-approvals" },
       { title: "IQAC Feedback Controls", path: "/faculty/feedback-approvals" },
       { title: "1. Gatepass Approvals", path: "/faculty/gatepass-approvals" },
+      { title: "1.1 Latecomer Approvals", path: "/faculty/latecomer-approvals" },
       { title: "NDC Achievement Upload Reviews", path: "/faculty/ndc-achievement-approvals" },
       { title: "Bonafide Approvals", path: "/faculty/bonafide-approvals" },
       { title: "Hostel Application Approvals", path: "/faculty/hostel-app-approvals" },

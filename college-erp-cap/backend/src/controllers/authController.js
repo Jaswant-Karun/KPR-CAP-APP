@@ -19,6 +19,7 @@ const getCurrentUser = async (req, res) => {
 				role: user.role,
 				rollNo: user.roll_no,
 				department: user.department,
+				residentType: user.resident_type || "day-scholar",
 			},
 		});
 	} catch (error) {

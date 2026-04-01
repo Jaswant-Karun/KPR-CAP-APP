@@ -50,6 +50,7 @@ const mapUserRow = (user) => ({
   role: user.role,
   roll_no: user.roll_no,
   department: user.department,
+  resident_type: user.resident_type || "day-scholar",
 });
 
 const isAllowedCollegeEmail = (email = "") => /^[a-zA-Z0-9._%+-]+@kpriet\.ac\.in$/i.test(String(email).trim());
@@ -64,8 +65,14 @@ const createSchema = async () => {
       role VARCHAR(20) NOT NULL CHECK (role IN ('student', 'faculty', 'admin')),
       roll_no VARCHAR(40),
       department VARCHAR(80),
+      resident_type VARCHAR(20) DEFAULT 'day-scholar' CHECK (resident_type IN ('day-scholar', 'hosteller')),
       created_at TIMESTAMP NOT NULL DEFAULT NOW()
     );
+  `);
+
+  await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS resident_type VARCHAR(20) DEFAULT 'day-scholar';
   `);
 
   await pool.query(`
@@ -215,6 +222,42 @@ const createSchema = async () => {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS latecomer_requests (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      student_id INT,
+      student_name VARCHAR(120),
+      roll_no VARCHAR(40),
+      department VARCHAR(80),
+      arrived_at TIMESTAMP NOT NULL,
+      reason TEXT NOT NULL,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+      remarks TEXT,
+      approved_by INT,
+      approved_by_name VARCHAR(120),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS digital_assets (
+      id SERIAL PRIMARY KEY,
+      ticket_no INT NOT NULL UNIQUE,
+      status VARCHAR(20) NOT NULL CHECK (status IN ('active', 'inactive')) DEFAULT 'active',
+      group_name VARCHAR(80) NOT NULL,
+      asset_type VARCHAR(20) NOT NULL CHECK (asset_type IN ('file', 'link')),
+      asset_name VARCHAR(180) NOT NULL,
+      order_no INT NOT NULL DEFAULT 0,
+      asset_url TEXT NOT NULL,
+      created_by INT,
+      created_by_name VARCHAR(120),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS ao_service_bookings (
       id SERIAL PRIMARY KEY,
       ticket_no VARCHAR(40) NOT NULL UNIQUE,
@@ -243,6 +286,37 @@ const createSchema = async () => {
       status VARCHAR(20) NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
       created_at TIMESTAMP NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS events (
+      id SERIAL PRIMARY KEY,
+      ticket_no VARCHAR(40) NOT NULL UNIQUE,
+      event_name VARCHAR(180) NOT NULL,
+      venue VARCHAR(180) NOT NULL,
+      event_datetime TIMESTAMP NOT NULL,
+      department VARCHAR(80),
+      event_type VARCHAR(30) NOT NULL CHECK (event_type IN ('local_department', 'club_community')),
+      max_participants INT NOT NULL DEFAULT 30,
+      poster_url TEXT,
+      created_by INT,
+      created_by_name VARCHAR(120),
+      created_by_role VARCHAR(20),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS event_registrations (
+      id SERIAL PRIMARY KEY,
+      event_id INT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      student_id INT NOT NULL,
+      student_name VARCHAR(120),
+      student_roll_no VARCHAR(40),
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      UNIQUE (event_id, student_id)
     );
   `);
 
@@ -333,6 +407,7 @@ const defaultUsers = [
     role: "admin",
     roll_no: "ADM001",
     department: "Administration",
+    resident_type: "day-scholar",
   },
   {
     name: "Student User",
@@ -340,6 +415,7 @@ const defaultUsers = [
     role: "student",
     roll_no: "24CB023",
     department: "CSE",
+    resident_type: "day-scholar",
   },
   {
     name: "Faculty User",
@@ -347,6 +423,7 @@ const defaultUsers = [
     role: "faculty",
     roll_no: "FAC101",
     department: "CSE",
+    resident_type: "day-scholar",
   },
 ];
 
@@ -364,8 +441,8 @@ const seedDefaults = async () => {
 
       await pool.query(
         `
-          INSERT INTO users (name, email, password_hash, role, roll_no, department)
-          VALUES ($1, $2, $3, $4, $5, $6)
+          INSERT INTO users (name, email, password_hash, role, roll_no, department, resident_type)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
           ON CONFLICT (email)
           DO NOTHING;
         `,
@@ -376,6 +453,7 @@ const seedDefaults = async () => {
           user.role,
           user.roll_no,
           user.department,
+          user.resident_type || "day-scholar",
         ]
       );
     }
@@ -442,6 +520,22 @@ const seedDefaults = async () => {
       `,
       [defaultStudentId, defaultStudentName, defaultSerial, defaultDepartment]
     );
+
+    const digitalAssetsCount = await pool.query("SELECT COUNT(*)::int AS count FROM digital_assets");
+    if (Number(digitalAssetsCount.rows[0]?.count || 0) === 0) {
+      await pool.query(
+        `
+          INSERT INTO digital_assets
+            (ticket_no, status, group_name, asset_type, asset_name, order_no, asset_url, created_by, created_by_name, created_at, updated_at)
+          VALUES
+            (26, 'active', 'NSC', 'file', 'NSC 2025-26', 1, 'https://example.com/nsc-2025-26.pdf', 1, 'Admin User', NOW(), NOW()),
+            (7, 'active', 'Others', 'file', 'Students Code of Conduct', 2, 'https://example.com/students-code-of-conduct.pdf', 1, 'Admin User', NOW(), NOW()),
+            (6, 'active', 'Others', 'file', 'Standard Operating Procedure (SOP)', 3, 'https://example.com/sop.pdf', 1, 'Admin User', NOW(), NOW()),
+            (5, 'active', 'Others', 'link', 'Intercom Numbers', 4, 'https://example.com/intercom', 1, 'Admin User', NOW(), NOW()),
+            (4, 'active', 'Others', 'link', 'Brand Assets', 5, 'https://example.com/brand-assets', 1, 'Admin User', NOW(), NOW());
+        `
+      );
+    }
 
     return;
   }
@@ -510,7 +604,7 @@ const getUserByEmail = async (email) => {
 
   if (dbState.mode === "postgres") {
     const result = await pool.query(
-      "SELECT id, name, email, password_hash, role, roll_no, department FROM users WHERE email = $1 LIMIT 1",
+      "SELECT id, name, email, password_hash, role, roll_no, department, resident_type FROM users WHERE email = $1 LIMIT 1",
       [normalizedEmail]
     );
     return result.rows[0] ? mapUserRow(result.rows[0]) : null;
@@ -519,15 +613,15 @@ const getUserByEmail = async (email) => {
   return memoryStore.users.find((user) => user.email === normalizedEmail) || null;
 };
 
-const createUser = async ({ name, email, passwordHash, role, rollNo, department }) => {
+const createUser = async ({ name, email, passwordHash, role, rollNo, department, residentType }) => {
   const normalizedEmail = String(email || "").trim().toLowerCase();
 
   if (dbState.mode === "postgres") {
     const result = await pool.query(
       `
-        INSERT INTO users (name, email, password_hash, role, roll_no, department)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING id, name, email, role, roll_no, department;
+        INSERT INTO users (name, email, password_hash, role, roll_no, department, resident_type)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, name, email, role, roll_no, department, resident_type;
       `,
       [
         name,
@@ -536,6 +630,7 @@ const createUser = async ({ name, email, passwordHash, role, rollNo, department 
         role,
         rollNo || null,
         department || null,
+        residentType || "day-scholar",
       ]
     );
 
@@ -554,6 +649,7 @@ const createUser = async ({ name, email, passwordHash, role, rollNo, department 
     role,
     roll_no: rollNo || null,
     department: department || null,
+    resident_type: residentType || "day-scholar",
   };
 
   memoryStore.users.push(memoryUser);

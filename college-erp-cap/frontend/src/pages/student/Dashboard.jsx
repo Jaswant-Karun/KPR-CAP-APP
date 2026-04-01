@@ -24,7 +24,7 @@ export default function Dashboard() {
   const displayName = user?.name || "JASWANT KARUN S A";
   const displayRollNo = user?.rollNo || "24CB023";
   const displayEmail = user?.email || "24cb023@kpriet.ac.in";
-  const displayDepartment = user?.department || "CSE";
+  const displayDepartment = user?.department || "CSBS";
   const displayInitial = displayName.charAt(0).toUpperCase();
 
   const dashboardDetails = {
@@ -35,7 +35,7 @@ export default function Dashboard() {
     },
     mentor: {
       mentorName: "SIVASANKARI S",
-      mentorCode: "CB005",
+      mentorCode: "CB001",
     },
   };
 

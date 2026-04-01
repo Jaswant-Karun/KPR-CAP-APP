@@ -20,7 +20,7 @@ export default function MainGate() {
 
 export function StudentPassRequestPage({
   mode = "gatepass",
-  category = "day-scholar",
+  category,
   titleOverride,
   subtitleOverride,
 }) {
@@ -36,13 +36,14 @@ export function StudentPassRequestPage({
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const normalizedCategory = String(category || "day-scholar").toLowerCase();
-  const passType = mode === "free-outing" ? "Free Outing" : "Gate Pass";
-  const fallbackTitle = mode === "free-outing" ? "Free Outing" : "Gatepass";
+  const residentType = String(user?.residentType || category || "day-scholar").toLowerCase();
+  const normalizedCategory = residentType === "hosteller" ? "hosteller" : "day-scholar";
+  const passType = normalizedCategory === "hosteller" ? "Free Outing" : "Gate Pass";
+  const fallbackTitle = normalizedCategory === "hosteller" ? "Free Outing" : "Gatepass";
   const fallbackSubtitle =
-    mode === "free-outing"
+    normalizedCategory === "hosteller"
       ? "Hosteller students can submit free outing requests and track approval."
-      : "Submit gatepass request to faculty and track approval status.";
+      : "Day scholar students can submit gatepass requests and track faculty approval status.";
   const pageTitle = titleOverride || fallbackTitle;
   const pageSubtitle = subtitleOverride || fallbackSubtitle;
 
