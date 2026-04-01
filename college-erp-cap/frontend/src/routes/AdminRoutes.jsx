@@ -10,6 +10,7 @@ import InternalMarks from "../pages/faculty/InternalMarks";
 import ServiceRequestsApproval from "../pages/faculty/ServiceRequestsApproval";
 import StudentUploadsApproval from "../pages/faculty/StudentUploadsApproval";
 import GatepassApprovals from "../pages/faculty/GatepassApprovals";
+import LatecomerApprovals from "../pages/faculty/LatecomerApprovals";
 import CourseRegistration from "../pages/CourseRegistration";
 import NominalRoll from "../pages/NominalRoll";
 import NominalRollCourses from "../pages/NominalRollCourses";
@@ -18,6 +19,8 @@ import AttendanceManage from "../pages/faculty/AttendanceManage";
 import AoServiceApprovals from "../pages/faculty/AoServiceApprovals";
 import FusionSpaceApprovals from "../pages/faculty/FusionSpaceApprovals";
 import HallTicket from "../pages/HallTicket";
+import DigitalAssets from "../pages/DigitalAssets";
+import Events from "../pages/student/Events";
 
 export default function AdminRoutes() {
   return (
@@ -35,6 +38,7 @@ export default function AdminRoutes() {
         <Route path="common-service-requests" element={<ServiceRequestsApproval />} />
         <Route path="iqac-feedback-requests" element={<ServiceRequestsApproval />} />
         <Route path="main-gate-requests" element={<GatepassApprovals />} />
+        <Route path="latecomer-approvals" element={<LatecomerApprovals />} />
         <Route path="ndc-upload-reviews" element={<StudentUploadsApproval />} />
         <Route path="student-service-requests" element={<ServiceRequestsApproval />} />
         <Route path="user-service-requests" element={<ServiceRequestsApproval />} />
@@ -52,6 +56,8 @@ export default function AdminRoutes() {
         <Route path="bonafide-approvals" element={<ServiceRequestsApproval />} />
         <Route path="hostel-app-approvals" element={<ServiceRequestsApproval />} />
         <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="digital-assets" element={<DigitalAssets />} />
+        <Route path="events" element={<Events />} />
       </Route>
     </Routes>
   );

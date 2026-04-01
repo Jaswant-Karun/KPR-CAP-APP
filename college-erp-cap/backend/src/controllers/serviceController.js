@@ -10,10 +10,16 @@ const aoServiceBookings = [];
 let nextAoBookingId = 1;
 const fusionSpaceBookings = [];
 let nextFusionBookingId = 1;
+const events = [];
+let nextEventId = 1;
+const eventRegistrations = [];
+let nextEventRegistrationId = 1;
 const hallTickets = [];
 let nextHallTicketId = 1;
 const hallTicketAudit = [];
 let nextHallTicketAuditId = 1;
+const latecomerRequests = [];
+let nextLatecomerId = 1;
 const waiverRequests = [
 	{
 		id: 1,
@@ -161,6 +167,70 @@ const normalizeGatepassType = (value) => {
 	const raw = String(value || "").trim().toLowerCase();
 	if (raw === "free outing" || raw === "free-outing") return "Free Outing";
 	return "Gate Pass";
+};
+
+const mapLatecomerRow = (row) => ({
+	id: row.id,
+	ticketNo: row.ticket_no,
+	studentId: row.student_id,
+	studentName: row.student_name,
+	rollNo: row.roll_no,
+	department: row.department,
+	arrivedAt: row.arrived_at,
+	reason: row.reason,
+	status: row.status,
+	remarks: row.remarks,
+	approvedBy: row.approved_by,
+	approvedByName: row.approved_by_name,
+	createdAt: row.created_at,
+	updatedAt: row.updated_at,
+});
+
+const normalizeEventType = (value) => {
+	const raw = String(value || "").trim().toLowerCase();
+	if (["club", "club_community", "club-community", "community"].includes(raw)) {
+		return "club_community";
+	}
+	return "local_department";
+};
+
+const mapEventRow = (row, registrationCount = 0, isRegistered = false) => ({
+	id: row.id,
+	ticket: row.ticket_no,
+	eventName: row.event_name,
+	venue: row.venue,
+	eventDateTime: row.event_datetime,
+	department: row.department || "General",
+	eventType: row.event_type,
+	maxParticipants: Number(row.max_participants || 0),
+	registeredCount: Number(registrationCount || 0),
+	vacancy: Math.max(Number(row.max_participants || 0) - Number(registrationCount || 0), 0),
+	posterUrl: row.poster_url || "",
+	createdBy: row.created_by,
+	createdByName: row.created_by_name || "",
+	createdByRole: row.created_by_role || "",
+	isRegistered: Boolean(isRegistered),
+	createdAt: row.created_at,
+	updatedAt: row.updated_at,
+});
+
+const uploadEventPoster = async (req, eventId) => {
+	if (!req.upload?.buffer) return null;
+	const stored = await uploadFile({
+		buffer: req.upload.buffer,
+		filename: req.upload.originalname || `event-poster-${Date.now()}`,
+		folder: `kpr-erp/events/${eventId || "general"}`,
+	});
+	return stored?.url || stored?.secure_url || null;
+};
+
+const canManageEvent = (user, row) => {
+	const role = String(user?.role || "").toLowerCase();
+	if (role === "admin") return true;
+	if (role === "faculty") {
+		return row?.event_type === "local_department" && Number(row?.created_by || 0) === Number(user?.id || 0);
+	}
+	return false;
 };
 
 const insertHallTicketAudit = async ({ hallTicketId, ticketNo, studentId, action, actor, remarks }) => {
@@ -1136,8 +1206,23 @@ const createGatepassRequest = async (req, res) => {
 			return res.status(400).json({ message: "reason, fromDate and toDate are required" });
 		}
 
-		const passCategory = normalizeGatepassCategory(payload.passCategory || payload.studentCategory);
+		let passCategory = normalizeGatepassCategory(payload.passCategory || payload.studentCategory);
 		const passType = normalizeGatepassType(payload.type);
+
+		if (req.user?.role === "student") {
+			if (dbState.mode === "postgres") {
+				const studentResult = await pool.query(
+					"SELECT resident_type FROM users WHERE id = $1 AND role = 'student' LIMIT 1",
+					[req.user?.id]
+				);
+				if (studentResult.rows.length === 0) {
+					return res.status(404).json({ message: "Student not found" });
+				}
+				passCategory = normalizeResidentType(studentResult.rows[0].resident_type);
+			} else {
+				passCategory = normalizeResidentType(req.user?.residentType);
+			}
+		}
 
 		if (passCategory === "hosteller" && passType !== "Free Outing") {
 			return res.status(400).json({ message: "Hosteller students must use Free Outing request" });
@@ -1424,6 +1509,192 @@ const updateGatepassStatus = async (req, res) => {
 	} catch (error) {
 		console.error("Error updating gatepass status:", error.message);
 		return res.status(500).json({ message: "Failed to update gatepass request", error: error.message });
+	}
+};
+
+const createLatecomerRequest = async (req, res) => {
+	try {
+		const payload = req.body || {};
+		const arrivedAt = new Date(payload.arrivedAt || payload.dateTime || new Date().toISOString());
+		const reason = String(payload.reason || payload.occ || "").trim();
+
+		if (!reason) {
+			return res.status(400).json({ message: "reason is required" });
+		}
+
+		if (Number.isNaN(arrivedAt.getTime())) {
+			return res.status(400).json({ message: "Invalid arrivedAt value" });
+		}
+
+		if (dbState.mode === "postgres") {
+			const studentResult = await pool.query(
+				`SELECT id, name, roll_no, department FROM users WHERE id = $1 AND role = 'student' LIMIT 1`,
+				[req.user?.id]
+			);
+
+			if (studentResult.rows.length === 0) {
+				return res.status(404).json({ message: "Student not found" });
+			}
+
+			const student = studentResult.rows[0];
+			const nextIdResult = await pool.query(
+				"SELECT nextval(pg_get_serial_sequence('latecomer_requests', 'id')) AS id"
+			);
+			const nextId = Number(nextIdResult.rows[0].id);
+			const ticketNo = `LT-${String(nextId).padStart(5, "0")}`;
+
+			const insertResult = await pool.query(
+				`INSERT INTO latecomer_requests
+					(id, ticket_no, student_id, student_name, roll_no, department, arrived_at, reason, status, remarks, created_at, updated_at)
+				 VALUES
+					($1, $2, $3, $4, $5, $6, $7, $8, 'pending', $9, NOW(), NOW())
+				 RETURNING *`,
+				[
+					nextId,
+					ticketNo,
+					student.id,
+					student.name || req.user?.name || req.user?.email || "Student",
+					student.roll_no || null,
+					student.department || null,
+					arrivedAt.toISOString(),
+					reason,
+					String(payload.remarks || "").trim() || null,
+				]
+			);
+
+			return res.status(201).json({
+				message: "Latecomer request sent for faculty approval",
+				request: mapLatecomerRow(insertResult.rows[0]),
+			});
+		}
+
+		const latecomerId = nextLatecomerId++;
+		const request = {
+			id: latecomerId,
+			ticketNo: `LT-${String(latecomerId).padStart(5, "0")}`,
+			studentId: req.user?.id || null,
+			studentName: req.user?.name || req.user?.email || "Student",
+			rollNo: req.user?.rollNo || null,
+			department: req.user?.department || null,
+			arrivedAt: arrivedAt.toISOString(),
+			reason,
+			status: "pending",
+			remarks: String(payload.remarks || "").trim(),
+			approvedBy: null,
+			approvedByName: null,
+			createdAt: new Date().toISOString(),
+			updatedAt: new Date().toISOString(),
+		};
+
+		latecomerRequests.push(request);
+		return res.status(201).json({ message: "Latecomer request sent for faculty approval", request });
+	} catch (error) {
+		console.error("Error creating latecomer request:", error.message);
+		return res.status(500).json({ message: "Failed to create latecomer request", error: error.message });
+	}
+};
+
+const listLatecomerRequests = async (req, res) => {
+	try {
+		const role = req.user?.role;
+		const userId = req.user?.id;
+		const status = String(req.query?.status || "").trim().toLowerCase();
+
+		if (dbState.mode === "postgres") {
+			let query = "SELECT * FROM latecomer_requests WHERE 1=1";
+			const params = [];
+
+			if (role === "student") {
+				query += ` AND student_id = $${params.length + 1}`;
+				params.push(userId);
+			}
+
+			if (["pending", "approved", "rejected"].includes(status)) {
+				query += ` AND status = $${params.length + 1}`;
+				params.push(status);
+			}
+
+			query += " ORDER BY created_at DESC";
+			const result = await pool.query(query, params);
+			const requests = result.rows.map(mapLatecomerRow);
+			return res.json({ total: requests.length, requests });
+		}
+
+		let rows = [...latecomerRequests];
+		if (role === "student") {
+			rows = rows.filter((item) => Number(item.studentId) === Number(userId));
+		}
+
+		if (["pending", "approved", "rejected"].includes(status)) {
+			rows = rows.filter((item) => String(item.status) === status);
+		}
+
+		rows.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+		return res.json({ total: rows.length, requests: rows });
+	} catch (error) {
+		console.error("Error listing latecomer requests:", error.message);
+		return res.status(500).json({ message: "Failed to list latecomer requests", error: error.message });
+	}
+};
+
+const updateLatecomerStatus = async (req, res) => {
+	try {
+		const requestId = Number(req.params.requestId);
+		const status = String(req.body?.status || "").trim().toLowerCase();
+
+		if (!["approved", "rejected"].includes(status)) {
+			return res.status(400).json({ message: "status must be approved or rejected" });
+		}
+
+		if (dbState.mode === "postgres") {
+			const checkResult = await pool.query("SELECT * FROM latecomer_requests WHERE id = $1", [requestId]);
+			if (checkResult.rows.length === 0) {
+				return res.status(404).json({ message: "Latecomer request not found" });
+			}
+
+			const target = checkResult.rows[0];
+			if (target.status !== "pending") {
+				return res.status(400).json({ message: "Only pending latecomer requests can be updated" });
+			}
+
+			const updateResult = await pool.query(
+				`UPDATE latecomer_requests
+				 SET status = $1, remarks = $2, approved_by = $3, approved_by_name = $4, updated_at = NOW()
+				 WHERE id = $5
+				 RETURNING *`,
+				[
+					status,
+					req.body?.remarks || null,
+					req.user?.id || null,
+					req.user?.name || req.user?.email || "Faculty",
+					requestId,
+				]
+			);
+
+			return res.json({
+				message: "Latecomer request updated",
+				request: mapLatecomerRow(updateResult.rows[0]),
+			});
+		}
+
+		const target = latecomerRequests.find((item) => item.id === requestId);
+		if (!target) {
+			return res.status(404).json({ message: "Latecomer request not found" });
+		}
+
+		if (target.status !== "pending") {
+			return res.status(400).json({ message: "Only pending latecomer requests can be updated" });
+		}
+
+		target.status = status;
+		target.remarks = req.body?.remarks || target.remarks;
+		target.approvedBy = req.user?.id || null;
+		target.approvedByName = req.user?.name || req.user?.email || "Faculty";
+		target.updatedAt = new Date().toISOString();
+		return res.json({ message: "Latecomer request updated", request: target });
+	} catch (error) {
+		console.error("Error updating latecomer request:", error.message);
+		return res.status(500).json({ message: "Failed to update latecomer request", error: error.message });
 	}
 };
 
@@ -1882,6 +2153,438 @@ const updateFusionBookingStatus = async (req, res) => {
 	}
 };
 
+const createEvent = async (req, res) => {
+	try {
+		const role = String(req.user?.role || "").toLowerCase();
+		const payload = req.body || {};
+		const eventType = normalizeEventType(payload.eventType);
+		const eventName = String(payload.eventName || "").trim();
+		const venue = String(payload.venue || "").trim();
+		const eventDateTime = String(payload.eventDateTime || "").trim();
+		const maxParticipants = Number(payload.maxParticipants || 0);
+		const posterUrl = String(payload.posterUrl || "").trim();
+
+		if (!eventName || !venue || !eventDateTime) {
+			return res.status(400).json({ message: "eventName, venue and eventDateTime are required" });
+		}
+
+		if (!Number.isFinite(maxParticipants) || maxParticipants <= 0) {
+			return res.status(400).json({ message: "maxParticipants must be greater than 0" });
+		}
+
+		if (role === "faculty" && eventType !== "local_department") {
+			return res.status(403).json({ message: "Faculty can only create Local Department events" });
+		}
+
+		const department = eventType === "local_department"
+			? String(role === "faculty" ? (req.user?.department || "General") : (payload.department || req.user?.department || "General")).trim()
+			: String(payload.department || "Club/Community").trim();
+
+		if (dbState.mode === "postgres") {
+			const nextIdResult = await pool.query(
+				"SELECT nextval(pg_get_serial_sequence('events', 'id')) AS id"
+			);
+			const nextId = Number(nextIdResult.rows[0].id);
+			const ticketNo = `EVT-${String(nextId).padStart(4, "0")}`;
+			const uploadedPosterUrl = await uploadEventPoster(req, nextId);
+
+			const insertResult = await pool.query(
+				`INSERT INTO events
+				(id, ticket_no, event_name, venue, event_datetime, department, event_type, max_participants, poster_url, created_by, created_by_name, created_by_role, created_at, updated_at)
+				VALUES ($1, $2, $3, $4, $5::timestamp, $6, $7, $8, $9, $10, $11, $12, NOW(), NOW())
+				RETURNING *;`,
+				[
+					nextId,
+					ticketNo,
+					eventName,
+					venue,
+					eventDateTime,
+					department || "General",
+					eventType,
+					maxParticipants,
+					uploadedPosterUrl || posterUrl || null,
+					req.user?.id || null,
+					req.user?.name || req.user?.email || role,
+					role,
+				]
+			);
+
+			return res.status(201).json({
+				message: "Event created",
+				event: mapEventRow(insertResult.rows[0], 0, false),
+			});
+		}
+
+		const now = new Date().toISOString();
+		const uploadedPosterUrl = await uploadEventPoster(req, nextEventId);
+		const row = {
+			id: nextEventId,
+			ticket_no: `EVT-${String(nextEventId).padStart(4, "0")}`,
+			event_name: eventName,
+			venue,
+			event_datetime: eventDateTime,
+			department: department || "General",
+			event_type: eventType,
+			max_participants: maxParticipants,
+			poster_url: uploadedPosterUrl || posterUrl || "",
+			created_by: req.user?.id || null,
+			created_by_name: req.user?.name || req.user?.email || role,
+			created_by_role: role,
+			created_at: now,
+			updated_at: now,
+		};
+		nextEventId += 1;
+		events.unshift(row);
+
+		return res.status(201).json({ message: "Event created", event: mapEventRow(row, 0, false) });
+	} catch (error) {
+		console.error("Error creating event:", error.message);
+		return res.status(500).json({ message: "Failed to create event", error: error.message });
+	}
+};
+
+const updateEvent = async (req, res) => {
+	try {
+		const eventId = Number(req.params.eventId);
+		if (!Number.isFinite(eventId) || eventId <= 0) {
+			return res.status(400).json({ message: "Invalid event id" });
+		}
+
+		const payload = req.body || {};
+		const eventName = String(payload.eventName || "").trim();
+		const venue = String(payload.venue || "").trim();
+		const eventDateTime = String(payload.eventDateTime || "").trim();
+		const maxParticipants = Number(payload.maxParticipants || 0);
+		const posterUrl = String(payload.posterUrl || "").trim();
+		const requestedType = normalizeEventType(payload.eventType);
+
+		if (!eventName || !venue || !eventDateTime) {
+			return res.status(400).json({ message: "eventName, venue and eventDateTime are required" });
+		}
+
+		if (!Number.isFinite(maxParticipants) || maxParticipants <= 0) {
+			return res.status(400).json({ message: "maxParticipants must be greater than 0" });
+		}
+
+		if (dbState.mode === "postgres") {
+			const check = await pool.query("SELECT * FROM events WHERE id = $1", [eventId]);
+			if (check.rows.length === 0) {
+				return res.status(404).json({ message: "Event not found" });
+			}
+
+			const current = check.rows[0];
+			if (!canManageEvent(req.user, current)) {
+				return res.status(403).json({ message: "Not allowed to update this event" });
+			}
+
+			const nextType = req.user?.role === "faculty" ? "local_department" : requestedType;
+			if (req.user?.role === "faculty" && nextType !== "local_department") {
+				return res.status(403).json({ message: "Faculty can only manage Local Department events" });
+			}
+
+			const department = nextType === "local_department"
+				? String(req.user?.role === "faculty" ? (req.user?.department || current.department || "General") : (payload.department || current.department || req.user?.department || "General")).trim()
+				: String(payload.department || current.department || "Club/Community").trim();
+			const uploadedPosterUrl = await uploadEventPoster(req, eventId);
+
+			const updated = await pool.query(
+				`UPDATE events
+				 SET event_name = $1,
+				     venue = $2,
+				     event_datetime = $3::timestamp,
+				     department = $4,
+				     event_type = $5,
+				     max_participants = $6,
+				     poster_url = $7,
+				     updated_at = NOW()
+				 WHERE id = $8
+				 RETURNING *`,
+				[eventName, venue, eventDateTime, department, nextType, maxParticipants, uploadedPosterUrl || posterUrl || null, eventId]
+			);
+
+			return res.json({
+				message: "Event updated",
+				event: mapEventRow(updated.rows[0], current.registered_count || 0, false),
+			});
+		}
+
+		const current = events.find((item) => Number(item.id) === eventId);
+		if (!current) {
+			return res.status(404).json({ message: "Event not found" });
+		}
+		if (!canManageEvent(req.user, current)) {
+			return res.status(403).json({ message: "Not allowed to update this event" });
+		}
+
+		const nextType = req.user?.role === "faculty" ? "local_department" : requestedType;
+		if (req.user?.role === "faculty" && nextType !== "local_department") {
+			return res.status(403).json({ message: "Faculty can only manage Local Department events" });
+		}
+
+		const department = nextType === "local_department"
+			? String(req.user?.role === "faculty" ? (req.user?.department || current.department || "General") : (payload.department || current.department || req.user?.department || "General")).trim()
+			: String(payload.department || current.department || "Club/Community").trim();
+		const uploadedPosterUrl = await uploadEventPoster(req, eventId);
+
+		current.event_name = eventName;
+		current.venue = venue;
+		current.event_datetime = eventDateTime;
+		current.department = department;
+		current.event_type = nextType;
+		current.max_participants = maxParticipants;
+		current.poster_url = uploadedPosterUrl || posterUrl || "";
+		current.updated_at = new Date().toISOString();
+
+		return res.json({ message: "Event updated", event: mapEventRow(current, 0, false) });
+	} catch (error) {
+		console.error("Error updating event:", error.message);
+		return res.status(500).json({ message: "Failed to update event", error: error.message });
+	}
+};
+
+const deleteEvent = async (req, res) => {
+	try {
+		const eventId = Number(req.params.eventId);
+		if (!Number.isFinite(eventId) || eventId <= 0) {
+			return res.status(400).json({ message: "Invalid event id" });
+		}
+
+		if (dbState.mode === "postgres") {
+			const check = await pool.query("SELECT * FROM events WHERE id = $1", [eventId]);
+			if (check.rows.length === 0) {
+				return res.status(404).json({ message: "Event not found" });
+			}
+			if (!canManageEvent(req.user, check.rows[0])) {
+				return res.status(403).json({ message: "Not allowed to delete this event" });
+			}
+
+			await pool.query("DELETE FROM events WHERE id = $1", [eventId]);
+			return res.json({ message: "Event deleted" });
+		}
+
+		const index = events.findIndex((item) => Number(item.id) === eventId);
+		if (index < 0) {
+			return res.status(404).json({ message: "Event not found" });
+		}
+		if (!canManageEvent(req.user, events[index])) {
+			return res.status(403).json({ message: "Not allowed to delete this event" });
+		}
+
+		events.splice(index, 1);
+		for (let i = eventRegistrations.length - 1; i >= 0; i -= 1) {
+			if (Number(eventRegistrations[i].event_id) === eventId) {
+				eventRegistrations.splice(i, 1);
+			}
+		}
+		return res.json({ message: "Event deleted" });
+	} catch (error) {
+		console.error("Error deleting event:", error.message);
+		return res.status(500).json({ message: "Failed to delete event", error: error.message });
+	}
+};
+
+const listEvents = async (req, res) => {
+	try {
+		const role = String(req.user?.role || "").toLowerCase();
+		const userId = Number(req.user?.id || 0);
+		const search = String(req.query?.search || "").trim().toLowerCase();
+		const eventType = normalizeEventType(req.query?.eventType || "local_department");
+		const dateFilter = String(req.query?.date || "").trim();
+
+		if (dbState.mode === "postgres") {
+			const params = [eventType, role === "student" ? userId : null];
+			let query = `
+				SELECT
+					e.*,
+					COALESCE(er.count, 0) AS registered_count,
+					CASE
+						WHEN $2::int IS NULL THEN false
+						ELSE EXISTS (
+							SELECT 1 FROM event_registrations r
+							WHERE r.event_id = e.id AND r.student_id = $2
+						)
+					END AS is_registered
+				FROM events e
+				LEFT JOIN (
+					SELECT event_id, COUNT(*)::int AS count
+					FROM event_registrations
+					GROUP BY event_id
+				) er ON er.event_id = e.id
+				WHERE e.event_type = $1
+			`;
+
+			if (search) {
+				params.push(`%${search}%`);
+				query += ` AND (LOWER(e.event_name) LIKE $${params.length} OR LOWER(e.venue) LIKE $${params.length} OR LOWER(COALESCE(e.department, '')) LIKE $${params.length} OR LOWER(COALESCE(e.ticket_no, '')) LIKE $${params.length})`;
+			}
+
+			if (dateFilter) {
+				params.push(dateFilter);
+				query += ` AND DATE(e.event_datetime) = $${params.length}::date`;
+			}
+
+			query += " ORDER BY e.event_datetime DESC, e.created_at DESC";
+
+			const result = await pool.query(query, params);
+			const rows = result.rows.map((row) => mapEventRow(row, row.registered_count, row.is_registered));
+			return res.json({ total: rows.length, events: rows });
+		}
+
+		const rows = events
+			.filter((row) => row.event_type === eventType)
+			.filter((row) => {
+				if (!search) return true;
+				const target = `${row.ticket_no} ${row.event_name} ${row.venue} ${row.department}`.toLowerCase();
+				return target.includes(search);
+			})
+			.filter((row) => {
+				if (!dateFilter) return true;
+				return String(row.event_datetime || "").slice(0, 10) === dateFilter;
+			})
+			.sort((a, b) => new Date(b.event_datetime).getTime() - new Date(a.event_datetime).getTime())
+			.map((row) => {
+				const registeredCount = eventRegistrations.filter((item) => Number(item.event_id) === Number(row.id)).length;
+				const isRegistered = role === "student"
+					? eventRegistrations.some((item) => Number(item.event_id) === Number(row.id) && Number(item.student_id) === userId)
+					: false;
+				return mapEventRow(row, registeredCount, isRegistered);
+			});
+
+		return res.json({ total: rows.length, events: rows });
+	} catch (error) {
+		console.error("Error listing events:", error.message);
+		return res.status(500).json({ message: "Failed to list events", error: error.message });
+	}
+};
+
+const registerEvent = async (req, res) => {
+	try {
+		const eventId = Number(req.params.eventId);
+		const studentId = Number(req.user?.id || 0);
+		const studentName = req.user?.name || req.user?.email || "Student";
+
+		if (!Number.isFinite(eventId) || eventId <= 0) {
+			return res.status(400).json({ message: "Invalid event id" });
+		}
+
+		if (dbState.mode === "postgres") {
+			await pool.query("BEGIN");
+			try {
+				const eventResult = await pool.query(
+					"SELECT id, max_participants FROM events WHERE id = $1 FOR UPDATE",
+					[eventId]
+				);
+				if (eventResult.rows.length === 0) {
+					await pool.query("ROLLBACK");
+					return res.status(404).json({ message: "Event not found" });
+				}
+
+				const duplicateCheck = await pool.query(
+					"SELECT id FROM event_registrations WHERE event_id = $1 AND student_id = $2 LIMIT 1",
+					[eventId, studentId]
+				);
+				if (duplicateCheck.rows.length > 0) {
+					await pool.query("ROLLBACK");
+					return res.status(409).json({ message: "You already registered for this event" });
+				}
+
+				const countResult = await pool.query(
+					"SELECT COUNT(*)::int AS count FROM event_registrations WHERE event_id = $1",
+					[eventId]
+				);
+				const registeredCount = Number(countResult.rows[0]?.count || 0);
+				const maxParticipants = Number(eventResult.rows[0]?.max_participants || 0);
+
+				if (registeredCount >= maxParticipants) {
+					await pool.query("ROLLBACK");
+					return res.status(409).json({ message: "Event registration is full" });
+				}
+
+				await pool.query(
+					`INSERT INTO event_registrations
+					(event_id, student_id, student_name, student_roll_no, created_at)
+					VALUES ($1, $2, $3, $4, NOW())`,
+					[eventId, studentId, studentName, req.user?.rollNo || null]
+				);
+
+				await pool.query("COMMIT");
+				return res.status(201).json({ message: "Registered successfully" });
+			} catch (error) {
+				await pool.query("ROLLBACK");
+				throw error;
+			}
+		}
+
+		const targetEvent = events.find((item) => Number(item.id) === eventId);
+		if (!targetEvent) {
+			return res.status(404).json({ message: "Event not found" });
+		}
+
+		const alreadyRegistered = eventRegistrations.some(
+			(item) => Number(item.event_id) === eventId && Number(item.student_id) === studentId
+		);
+		if (alreadyRegistered) {
+			return res.status(409).json({ message: "You already registered for this event" });
+		}
+
+		const registeredCount = eventRegistrations.filter((item) => Number(item.event_id) === eventId).length;
+		if (registeredCount >= Number(targetEvent.max_participants || 0)) {
+			return res.status(409).json({ message: "Event registration is full" });
+		}
+
+		eventRegistrations.push({
+			id: nextEventRegistrationId++,
+			event_id: eventId,
+			student_id: studentId,
+			student_name: studentName,
+			student_roll_no: req.user?.rollNo || null,
+			created_at: new Date().toISOString(),
+		});
+
+		return res.status(201).json({ message: "Registered successfully" });
+	} catch (error) {
+		console.error("Error registering event:", error.message);
+		return res.status(500).json({ message: "Failed to register event", error: error.message });
+	}
+};
+
+const unregisterEvent = async (req, res) => {
+	try {
+		const eventId = Number(req.params.eventId);
+		const studentId = Number(req.user?.id || 0);
+
+		if (!Number.isFinite(eventId) || eventId <= 0) {
+			return res.status(400).json({ message: "Invalid event id" });
+		}
+
+		if (dbState.mode === "postgres") {
+			const result = await pool.query(
+				"DELETE FROM event_registrations WHERE event_id = $1 AND student_id = $2 RETURNING id",
+				[eventId, studentId]
+			);
+
+			if (result.rows.length === 0) {
+				return res.status(404).json({ message: "Registration not found" });
+			}
+
+			return res.json({ message: "Registration cancelled" });
+		}
+
+		const index = eventRegistrations.findIndex(
+			(item) => Number(item.event_id) === eventId && Number(item.student_id) === studentId
+		);
+		if (index < 0) {
+			return res.status(404).json({ message: "Registration not found" });
+		}
+
+		eventRegistrations.splice(index, 1);
+		return res.json({ message: "Registration cancelled" });
+	} catch (error) {
+		console.error("Error cancelling event registration:", error.message);
+		return res.status(500).json({ message: "Failed to cancel registration", error: error.message });
+	}
+};
+
 module.exports = {
 	createServiceRequest,
 	listServiceRequests,
@@ -1896,6 +2599,9 @@ module.exports = {
 	createGatepassRequest,
 	listGatepassRequests,
 	updateGatepassStatus,
+	createLatecomerRequest,
+	listLatecomerRequests,
+	updateLatecomerStatus,
 	createAoBooking,
 	listAoBookings,
 	deleteAoBooking,
@@ -1904,6 +2610,12 @@ module.exports = {
 	listFusionBookings,
 	deleteFusionBooking,
 	updateFusionBookingStatus,
+	createEvent,
+	updateEvent,
+	deleteEvent,
+	listEvents,
+	registerEvent,
+	unregisterEvent,
 	listWaiverRequests,
 	updateWaiverRequestStatus,
 };

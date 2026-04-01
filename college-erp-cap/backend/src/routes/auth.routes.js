@@ -79,9 +79,15 @@ router.post("/signup", async (req, res) => {
       role: safeRole,
       rollNo: rollNo ? String(rollNo).trim() : null,
       department: department ? String(department).trim() : null,
+      residentType: "day-scholar",
     });
 
-    const token = signToken({ id: createdUser.id, role: createdUser.role, email: createdUser.email });
+    const token = signToken({
+      id: createdUser.id,
+      role: createdUser.role,
+      email: createdUser.email,
+      residentType: createdUser.resident_type || "day-scholar",
+    });
 
     return res.status(201).json({
       message: "Signup successful",
@@ -93,6 +99,7 @@ router.post("/signup", async (req, res) => {
         role: createdUser.role,
         rollNo: createdUser.roll_no,
         department: createdUser.department,
+        residentType: createdUser.resident_type || "day-scholar",
       },
     });
   } catch (error) {
@@ -136,7 +143,12 @@ router.post("/login", async (req, res) => {
       return res.status(503).json({ message: "System is under maintenance. Please try again later." });
     }
 
-    const token = signToken({ id: user.id, role: user.role, email: user.email });
+    const token = signToken({
+      id: user.id,
+      role: user.role,
+      email: user.email,
+      residentType: user.resident_type || "day-scholar",
+    });
 
     return res.json({
       token,
@@ -147,6 +159,7 @@ router.post("/login", async (req, res) => {
         role: user.role,
         rollNo: user.roll_no,
         department: user.department,
+        residentType: user.resident_type || "day-scholar",
       },
     });
   } catch (error) {

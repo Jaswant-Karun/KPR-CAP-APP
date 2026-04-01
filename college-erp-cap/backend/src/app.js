@@ -30,6 +30,7 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/internal-mark-courses", internalMarkCourseRoutes);
 app.use("/api/departments", departmentRoutes);
 app.use("/api/files", require("./routes/files.routes"));
+app.use("/api/digital-assets", require("./routes/digitalAssets.routes"));
 app.get("/api/profile", auth, getStudentProfile);
 
 app.get("/", (req, res) => {

@@ -1,0 +1,205 @@
+.event-feature-page {
+  padding: 1rem;
+}
+
+.event-type-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #334155;
+}
+
+.event-type-tab {
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.event-type-tab.active {
+  border-color: rgba(0, 196, 255, 0.6);
+  color: #b9ecff;
+  background: rgba(2, 132, 199, 0.2);
+}
+
+.event-feature-table {
+  min-width: 1220px;
+}
+
+.event-feature-table .booking-status-pill.open {
+  background: #0f5132;
+  color: #bbf7d0;
+}
+
+.event-feature-table .booking-status-pill.registered {
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+.event-feature-table .booking-status-pill.full {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.event-poster-link {
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+.event-poster-link:hover {
+  text-decoration: underline;
+}
+
+.event-action-group {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.event-action-group svg {
+  margin-right: 0.25rem;
+}
+
+.event-name-link {
+  border: 0;
+  background: transparent;
+  color: #7dd3fc;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+}
+
+.event-name-link:hover {
+  text-decoration: underline;
+}
+
+.event-detail-modal {
+  max-width: 760px;
+}
+
+.event-detail-body {
+  padding: 1rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.event-detail-poster {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 0.6rem;
+  border: 1px solid #334155;
+}
+
+.event-detail-grid {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.event-detail-grid div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.event-detail-grid span {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.event-detail-grid strong {
+  color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.event-upload-info {
+  color: #7dd3fc;
+}
+
+.event-upload-success {
+  color: #86efac;
+}
+
+.event-upload-error {
+  color: #fca5a5;
+}
+
+@media (max-width: 960px) {
+  .event-toolbar-right {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .event-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+html[data-theme="light"] .event-type-tabs {
+  border-bottom-color: #d6e1ef;
+}
+
+html[data-theme="light"] .event-type-tab {
+  border-color: #b4c9e3;
+  background: #f7fbff;
+  color: #2c527f;
+}
+
+html[data-theme="light"] .event-type-tab.active {
+  border-color: #1f4d80;
+  color: #173a67;
+  background: #dfeeff;
+}
+
+html[data-theme="light"] .event-feature-table .booking-status-pill.open {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+html[data-theme="light"] .event-feature-table .booking-status-pill.registered {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+html[data-theme="light"] .event-feature-table .booking-status-pill.full {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+html[data-theme="light"] .event-poster-link {
+  color: #1f4d80;
+}
+
+html[data-theme="light"] .event-name-link {
+  color: #1f4d80;
+}
+
+html[data-theme="light"] .event-detail-poster {
+  border-color: #d6e1ef;
+}
+
+html[data-theme="light"] .event-detail-grid span {
+  color: #4a678a;
+}
+
+html[data-theme="light"] .event-detail-grid strong {
+  color: #173a67;
+}
+
+html[data-theme="light"] .event-upload-info {
+  color: #1f4d80;
+}
+
+html[data-theme="light"] .event-upload-success {
+  color: #166534;
+}
+
+html[data-theme="light"] .event-upload-error {
+  color: #b91c1c;
+}

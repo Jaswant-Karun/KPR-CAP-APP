@@ -6,6 +6,7 @@ import Academics from '../pages/student/Academics';
 import Attendance from '../pages/student/Attendance';
 import Project from '../pages/student/Project';
 import Booking from '../pages/student/Booking';
+import Events from '../pages/student/Events';
 import AOServiceSupport from '../pages/student/AOServiceSupport';
 import FusionSpace from '../pages/student/FusionSpace';
 import CFAC from '../pages/student/CFAC';
@@ -24,6 +25,7 @@ import NominalRoll from '../pages/NominalRoll';
 import NominalRollCourses from '../pages/NominalRollCourses';
 import Waiver from '../pages/Waiver';
 import HallTicket from '../pages/HallTicket';
+import DigitalAssets from '../pages/DigitalAssets';
 import NotFound from '../pages/error/NotFound';
 import Unauthorized from '../pages/error/Unauthorized';
 
@@ -38,6 +40,7 @@ export default function StudentRoutes() {
         <Route path="project" element={<Project />} />
         <Route path="final-year-project" element={<Project />} />
         <Route path="booking" element={<Booking />} />
+        <Route path="events" element={<Events />} />
         <Route path="ao-service" element={<AOServiceSupport />} />
         <Route path="fusion-space" element={<FusionSpace />} />
         <Route path="cfac" element={<CFAC />} />
@@ -58,6 +61,7 @@ export default function StudentRoutes() {
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />
         <Route path="waiver" element={<Waiver />} />
         <Route path="hall-ticket" element={<HallTicket mode="student" />} />
+        <Route path="digital-assets" element={<DigitalAssets />} />
         <Route path="unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
       </Route>

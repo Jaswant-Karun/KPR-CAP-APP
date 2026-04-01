@@ -74,7 +74,7 @@ const sidebarMenu = [
     children: [
       { title: '1. Gatepass - Day Scholar/Lateral', path: '/student/gatepass' },
       { title: '2. Lateral Student Gatepass', path: '/student/lateral-gatepass' },
-      { title: '3. Latecomers - All Students', path: '/student/latecomers' },
+      { title: '3. Latecomers Permission Request', path: '/student/latecomers' },
       { title: '4. Free Outing - Hostel Students', path: '/student/free-outing' }
     ]
   },

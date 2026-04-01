@@ -25,7 +25,7 @@ export default function UserManagement() {
   const [mapBatch, setMapBatch] = useState("");
   const [mapSection, setMapSection] = useState("");
   const [mappedStudentIds, setMappedStudentIds] = useState([]);
-  const [form, setForm] = useState({ name: "", email: "", department: "", rollNo: "" });
+  const [form, setForm] = useState({ name: "", email: "", department: "", rollNo: "", residentType: "day-scholar" });
   const [formErrors, setFormErrors] = useState({});
   const [message, setMessage] = useState("");
 
@@ -69,6 +69,7 @@ export default function UserManagement() {
       email: item.email || "",
       department: item.department || "",
       rollNo: item.roll_no || "",
+      residentType: item.resident_type || "day-scholar",
     });
   };
 
@@ -78,6 +79,7 @@ export default function UserManagement() {
     const email = String(form.email || "").trim();
     const department = String(form.department || "").trim();
     const rollNo = String(form.rollNo || "").trim();
+    const residentType = String(form.residentType || "").trim().toLowerCase();
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const rollNoPattern = /^[A-Z0-9-]{4,20}$/i;
 
@@ -100,6 +102,10 @@ export default function UserManagement() {
         nextErrors.rollNo = "Roll No is required for students.";
       } else if (!rollNoPattern.test(rollNo)) {
         nextErrors.rollNo = "Roll No can contain letters, numbers, and hyphen only.";
+      }
+
+      if (!["day-scholar", "hosteller"].includes(residentType)) {
+        nextErrors.residentType = "Resident type must be Day Scholar or Hosteller.";
       }
     }
 
@@ -221,13 +227,14 @@ export default function UserManagement() {
                 <th>Email</th>
                 <th>Department</th>
                 <th>Roll No</th>
+                {roleFilter === "student" && <th>Resident Type</th>}
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan="6">No users found.</td>
+                  <td colSpan={roleFilter === "student" ? 7 : 6}>No users found.</td>
                 </tr>
               ) : (
                 rows.map((item) => (
@@ -307,6 +314,29 @@ export default function UserManagement() {
                         item.roll_no
                       )}
                     </td>
+                    {roleFilter === "student" && (
+                      <td>
+                        {editing === item.id ? (
+                          <div className="admin-input-wrap">
+                            <select
+                              className="admin-select"
+                              value={form.residentType}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setForm((p) => ({ ...p, residentType: value }));
+                                setFormErrors((p) => ({ ...p, residentType: "" }));
+                              }}
+                            >
+                              <option value="day-scholar">Day Scholar</option>
+                              <option value="hosteller">Hosteller</option>
+                            </select>
+                            {formErrors.residentType && <small className="admin-field-error">{formErrors.residentType}</small>}
+                          </div>
+                        ) : (
+                          item.resident_type || "day-scholar"
+                        )}
+                      </td>
+                    )}
                     <td>
                       <div className="admin-flex">
                         {editing === item.id ? (
