@@ -15,6 +15,10 @@ import StudentUploadsApproval from "../pages/faculty/StudentUploadsApproval";
 import AoServiceApprovals from "../pages/faculty/AoServiceApprovals";
 import FusionSpaceApprovals from "../pages/faculty/FusionSpaceApprovals";
 import FacultyCourseMgmt from "../pages/faculty/FacultyCourseMgmt";
+import GymSubscription from "../pages/student/GymSubscription";
+import IBoxComplaints from "../pages/student/IBoxComplaints";
+import IdCardReissueRequests from "../pages/student/IdCardReissueRequests";
+import WiFiRequests from "../pages/student/WiFiRequests";
 
 import CourseRegistration from "../pages/CourseRegistration";
 import NominalRoll from "../pages/NominalRoll";
@@ -66,6 +70,10 @@ export default function FacultyRoutes() {
         <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
         <Route path="digital-assets" element={<DigitalAssets />} />
         <Route path="events" element={<Events />} />
+        <Route path="gym" element={<GymSubscription />} />
+        <Route path="complaints" element={<IBoxComplaints />} />
+        <Route path="id-card" element={<IdCardReissueRequests />} />
+        <Route path="wifi-request" element={<WiFiRequests />} />
         <Route path="course-registration" element={<CourseRegistration />} />
         <Route path="nominal-roll" element={<NominalRoll />} />
         <Route path="nominal-roll-courses" element={<NominalRollCourses />} />

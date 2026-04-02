@@ -1,0 +1,89 @@
+.gym-page { padding: 1rem; color: var(--text-primary); }
+.gym-hero { display: flex; justify-content: space-between; gap: 1rem; padding: 1.2rem 1.25rem; border: 1px solid var(--border-primary); border-radius: 1rem; background: linear-gradient(145deg, rgba(5, 12, 24, 0.96), rgba(10, 16, 30, 0.88)); box-shadow: 0 16px 38px rgba(0, 0, 0, 0.18); }
+.gym-eyebrow { display: inline-flex; margin-bottom: 0.45rem; color: var(--color-primary-light); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.gym-hero h1 { margin: 0; font-size: 1.9rem; color: var(--text-primary); }
+.gym-hero p { max-width: 58rem; margin: 0.55rem 0 0; color: var(--text-secondary); }
+.gym-role-chip { align-self: center; display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.8rem 1rem; border-radius: 999px; border: 1px solid var(--border-secondary); background: rgba(10, 18, 32, 0.86); color: var(--text-primary); white-space: nowrap; }
+.gym-summary-grid { margin-top: 1rem; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.85rem; }
+.gym-summary-card { display: flex; align-items: center; gap: 0.9rem; padding: 0.95rem 1rem; border: 1px solid var(--border-primary); border-radius: 0.95rem; background: rgba(8, 14, 26, 0.88); }
+.gym-summary-card svg { font-size: 1.25rem; color: var(--color-primary-light); }
+.gym-summary-card span { display: block; color: var(--text-secondary); font-size: 0.8rem; }
+.gym-summary-card strong { display: block; margin-top: 0.15rem; font-size: 1.35rem; color: var(--text-primary); }
+.gym-content-grid { margin-top: 1rem; display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.55fr); gap: 1rem; align-items: start; }
+.gym-stack { display: grid; gap: 1rem; }
+.gym-panel { border: 1px solid var(--border-primary); border-radius: 1rem; background: rgba(8, 14, 26, 0.9); overflow: hidden; }
+.gym-panel-head { padding: 1rem 1rem 0.8rem; }
+.gym-panel-head h2 { margin: 0; color: var(--text-primary); font-size: 1.05rem; }
+.gym-panel-head p { margin: 0.35rem 0 0; color: var(--text-secondary); font-size: 0.9rem; }
+.gym-policy-list { margin: 0; padding: 0 1rem; list-style: none; display: grid; gap: 0.55rem; }
+.gym-policy-list li, .gym-rule-card { color: var(--text-secondary); border: 1px solid var(--border-secondary); border-radius: 0.8rem; background: rgba(11, 18, 32, 0.7); }
+.gym-policy-list li { padding: 0.75rem 0.8rem; }
+.gym-plan-grid { padding: 1rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+.gym-plan-card { min-height: 5.5rem; border: 1px solid var(--border-secondary); border-radius: 0.85rem; background: rgba(15, 22, 37, 0.85); color: var(--text-primary); text-align: left; padding: 0.85rem; cursor: pointer; }
+.gym-plan-card span, .gym-plan-card strong { display: block; }
+.gym-plan-card span { font-size: 0.82rem; color: var(--text-secondary); }
+.gym-plan-card strong { margin-top: 0.35rem; font-size: 0.92rem; }
+.gym-plan-card.active { border-color: var(--color-primary); box-shadow: 0 0 0 1px rgba(0, 196, 255, 0.28) inset; }
+.gym-rule-card { margin: 0 1rem 0.7rem; padding: 0.85rem; }
+.gym-rule-card strong { display: block; color: var(--text-primary); margin-bottom: 0.15rem; }
+.gym-rule-card span { color: var(--text-secondary); }
+.gym-primary-btn, .gym-secondary-btn, .gym-danger-btn, .gym-row-btn, .gym-close-btn { border: 1px solid transparent; border-radius: 0.55rem; cursor: pointer; transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, border-color 0.18s ease; }
+.gym-primary-btn, .gym-secondary-btn, .gym-danger-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 2.65rem; padding: 0.62rem 1rem; font-weight: 700; }
+.gym-primary-btn { background: linear-gradient(135deg, var(--color-primary), var(--color-accent)); color: #fff; }
+.gym-secondary-btn { background: transparent; color: var(--text-primary); border-color: var(--border-secondary); }
+.gym-danger-btn { background: rgba(185, 28, 28, 0.18); color: #fecaca; border-color: rgba(248, 113, 113, 0.28); }
+.gym-primary-btn:hover, .gym-secondary-btn:hover, .gym-danger-btn:hover, .gym-row-btn:hover { transform: translateY(-1px); }
+.gym-table-panel { min-width: 0; }
+.gym-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.gym-toolbar-actions { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
+.gym-search-box, .gym-filter-box { display: inline-flex; align-items: center; gap: 0.55rem; min-height: 2.7rem; padding: 0 0.8rem; border-radius: 0.7rem; border: 1px solid var(--border-secondary); background: rgba(12, 18, 30, 0.9); color: var(--text-secondary); }
+.gym-search-box input, .gym-filter-box select, .gym-form select, .gym-form textarea, .gym-detail-grid strong { color: var(--text-primary); }
+.gym-search-box input, .gym-filter-box select, .gym-form select, .gym-form textarea { border: none; outline: none; background: transparent; font: inherit; width: 100%; }
+.gym-search-box input { min-width: 18rem; }
+.gym-alert { margin: 0 1rem 1rem; padding: 0.8rem 0.9rem; border-radius: 0.8rem; border: 1px solid transparent; }
+.gym-alert.success { background: rgba(20, 83, 45, 0.24); color: #bbf7d0; border-color: rgba(74, 222, 128, 0.2); }
+.gym-alert.error { background: rgba(127, 29, 29, 0.24); color: #fecaca; border-color: rgba(248, 113, 113, 0.22); }
+.gym-alert.info { background: rgba(30, 64, 175, 0.18); color: #dbeafe; border-color: rgba(96, 165, 250, 0.18); }
+.gym-table-wrap { overflow: auto; padding: 0 1rem 1rem; }
+.gym-table { width: 100%; min-width: 960px; border-collapse: collapse; }
+.gym-table th, .gym-table td { padding: 0.8rem 0.65rem; border-bottom: 1px solid var(--border-secondary); color: var(--text-secondary); text-align: left; vertical-align: top; }
+.gym-table th { color: var(--text-primary); font-size: 0.85rem; }
+.gym-table tbody tr { cursor: pointer; }
+.gym-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.gym-person-cell strong, .gym-detail-grid strong { display: block; }
+.gym-person-cell span, .gym-detail-grid span { display: block; margin-top: 0.2rem; font-size: 0.8rem; color: var(--text-tertiary); }
+.gym-status-pill { display: inline-flex; align-items: center; min-height: 1.75rem; padding: 0.18rem 0.55rem; border-radius: 999px; font-size: 0.78rem; font-weight: 700; }
+.gym-status-pill.pending, .gym-status-pill.reviewing { background: rgba(180, 83, 9, 0.22); color: #fde68a; }
+.gym-status-pill.approved { background: rgba(21, 128, 61, 0.22); color: #bbf7d0; }
+.gym-status-pill.rejected { background: rgba(153, 27, 27, 0.24); color: #fecaca; }
+.gym-row-btn { min-height: 2rem; padding: 0.35rem 0.7rem; background: transparent; color: var(--text-primary); border-color: var(--border-secondary); }
+.gym-empty-state { padding: 3rem 1rem; text-align: center; color: var(--text-secondary); }
+.gym-empty-state h3 { margin: 0 0 0.25rem; color: var(--text-primary); }
+.gym-modal-backdrop { position: fixed; inset: 0; z-index: 70; background: rgba(2, 6, 23, 0.72); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.gym-modal { width: min(760px, 100%); max-height: 90vh; overflow: auto; border: 1px solid var(--border-primary); border-radius: 1rem; background: linear-gradient(180deg, rgba(8, 14, 26, 0.98), rgba(7, 12, 21, 0.96)); box-shadow: 0 20px 52px rgba(0, 0, 0, 0.32); }
+.gym-details-modal { width: min(680px, 100%); }
+.gym-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--border-primary); }
+.gym-modal-head h3 { margin: 0; color: var(--text-primary); }
+.gym-close-btn { width: 2.2rem; height: 2.2rem; display: inline-flex; align-items: center; justify-content: center; background: transparent; color: var(--text-secondary); border-color: var(--border-secondary); }
+.gym-form, .gym-detail-grid, .gym-admin-actions { padding: 1rem; }
+.gym-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
+.gym-form label, .gym-detail-grid div { display: grid; gap: 0.35rem; color: var(--text-secondary); }
+.gym-form label, .gym-form textarea, .gym-form select { min-width: 0; }
+.gym-form select, .gym-form textarea { padding: 0.75rem 0.8rem; border-radius: 0.7rem; border: 1px solid var(--border-secondary); background: rgba(12, 18, 30, 0.88); }
+.gym-form textarea { resize: vertical; }
+.gym-form .full-width, .gym-detail-grid .full-width, .gym-modal-actions.full-width { grid-column: 1 / -1; }
+.gym-modal-actions { display: flex; justify-content: flex-end; gap: 0.65rem; }
+.gym-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
+.gym-detail-grid div { padding: 0.85rem; border: 1px solid var(--border-secondary); border-radius: 0.8rem; background: rgba(12, 18, 30, 0.78); }
+.gym-detail-grid strong { margin-top: 0.2rem; }
+.gym-admin-actions { padding-top: 0; }
+html[data-theme="light"] .gym-hero, html[data-theme="light"] .gym-summary-card, html[data-theme="light"] .gym-panel, html[data-theme="light"] .gym-modal { background: linear-gradient(180deg, #ffffff, #f3f7fc); }
+html[data-theme="light"] .gym-summary-card, html[data-theme="light"] .gym-panel, html[data-theme="light"] .gym-role-chip, html[data-theme="light"] .gym-search-box, html[data-theme="light"] .gym-filter-box, html[data-theme="light"] .gym-form select, html[data-theme="light"] .gym-form textarea, html[data-theme="light"] .gym-detail-grid div, html[data-theme="light"] .gym-rule-card, html[data-theme="light"] .gym-plan-card, html[data-theme="light"] .gym-table th, html[data-theme="light"] .gym-table td { border-color: var(--border-primary); }
+html[data-theme="light"] .gym-hero h1, html[data-theme="light"] .gym-panel-head h2, html[data-theme="light"] .gym-empty-state h3, html[data-theme="light"] .gym-table th, html[data-theme="light"] .gym-role-chip, html[data-theme="light"] .gym-plan-card strong, html[data-theme="light"] .gym-rule-card strong, html[data-theme="light"] .gym-detail-grid strong { color: var(--text-primary); }
+html[data-theme="light"] .gym-hero p, html[data-theme="light"] .gym-panel-head p, html[data-theme="light"] .gym-summary-card span, html[data-theme="light"] .gym-person-cell span, html[data-theme="light"] .gym-detail-grid span, html[data-theme="light"] .gym-rule-card span, html[data-theme="light"] .gym-policy-list li, html[data-theme="light"] .gym-table td, html[data-theme="light"] .gym-empty-state { color: var(--text-secondary); }
+html[data-theme="light"] .gym-hero { background: linear-gradient(145deg, #f9fcff, #edf3fb); }
+html[data-theme="light"] .gym-role-chip, html[data-theme="light"] .gym-search-box, html[data-theme="light"] .gym-filter-box, html[data-theme="light"] .gym-form select, html[data-theme="light"] .gym-form textarea { background: #ffffff; }
+html[data-theme="light"] .gym-panel, html[data-theme="light"] .gym-summary-card, html[data-theme="light"] .gym-modal { box-shadow: 0 10px 26px rgba(31, 79, 138, 0.08); }
+@media (max-width: 1180px) { .gym-content-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .gym-hero, .gym-toolbar { flex-direction: column; } .gym-summary-grid, .gym-plan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gym-form, .gym-detail-grid { grid-template-columns: 1fr; } .gym-search-box input { min-width: 12rem; } }
+@media (max-width: 640px) { .gym-summary-grid, .gym-plan-grid { grid-template-columns: 1fr; } .gym-modal-actions { flex-direction: column; } .gym-primary-btn, .gym-secondary-btn, .gym-danger-btn { width: 100%; } }

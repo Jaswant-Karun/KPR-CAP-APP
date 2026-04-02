@@ -6,6 +6,11 @@ const {
 	createServiceRequest,
 	listServiceRequests,
 	updateServiceRequestStatus,
+	acceptIdCardReissueRequest,
+	escalateIdCardReissueRequest,
+	grantIboxRequisitionPermission,
+	convertIboxRequisitionToComplaint,
+	deleteServiceRequest,
 	createHallTicket,
 	listHallTickets,
 	downloadHallTicket,
@@ -42,6 +47,11 @@ router.use(auth);
 router.post("/requests", allowRoles(["student", "faculty", "admin"]), createServiceRequest);
 router.get("/requests", allowRoles(["student", "faculty", "admin"]), listServiceRequests);
 router.patch("/requests/:requestId/status", allowRoles(["faculty", "admin"]), updateServiceRequestStatus);
+router.patch("/requests/:requestId/id-card-accept", allowRoles(["faculty", "admin"]), acceptIdCardReissueRequest);
+router.patch("/requests/:requestId/id-card-escalate", allowRoles(["faculty"]), escalateIdCardReissueRequest);
+router.patch("/requests/:requestId/ibox-permission", allowRoles(["student"]), grantIboxRequisitionPermission);
+router.post("/requests/:requestId/ibox-convert", allowRoles(["faculty"]), convertIboxRequisitionToComplaint);
+router.delete("/requests/:requestId", allowRoles(["student", "faculty", "admin"]), deleteServiceRequest);
 
 router.post("/hall-tickets/upload", allowRoles(["admin"]), normalizeUploadPayload, createHallTicket);
 router.get("/hall-tickets", allowRoles(["student", "faculty", "admin"]), listHallTickets);

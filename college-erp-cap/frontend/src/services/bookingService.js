@@ -51,3 +51,32 @@ export const registerEvent = (eventId, token) =>
 
 export const unregisterEvent = (eventId, token) =>
   apiRequest(`/services/events/${eventId}/register`, "DELETE", null, token);
+
+export const createServiceRequest = (payload, token) =>
+  apiRequest("/services/requests", "POST", payload, token);
+
+export const getServiceRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  if (filters.category) params.set("category", filters.category);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/requests${query}`, "GET", null, token);
+};
+
+export const updateServiceRequestStatus = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/status`, "PATCH", payload, token);
+
+export const grantIboxRequisitionPermission = (requestId, token) =>
+  apiRequest(`/services/requests/${requestId}/ibox-permission`, "PATCH", null, token);
+
+export const convertIboxRequisitionToComplaint = (requestId, token) =>
+  apiRequest(`/services/requests/${requestId}/ibox-convert`, "POST", null, token);
+
+export const acceptIdCardReissueRequest = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/id-card-accept`, "PATCH", payload, token);
+
+export const escalateIdCardReissueRequest = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/id-card-escalate`, "PATCH", payload, token);
+
+export const deleteServiceRequest = (requestId, token) =>
+  apiRequest(`/services/requests/${requestId}`, "DELETE", null, token);
