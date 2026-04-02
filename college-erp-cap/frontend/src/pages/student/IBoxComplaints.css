@@ -1,0 +1,387 @@
+.ibox-page {
+  padding: 1rem;
+  color: var(--text-primary);
+}
+
+.ibox-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.9rem;
+  background: var(--gradient-primary);
+  padding: 1rem 1.1rem;
+}
+
+.ibox-hero h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.ibox-hero p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+}
+
+.ibox-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  min-width: 320px;
+}
+
+.ibox-hero-stats article {
+  border: 1px solid var(--border-secondary);
+  border-radius: 0.7rem;
+  background: var(--bg-card);
+  padding: 0.6rem;
+}
+
+.ibox-hero-stats span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.ibox-hero-stats strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+}
+
+.ibox-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.75rem;
+}
+
+.ibox-readonly-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+}
+
+.ibox-btn {
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ibox-btn.primary {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--border-secondary);
+}
+
+.ibox-btn.primary:hover {
+  background: var(--button-bg-hover);
+}
+
+.ibox-btn.warning {
+  background: rgba(217, 119, 6, 0.18);
+  border-color: rgba(251, 191, 36, 0.34);
+  color: #fcd34d;
+}
+
+.ibox-btn.warning:hover {
+  background: rgba(217, 119, 6, 0.28);
+}
+
+.ibox-btn.danger {
+  background: rgba(190, 24, 24, 0.14);
+  border-color: rgba(248, 113, 113, 0.36);
+  color: #fecaca;
+}
+
+.ibox-form-card {
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.85rem;
+  background: var(--bg-card);
+  padding: 0.9rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.ibox-form-card h3 {
+  margin: 0;
+  grid-column: 1 / -1;
+}
+
+.ibox-form-card label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--text-secondary);
+}
+
+.ibox-form-card textarea,
+.ibox-form-card select,
+.ibox-form-card input {
+  border: 1px solid var(--border-secondary);
+  border-radius: 0.5rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  padding: 0.55rem 0.65rem;
+}
+
+.ibox-form-card textarea {
+  grid-column: 1 / -1;
+  resize: vertical;
+}
+
+.ibox-form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ibox-table-card {
+  margin-top: 0.85rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 0.9rem;
+  background: var(--bg-card);
+}
+
+.ibox-toolbar {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.ibox-search,
+.ibox-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid var(--border-secondary);
+  border-radius: 0.5rem;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  padding: 0 0.7rem;
+  min-height: 2.35rem;
+}
+
+.ibox-search input,
+.ibox-filter select {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.ibox-search input {
+  width: 270px;
+}
+
+.ibox-message {
+  margin: 0.7rem 0.8rem 0;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.ibox-message.success {
+  background: rgba(21, 128, 61, 0.18);
+  border-color: rgba(74, 222, 128, 0.24);
+  color: #bbf7d0;
+}
+
+.ibox-message.error {
+  background: rgba(127, 29, 29, 0.18);
+  border-color: rgba(248, 113, 113, 0.24);
+  color: #fecaca;
+}
+
+.ibox-message.info {
+  background: rgba(30, 64, 175, 0.18);
+  border-color: rgba(96, 165, 250, 0.2);
+  color: #dbeafe;
+}
+
+.ibox-table-wrap {
+  overflow: auto;
+  min-height: 360px;
+}
+
+.ibox-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+}
+
+.ibox-table th,
+.ibox-table td {
+  border-bottom: 1px solid var(--border-primary);
+  padding: 0.68rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ibox-table th {
+  color: var(--text-primary);
+}
+
+.ibox-table td {
+  color: var(--text-secondary);
+}
+
+.ibox-table td strong {
+  display: block;
+  color: var(--text-primary);
+}
+
+.ibox-table td span {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.ibox-status {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ibox-status.pending {
+  background: rgba(180, 83, 9, 0.2);
+  color: #fde68a;
+}
+
+.ibox-status.reviewed {
+  background: rgba(20, 83, 45, 0.22);
+  color: #bbf7d0;
+}
+
+.ibox-status.rejected {
+  background: rgba(127, 29, 29, 0.22);
+  color: #fecaca;
+}
+
+.ibox-consent {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ibox-consent.pending {
+  background: rgba(30, 64, 175, 0.2);
+  color: #bfdbfe;
+}
+
+.ibox-consent.granted {
+  background: rgba(15, 118, 110, 0.2);
+  color: #99f6e4;
+}
+
+.ibox-consent.converted {
+  background: rgba(20, 83, 45, 0.22);
+  color: #bbf7d0;
+}
+
+.ibox-view-only {
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+}
+
+.ibox-action-stack {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.ibox-empty {
+  padding: 3.5rem 0;
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.ibox-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.ibox-modal-card {
+  width: min(540px, 100%);
+  border: 1px solid var(--border-secondary);
+  border-radius: 0.8rem;
+  background: var(--bg-card);
+  padding: 1rem;
+}
+
+.ibox-modal-card h3 {
+  margin: 0;
+}
+
+.ibox-modal-card p {
+  margin: 0.65rem 0;
+  color: var(--text-secondary);
+}
+
+.ibox-consent-check {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  color: var(--text-primary);
+}
+
+.ibox-consent-check input {
+  margin-top: 0.2rem;
+}
+
+.ibox-modal-actions {
+  margin-top: 0.9rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+}
+
+@media (max-width: 1000px) {
+  .ibox-hero {
+    flex-direction: column;
+  }
+
+  .ibox-hero-stats {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 820px) {
+  .ibox-form-card {
+    grid-template-columns: 1fr;
+  }
+
+  .ibox-toolbar {
+    flex-direction: column;
+  }
+
+  .ibox-search input {
+    width: 190px;
+  }
+}

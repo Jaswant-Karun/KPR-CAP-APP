@@ -7,6 +7,10 @@ import Attendance from '../pages/student/Attendance';
 import Project from '../pages/student/Project';
 import Booking from '../pages/student/Booking';
 import Events from '../pages/student/Events';
+import GymSubscription from '../pages/student/GymSubscription';
+import IBoxComplaints from '../pages/student/IBoxComplaints';
+import IdCardReissueRequests from '../pages/student/IdCardReissueRequests';
+import WiFiRequests from '../pages/student/WiFiRequests';
 import AOServiceSupport from '../pages/student/AOServiceSupport';
 import FusionSpace from '../pages/student/FusionSpace';
 import CFAC from '../pages/student/CFAC';
@@ -41,6 +45,10 @@ export default function StudentRoutes() {
         <Route path="final-year-project" element={<Project />} />
         <Route path="booking" element={<Booking />} />
         <Route path="events" element={<Events />} />
+        <Route path="gym" element={<GymSubscription />} />
+        <Route path="complaints" element={<IBoxComplaints />} />
+        <Route path="id-card" element={<IdCardReissueRequests />} />
+        <Route path="wifi-request" element={<WiFiRequests />} />
         <Route path="ao-service" element={<AOServiceSupport />} />
         <Route path="fusion-space" element={<FusionSpace />} />
         <Route path="cfac" element={<CFAC />} />

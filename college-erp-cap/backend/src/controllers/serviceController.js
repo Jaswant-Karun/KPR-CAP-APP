@@ -1147,14 +1147,58 @@ const createServiceRequest = (req, res) => {
 		return res.status(400).json({ message: validation.message });
 	}
 
+	const normalizedCategory = String(payload.category || "").trim().toLowerCase();
+	const actorRole = String(req.user?.role || "").toLowerCase();
+	const entryType = String(req.body?.metadata?.entryType || "").toLowerCase();
+
+	if (normalizedCategory === "ibox") {
+		if (actorRole === "admin") {
+			return res.status(403).json({ message: "Admin can only view I-BOX records" });
+		}
+
+		if (actorRole === "faculty" && entryType && entryType !== "complaint") {
+			return res.status(400).json({ message: "Faculty I-BOX entries must be complaint type" });
+		}
+
+		if (actorRole === "student" && entryType && entryType !== "requisition") {
+			return res.status(400).json({ message: "Student I-BOX entries must be requisition type" });
+		}
+	}
+
+	if (normalizedCategory === "idcard-reissue") {
+		if (actorRole !== "student") {
+			return res.status(403).json({ message: "Only students can create ID card reissue requisitions" });
+		}
+
+		if (entryType && entryType !== "requisition") {
+			return res.status(400).json({ message: "ID card requests must be requisition type" });
+		}
+	}
+
+	if (normalizedCategory === "wifi-request") {
+		if (!["student", "faculty"].includes(actorRole)) {
+			return res.status(403).json({ message: "Only students and faculty can create Wi-Fi requests" });
+		}
+
+		if (req.body?.metadata?.macAddress && String(req.body.metadata.macAddress).trim().length < 8) {
+			return res.status(400).json({ message: "Valid MAC address is required" });
+		}
+	}
+
 	const requestItem = {
 		id: nextServiceRequestId++,
 		title: payload.title,
-		category: payload.category,
+		category: normalizedCategory,
 		description: payload.description,
 		status: "open",
 		createdBy: req.user?.id || null,
 		role: req.user?.role || "student",
+		createdByName: req.user?.name || null,
+		createdByEmail: req.user?.email || null,
+		createdByRollNo: req.user?.rollNo || null,
+		createdByDepartment: req.user?.department || null,
+		metadata: req.body?.metadata || null,
+		remarks: req.body?.remarks || "",
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
@@ -1167,6 +1211,7 @@ const listServiceRequests = (req, res) => {
 	const role = req.user?.role;
 	const userId = req.user?.id;
 	const status = String(req.query?.status || "").trim().toLowerCase();
+	const category = String(req.query?.category || "").trim().toLowerCase();
 
 	let rows = serviceRequests;
 	if (role === "student") {
@@ -1177,13 +1222,19 @@ const listServiceRequests = (req, res) => {
 		rows = rows.filter((item) => item.status === status);
 	}
 
+	if (category) {
+		rows = rows.filter((item) => String(item.category || "").trim().toLowerCase() === category);
+	}
+
+	rows = [...rows].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
 	return res.json({ total: rows.length, requests: rows });
 };
 
 const updateServiceRequestStatus = (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const status = String(req.body?.status || "").toLowerCase();
-	const allowed = ["open", "in-progress", "resolved", "rejected"];
+	const allowed = ["open", "pending", "in-progress", "resolved", "approved", "rejected"];
 
 	if (!allowed.includes(status)) {
 		return res.status(400).json({ message: "Invalid status value" });
@@ -1194,9 +1245,269 @@ const updateServiceRequestStatus = (req, res) => {
 		return res.status(404).json({ message: "Service request not found" });
 	}
 
+	if (String(target.category || "").toLowerCase() === "wifi-request" && String(req.user?.role || "").toLowerCase() !== "admin") {
+		return res.status(403).json({ message: "Only admin can control Wi-Fi requests" });
+	}
+
 	target.status = status;
+	target.remarks = req.body?.remarks ?? target.remarks ?? "";
 	target.updatedAt = new Date().toISOString();
 	return res.json({ message: "Service request updated", request: target });
+};
+
+const acceptIdCardReissueRequest = (req, res) => {
+	const requestId = Number(req.params.requestId);
+	const actorRole = String(req.user?.role || "").toLowerCase();
+
+	if (!requestId) {
+		return res.status(400).json({ message: "Invalid request id" });
+	}
+
+	if (!["faculty", "admin"].includes(actorRole)) {
+		return res.status(403).json({ message: "Only faculty or admin can accept ID card requests" });
+	}
+
+	const target = serviceRequests.find((item) => item.id === requestId);
+	if (!target) {
+		return res.status(404).json({ message: "Service request not found" });
+	}
+
+	const category = String(target.category || "").toLowerCase();
+	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+	const entryType = String(metadata.entryType || "").toLowerCase();
+	const severity = String(metadata.issueSeverity || "minor").toLowerCase();
+
+	if (category !== "idcard-reissue" || entryType !== "requisition") {
+		return res.status(400).json({ message: "Only ID card requisitions can be accepted here" });
+	}
+
+	if (["approved", "resolved", "rejected"].includes(String(target.status || "").toLowerCase())) {
+		return res.status(400).json({ message: "This request is already finalized" });
+	}
+
+	if (actorRole === "faculty" && severity !== "minor") {
+		return res.status(403).json({
+			message: "Faculty can accept only minor mistakes. Major, photo, or full reissue must be handled by admin.",
+		});
+	}
+
+	target.status = "approved";
+	target.remarks = String(req.body?.remarks || target.remarks || "");
+	target.metadata = {
+		...metadata,
+		handledByRole: actorRole,
+		handledById: req.user?.id || null,
+		handledByName: req.user?.name || null,
+		handledAt: new Date().toISOString(),
+		resolution: req.body?.resolution && typeof req.body.resolution === "object" ? req.body.resolution : metadata.resolution || null,
+	};
+	target.updatedAt = new Date().toISOString();
+
+	return res.json({ message: "ID card requisition accepted", request: target });
+};
+
+const escalateIdCardReissueRequest = (req, res) => {
+	const requestId = Number(req.params.requestId);
+	const actorRole = String(req.user?.role || "").toLowerCase();
+
+	if (!requestId) {
+		return res.status(400).json({ message: "Invalid request id" });
+	}
+
+	if (actorRole !== "faculty") {
+		return res.status(403).json({ message: "Only faculty can escalate ID card requests" });
+	}
+
+	const target = serviceRequests.find((item) => item.id === requestId);
+	if (!target) {
+		return res.status(404).json({ message: "Service request not found" });
+	}
+
+	const category = String(target.category || "").toLowerCase();
+	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+	const entryType = String(metadata.entryType || "").toLowerCase();
+	const severity = String(metadata.issueSeverity || "minor").toLowerCase();
+
+	if (category !== "idcard-reissue" || entryType !== "requisition") {
+		return res.status(400).json({ message: "Only ID card requisitions can be escalated here" });
+	}
+
+	if (["approved", "resolved", "rejected"].includes(String(target.status || "").toLowerCase())) {
+		return res.status(400).json({ message: "This request is already finalized" });
+	}
+
+	if (severity === "minor") {
+		return res.status(400).json({ message: "Minor issues should be handled by faculty directly" });
+	}
+
+	if (metadata.escalatedToAdmin) {
+		return res.status(400).json({ message: "Request already escalated to admin" });
+	}
+
+	target.status = "pending";
+	target.remarks = String(req.body?.remarks || "Escalated to admin by faculty");
+	target.metadata = {
+		...metadata,
+		escalatedToAdmin: true,
+		escalatedByRole: "faculty",
+		escalatedById: req.user?.id || null,
+		escalatedByName: req.user?.name || null,
+		escalatedAt: new Date().toISOString(),
+	};
+	target.updatedAt = new Date().toISOString();
+
+	return res.json({ message: "ID card requisition escalated to admin", request: target });
+};
+
+const grantIboxRequisitionPermission = (req, res) => {
+	const requestId = Number(req.params.requestId);
+	const actorId = Number(req.user?.id || 0);
+
+	if (!requestId) {
+		return res.status(400).json({ message: "Invalid request id" });
+	}
+
+	const target = serviceRequests.find((item) => item.id === requestId);
+	if (!target) {
+		return res.status(404).json({ message: "Service request not found" });
+	}
+
+	const category = String(target.category || "").toLowerCase();
+	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+	const entryType = String(metadata.entryType || "").toLowerCase();
+
+	if (category !== "ibox" || entryType !== "requisition") {
+		return res.status(400).json({ message: "Permission can be given only for I-BOX requisitions" });
+	}
+
+	if (Number(target.createdBy || 0) !== actorId) {
+		return res.status(403).json({ message: "Only the requisition owner can give permission" });
+	}
+
+	if (metadata.permissionGranted) {
+		return res.status(400).json({ message: "Permission already granted for this requisition" });
+	}
+
+	target.metadata = {
+		...metadata,
+		permissionGranted: true,
+		permissionGrantedAt: new Date().toISOString(),
+		permissionGrantedBy: actorId,
+	};
+	target.updatedAt = new Date().toISOString();
+
+	return res.json({ message: "Permission granted. Faculty can now convert this requisition.", request: target });
+};
+
+const convertIboxRequisitionToComplaint = (req, res) => {
+	const requestId = Number(req.params.requestId);
+	const actorRole = String(req.user?.role || "").toLowerCase();
+
+	if (!requestId) {
+		return res.status(400).json({ message: "Invalid request id" });
+	}
+
+	if (actorRole !== "faculty") {
+		return res.status(403).json({ message: "Only faculty can convert requisitions" });
+	}
+
+	const target = serviceRequests.find((item) => item.id === requestId);
+	if (!target) {
+		return res.status(404).json({ message: "Service request not found" });
+	}
+
+	const category = String(target.category || "").toLowerCase();
+	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+	const entryType = String(metadata.entryType || "").toLowerCase();
+
+	if (category !== "ibox" || entryType !== "requisition") {
+		return res.status(400).json({ message: "Only I-BOX requisitions can be converted" });
+	}
+
+	if (!metadata.permissionGranted) {
+		return res.status(400).json({ message: "Student permission is required before conversion" });
+	}
+
+	if (metadata.convertedToComplaintId) {
+		return res.status(400).json({ message: "Requisition already converted to complaint" });
+	}
+
+	const complaintItem = {
+		id: nextServiceRequestId++,
+		title: `I-BOX Complaint - ${metadata.complaintType || "Other"}`,
+		category: "ibox",
+		description: target.description,
+		status: "pending",
+		createdBy: req.user?.id || null,
+		role: req.user?.role || "faculty",
+		createdByName: req.user?.name || null,
+		createdByEmail: req.user?.email || null,
+		createdByRollNo: req.user?.rollNo || null,
+		createdByDepartment: req.user?.department || null,
+		metadata: {
+			entryType: "complaint",
+			complaintType: metadata.complaintType || "Other",
+			againstName: metadata.studentName || target.createdByName || "-",
+			againstRollNo: metadata.studentRollNo || target.createdByRollNo || "-",
+			studentName: metadata.studentName || target.createdByName || "-",
+			studentRollNo: metadata.studentRollNo || target.createdByRollNo || "-",
+			convertedFromRequisitionId: target.id,
+			convertedByFacultyId: req.user?.id || null,
+			convertedByFacultyName: req.user?.name || "Faculty",
+			convertedAt: new Date().toISOString(),
+		},
+		remarks: `Converted from requisition IBX-${String(target.id).padStart(4, "0")}`,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString(),
+	};
+
+	target.metadata = {
+		...metadata,
+		convertedToComplaintId: complaintItem.id,
+		convertedAt: new Date().toISOString(),
+		convertedByFacultyId: req.user?.id || null,
+	};
+	target.status = "approved";
+	target.remarks = `Converted to complaint IBX-${String(complaintItem.id).padStart(4, "0")}`;
+	target.updatedAt = new Date().toISOString();
+
+	serviceRequests.push(complaintItem);
+
+	return res.json({
+		message: "Requisition converted to official complaint",
+		requisition: target,
+		complaint: complaintItem,
+	});
+};
+
+const deleteServiceRequest = (req, res) => {
+	const requestId = Number(req.params.requestId);
+	const actorRole = String(req.user?.role || "").toLowerCase();
+	const actorId = Number(req.user?.id || 0);
+
+	const index = serviceRequests.findIndex((item) => item.id === requestId);
+	if (index < 0) {
+		return res.status(404).json({ message: "Service request not found" });
+	}
+
+	const target = serviceRequests[index];
+	const category = String(target.category || "").toLowerCase();
+
+	if (category === "ibox") {
+		if (actorRole !== "faculty") {
+			return res.status(403).json({ message: "Only faculty can delete I-BOX records" });
+		}
+	} else {
+		const isAdminOrFaculty = actorRole === "admin" || actorRole === "faculty";
+		const isOwnerStudent = actorRole === "student" && Number(target.createdBy || 0) === actorId;
+
+		if (!isAdminOrFaculty && !isOwnerStudent) {
+			return res.status(403).json({ message: "Not allowed to delete this request" });
+		}
+	}
+
+	serviceRequests.splice(index, 1);
+	return res.json({ message: "Service request deleted", requestId });
 };
 
 const createGatepassRequest = async (req, res) => {
@@ -2589,6 +2900,11 @@ module.exports = {
 	createServiceRequest,
 	listServiceRequests,
 	updateServiceRequestStatus,
+	acceptIdCardReissueRequest,
+	escalateIdCardReissueRequest,
+	grantIboxRequisitionPermission,
+	convertIboxRequisitionToComplaint,
+	deleteServiceRequest,
 	createHallTicket,
 	listHallTickets,
 	downloadHallTicket,

@@ -21,6 +21,10 @@ import FusionSpaceApprovals from "../pages/faculty/FusionSpaceApprovals";
 import HallTicket from "../pages/HallTicket";
 import DigitalAssets from "../pages/DigitalAssets";
 import Events from "../pages/student/Events";
+import GymSubscription from "../pages/student/GymSubscription";
+import IBoxComplaints from "../pages/student/IBoxComplaints";
+import IdCardReissueRequests from "../pages/student/IdCardReissueRequests";
+import WiFiRequests from "../pages/student/WiFiRequests";
 
 export default function AdminRoutes() {
   return (
@@ -58,6 +62,10 @@ export default function AdminRoutes() {
         <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
         <Route path="digital-assets" element={<DigitalAssets />} />
         <Route path="events" element={<Events />} />
+        <Route path="gym" element={<GymSubscription />} />
+        <Route path="complaints" element={<IBoxComplaints />} />
+        <Route path="id-card" element={<IdCardReissueRequests />} />
+        <Route path="wifi-request" element={<WiFiRequests />} />
       </Route>
     </Routes>
   );
