@@ -97,6 +97,7 @@ export default function Login() {
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? "Signing in..." : "Sign In"} <FaArrowRight />
           </button>
+
         </form>
 
         <p className="auth-switch">

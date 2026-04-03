@@ -1135,7 +1135,25 @@ const updateWaiverRequestStatus = async (req, res) => {
 	}
 };
 
-const createServiceRequest = (req, res) => {
+const mapServiceRequestRow = (row) => ({
+	id: row.id,
+	title: row.title,
+	category: row.category,
+	description: row.description,
+	status: row.status,
+	createdBy: row.created_by,
+	role: row.role,
+	createdByName: row.created_by_name,
+	createdByEmail: row.created_by_email,
+	createdByRollNo: row.created_by_roll_no,
+	createdByDepartment: row.created_by_department,
+	metadata: row.metadata,
+	remarks: row.remarks,
+	createdAt: row.created_at,
+	updatedAt: row.updated_at,
+});
+
+const createServiceRequest = async (req, res) => {
 	const payload = {
 		title: req.body?.title,
 		category: req.body?.category,
@@ -1185,77 +1203,148 @@ const createServiceRequest = (req, res) => {
 		}
 	}
 
-	const requestItem = {
-		id: nextServiceRequestId++,
-		title: payload.title,
-		category: normalizedCategory,
-		description: payload.description,
-		status: "open",
-		createdBy: req.user?.id || null,
-		role: req.user?.role || "student",
-		createdByName: req.user?.name || null,
-		createdByEmail: req.user?.email || null,
-		createdByRollNo: req.user?.rollNo || null,
-		createdByDepartment: req.user?.department || null,
-		metadata: req.body?.metadata || null,
-		remarks: req.body?.remarks || "",
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	};
+	if (normalizedCategory === "bonafide") {
+		if (actorRole !== "student") {
+			return res.status(403).json({ message: "Only students can create bonafide requests" });
+		}
+	}
 
-	serviceRequests.push(requestItem);
-	return res.status(201).json({ message: "Service request created", request: requestItem });
+	if (normalizedCategory === "hostel-app") {
+		if (actorRole !== "student") {
+			return res.status(403).json({ message: "Only students can create hostel application requests" });
+		}
+	}
+
+	if (normalizedCategory === "hostel-permission") {
+		if (actorRole !== "student") {
+			return res.status(403).json({ message: "Only students can create hostel stay permission requests" });
+		}
+	}
+
+	try {
+		const insert = await pool.query(
+			`INSERT INTO service_requests
+				(title, category, description, status, created_by, role, created_by_name, created_by_email, created_by_roll_no, created_by_department, metadata, remarks, created_at, updated_at)
+			 VALUES
+				($1, $2, $3, 'open', $4, $5, $6, $7, $8, $9, $10::jsonb, $11, NOW(), NOW())
+			 RETURNING *`,
+			[
+				payload.title,
+				normalizedCategory,
+				payload.description,
+				req.user?.id || null,
+				req.user?.role || "student",
+				req.user?.name || null,
+				req.user?.email || null,
+				req.user?.rollNo || null,
+				req.user?.department || null,
+				JSON.stringify(req.body?.metadata || null),
+				req.body?.remarks || "",
+			]
+		);
+
+		return res.status(201).json({
+			message: "Service request created",
+			request: mapServiceRequestRow(insert.rows[0]),
+		});
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to create service request", error: error.message });
+	}
 };
 
-const listServiceRequests = (req, res) => {
+const listServiceRequests = async (req, res) => {
 	const role = req.user?.role;
 	const userId = req.user?.id;
+	const userDepartment = String(req.user?.department || "").trim().toLowerCase();
 	const status = String(req.query?.status || "").trim().toLowerCase();
 	const category = String(req.query?.category || "").trim().toLowerCase();
 
-	let rows = serviceRequests;
-	if (role === "student") {
-		rows = rows.filter((item) => item.createdBy === userId);
+	try {
+		let query = "SELECT * FROM service_requests WHERE 1=1";
+		const params = [];
+
+		if (role === "student") {
+			params.push(userId);
+			query += ` AND created_by = $${params.length}`;
+		}
+
+		if (status) {
+			params.push(status);
+			query += ` AND status = $${params.length}`;
+		}
+
+		if (category) {
+			params.push(category);
+			query += ` AND LOWER(category) = $${params.length}`;
+		}
+
+		if (role === "faculty" && ["bonafide", "hostel-app", "hostel-permission"].includes(category)) {
+			if (userDepartment) {
+				params.push(userDepartment);
+				query += ` AND LOWER(COALESCE(created_by_department, '')) = $${params.length}`;
+			}
+		}
+
+		query += " ORDER BY created_at DESC";
+		const result = await pool.query(query, params);
+		const rows = result.rows.map(mapServiceRequestRow);
+
+		return res.json({ total: rows.length, requests: rows });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to list service requests", error: error.message });
 	}
-
-	if (status) {
-		rows = rows.filter((item) => item.status === status);
-	}
-
-	if (category) {
-		rows = rows.filter((item) => String(item.category || "").trim().toLowerCase() === category);
-	}
-
-	rows = [...rows].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-	return res.json({ total: rows.length, requests: rows });
 };
 
-const updateServiceRequestStatus = (req, res) => {
+const updateServiceRequestStatus = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const status = String(req.body?.status || "").toLowerCase();
+	const actorRole = String(req.user?.role || "").toLowerCase();
 	const allowed = ["open", "pending", "in-progress", "resolved", "approved", "rejected"];
 
 	if (!allowed.includes(status)) {
 		return res.status(400).json({ message: "Invalid status value" });
 	}
 
-	const target = serviceRequests.find((item) => item.id === requestId);
-	if (!target) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
+		}
 
-	if (String(target.category || "").toLowerCase() === "wifi-request" && String(req.user?.role || "").toLowerCase() !== "admin") {
-		return res.status(403).json({ message: "Only admin can control Wi-Fi requests" });
-	}
+		const target = mapServiceRequestRow(check.rows[0]);
+		const normalizedCategory = String(target.category || "").toLowerCase();
 
-	target.status = status;
-	target.remarks = req.body?.remarks ?? target.remarks ?? "";
-	target.updatedAt = new Date().toISOString();
-	return res.json({ message: "Service request updated", request: target });
+		if (normalizedCategory === "bonafide" && actorRole !== "faculty") {
+			return res.status(403).json({ message: "Only faculty can approve bonafide requests" });
+		}
+
+		if (normalizedCategory === "hostel-app" && actorRole !== "faculty") {
+			return res.status(403).json({ message: "Only faculty can approve hostel application requests" });
+		}
+
+		if (normalizedCategory === "hostel-permission" && actorRole !== "faculty") {
+			return res.status(403).json({ message: "Only faculty can approve hostel stay permission requests" });
+		}
+
+		if (normalizedCategory === "wifi-request" && actorRole !== "admin") {
+			return res.status(403).json({ message: "Only admin can control Wi-Fi requests" });
+		}
+
+		const updated = await pool.query(
+			`UPDATE service_requests
+			 SET status = $1, remarks = $2, updated_at = NOW()
+			 WHERE id = $3
+			 RETURNING *`,
+			[status, req.body?.remarks ?? target.remarks ?? "", requestId]
+		);
+
+		return res.json({ message: "Service request updated", request: mapServiceRequestRow(updated.rows[0]) });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to update service request", error: error.message });
+	}
 };
 
-const acceptIdCardReissueRequest = (req, res) => {
+const acceptIdCardReissueRequest = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const actorRole = String(req.user?.role || "").toLowerCase();
 
@@ -1267,13 +1356,15 @@ const acceptIdCardReissueRequest = (req, res) => {
 		return res.status(403).json({ message: "Only faculty or admin can accept ID card requests" });
 	}
 
-	const target = serviceRequests.find((item) => item.id === requestId);
-	if (!target) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
+		}
 
-	const category = String(target.category || "").toLowerCase();
-	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+		const target = mapServiceRequestRow(check.rows[0]);
+		const category = String(target.category || "").toLowerCase();
+		const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
 	const entryType = String(metadata.entryType || "").toLowerCase();
 	const severity = String(metadata.issueSeverity || "minor").toLowerCase();
 
@@ -1291,22 +1382,30 @@ const acceptIdCardReissueRequest = (req, res) => {
 		});
 	}
 
-	target.status = "approved";
-	target.remarks = String(req.body?.remarks || target.remarks || "");
-	target.metadata = {
+		const nextMetadata = {
 		...metadata,
 		handledByRole: actorRole,
 		handledById: req.user?.id || null,
 		handledByName: req.user?.name || null,
 		handledAt: new Date().toISOString(),
 		resolution: req.body?.resolution && typeof req.body.resolution === "object" ? req.body.resolution : metadata.resolution || null,
-	};
-	target.updatedAt = new Date().toISOString();
+		};
 
-	return res.json({ message: "ID card requisition accepted", request: target });
+		const updated = await pool.query(
+			`UPDATE service_requests
+			 SET status = 'approved', remarks = $1, metadata = $2::jsonb, updated_at = NOW()
+			 WHERE id = $3
+			 RETURNING *`,
+			[String(req.body?.remarks || target.remarks || ""), JSON.stringify(nextMetadata), requestId]
+		);
+
+		return res.json({ message: "ID card requisition accepted", request: mapServiceRequestRow(updated.rows[0]) });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to accept ID card request", error: error.message });
+	}
 };
 
-const escalateIdCardReissueRequest = (req, res) => {
+const escalateIdCardReissueRequest = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const actorRole = String(req.user?.role || "").toLowerCase();
 
@@ -1318,13 +1417,15 @@ const escalateIdCardReissueRequest = (req, res) => {
 		return res.status(403).json({ message: "Only faculty can escalate ID card requests" });
 	}
 
-	const target = serviceRequests.find((item) => item.id === requestId);
-	if (!target) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
+		}
 
-	const category = String(target.category || "").toLowerCase();
-	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+		const target = mapServiceRequestRow(check.rows[0]);
+		const category = String(target.category || "").toLowerCase();
+		const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
 	const entryType = String(metadata.entryType || "").toLowerCase();
 	const severity = String(metadata.issueSeverity || "minor").toLowerCase();
 
@@ -1344,22 +1445,30 @@ const escalateIdCardReissueRequest = (req, res) => {
 		return res.status(400).json({ message: "Request already escalated to admin" });
 	}
 
-	target.status = "pending";
-	target.remarks = String(req.body?.remarks || "Escalated to admin by faculty");
-	target.metadata = {
+		const nextMetadata = {
 		...metadata,
 		escalatedToAdmin: true,
 		escalatedByRole: "faculty",
 		escalatedById: req.user?.id || null,
 		escalatedByName: req.user?.name || null,
 		escalatedAt: new Date().toISOString(),
-	};
-	target.updatedAt = new Date().toISOString();
+		};
 
-	return res.json({ message: "ID card requisition escalated to admin", request: target });
+		const updated = await pool.query(
+			`UPDATE service_requests
+			 SET status = 'pending', remarks = $1, metadata = $2::jsonb, updated_at = NOW()
+			 WHERE id = $3
+			 RETURNING *`,
+			[String(req.body?.remarks || "Escalated to admin by faculty"), JSON.stringify(nextMetadata), requestId]
+		);
+
+		return res.json({ message: "ID card requisition escalated to admin", request: mapServiceRequestRow(updated.rows[0]) });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to escalate ID card request", error: error.message });
+	}
 };
 
-const grantIboxRequisitionPermission = (req, res) => {
+const grantIboxRequisitionPermission = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const actorId = Number(req.user?.id || 0);
 
@@ -1367,13 +1476,15 @@ const grantIboxRequisitionPermission = (req, res) => {
 		return res.status(400).json({ message: "Invalid request id" });
 	}
 
-	const target = serviceRequests.find((item) => item.id === requestId);
-	if (!target) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
+		}
 
-	const category = String(target.category || "").toLowerCase();
-	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+		const target = mapServiceRequestRow(check.rows[0]);
+		const category = String(target.category || "").toLowerCase();
+		const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
 	const entryType = String(metadata.entryType || "").toLowerCase();
 
 	if (category !== "ibox" || entryType !== "requisition") {
@@ -1388,18 +1499,31 @@ const grantIboxRequisitionPermission = (req, res) => {
 		return res.status(400).json({ message: "Permission already granted for this requisition" });
 	}
 
-	target.metadata = {
+		const nextMetadata = {
 		...metadata,
 		permissionGranted: true,
 		permissionGrantedAt: new Date().toISOString(),
 		permissionGrantedBy: actorId,
-	};
-	target.updatedAt = new Date().toISOString();
+		};
 
-	return res.json({ message: "Permission granted. Faculty can now convert this requisition.", request: target });
+		const updated = await pool.query(
+			`UPDATE service_requests
+			 SET metadata = $1::jsonb, updated_at = NOW()
+			 WHERE id = $2
+			 RETURNING *`,
+			[JSON.stringify(nextMetadata), requestId]
+		);
+
+		return res.json({
+			message: "Permission granted. Faculty can now convert this requisition.",
+			request: mapServiceRequestRow(updated.rows[0]),
+		});
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to grant I-BOX permission", error: error.message });
+	}
 };
 
-const convertIboxRequisitionToComplaint = (req, res) => {
+const convertIboxRequisitionToComplaint = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const actorRole = String(req.user?.role || "").toLowerCase();
 
@@ -1411,13 +1535,15 @@ const convertIboxRequisitionToComplaint = (req, res) => {
 		return res.status(403).json({ message: "Only faculty can convert requisitions" });
 	}
 
-	const target = serviceRequests.find((item) => item.id === requestId);
-	if (!target) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
+		}
 
-	const category = String(target.category || "").toLowerCase();
-	const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
+		const target = mapServiceRequestRow(check.rows[0]);
+		const category = String(target.category || "").toLowerCase();
+		const metadata = target?.metadata && typeof target.metadata === "object" ? target.metadata : {};
 	const entryType = String(metadata.entryType || "").toLowerCase();
 
 	if (category !== "ibox" || entryType !== "requisition") {
@@ -1432,19 +1558,7 @@ const convertIboxRequisitionToComplaint = (req, res) => {
 		return res.status(400).json({ message: "Requisition already converted to complaint" });
 	}
 
-	const complaintItem = {
-		id: nextServiceRequestId++,
-		title: `I-BOX Complaint - ${metadata.complaintType || "Other"}`,
-		category: "ibox",
-		description: target.description,
-		status: "pending",
-		createdBy: req.user?.id || null,
-		role: req.user?.role || "faculty",
-		createdByName: req.user?.name || null,
-		createdByEmail: req.user?.email || null,
-		createdByRollNo: req.user?.rollNo || null,
-		createdByDepartment: req.user?.department || null,
-		metadata: {
+		const complaintMetadata = {
 			entryType: "complaint",
 			complaintType: metadata.complaintType || "Other",
 			againstName: metadata.studentName || target.createdByName || "-",
@@ -1455,59 +1569,90 @@ const convertIboxRequisitionToComplaint = (req, res) => {
 			convertedByFacultyId: req.user?.id || null,
 			convertedByFacultyName: req.user?.name || "Faculty",
 			convertedAt: new Date().toISOString(),
-		},
-		remarks: `Converted from requisition IBX-${String(target.id).padStart(4, "0")}`,
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString(),
-	};
+		};
 
-	target.metadata = {
+		const insertComplaint = await pool.query(
+			`INSERT INTO service_requests
+				(title, category, description, status, created_by, role, created_by_name, created_by_email, created_by_roll_no, created_by_department, metadata, remarks, created_at, updated_at)
+			 VALUES
+				($1, 'ibox', $2, 'pending', $3, $4, $5, $6, $7, $8, $9::jsonb, $10, NOW(), NOW())
+			 RETURNING *`,
+			[
+				`I-BOX Complaint - ${metadata.complaintType || "Other"}`,
+				target.description,
+				req.user?.id || null,
+				req.user?.role || "faculty",
+				req.user?.name || null,
+				req.user?.email || null,
+				req.user?.rollNo || null,
+				req.user?.department || null,
+				JSON.stringify(complaintMetadata),
+				`Converted from requisition IBX-${String(target.id).padStart(4, "0")}`,
+			]
+		);
+
+		const complaintItem = mapServiceRequestRow(insertComplaint.rows[0]);
+		const requisitionMetadata = {
 		...metadata,
 		convertedToComplaintId: complaintItem.id,
 		convertedAt: new Date().toISOString(),
 		convertedByFacultyId: req.user?.id || null,
-	};
-	target.status = "approved";
-	target.remarks = `Converted to complaint IBX-${String(complaintItem.id).padStart(4, "0")}`;
-	target.updatedAt = new Date().toISOString();
+		};
 
-	serviceRequests.push(complaintItem);
+		const updateRequisition = await pool.query(
+			`UPDATE service_requests
+			 SET status = 'approved', remarks = $1, metadata = $2::jsonb, updated_at = NOW()
+			 WHERE id = $3
+			 RETURNING *`,
+			[
+				`Converted to complaint IBX-${String(complaintItem.id).padStart(4, "0")}`,
+				JSON.stringify(requisitionMetadata),
+				requestId,
+			]
+		);
 
-	return res.json({
-		message: "Requisition converted to official complaint",
-		requisition: target,
-		complaint: complaintItem,
-	});
+		return res.json({
+			message: "Requisition converted to official complaint",
+			requisition: mapServiceRequestRow(updateRequisition.rows[0]),
+			complaint: complaintItem,
+		});
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to convert requisition", error: error.message });
+	}
 };
 
-const deleteServiceRequest = (req, res) => {
+const deleteServiceRequest = async (req, res) => {
 	const requestId = Number(req.params.requestId);
 	const actorRole = String(req.user?.role || "").toLowerCase();
 	const actorId = Number(req.user?.id || 0);
 
-	const index = serviceRequests.findIndex((item) => item.id === requestId);
-	if (index < 0) {
-		return res.status(404).json({ message: "Service request not found" });
-	}
-
-	const target = serviceRequests[index];
-	const category = String(target.category || "").toLowerCase();
-
-	if (category === "ibox") {
-		if (actorRole !== "faculty") {
-			return res.status(403).json({ message: "Only faculty can delete I-BOX records" });
+	try {
+		const check = await pool.query("SELECT * FROM service_requests WHERE id = $1", [requestId]);
+		if (check.rows.length === 0) {
+			return res.status(404).json({ message: "Service request not found" });
 		}
-	} else {
-		const isAdminOrFaculty = actorRole === "admin" || actorRole === "faculty";
-		const isOwnerStudent = actorRole === "student" && Number(target.createdBy || 0) === actorId;
 
-		if (!isAdminOrFaculty && !isOwnerStudent) {
-			return res.status(403).json({ message: "Not allowed to delete this request" });
+		const target = mapServiceRequestRow(check.rows[0]);
+		const category = String(target.category || "").toLowerCase();
+
+		if (category === "ibox") {
+			if (actorRole !== "faculty") {
+				return res.status(403).json({ message: "Only faculty can delete I-BOX records" });
+			}
+		} else {
+			const isAdminOrFaculty = actorRole === "admin" || actorRole === "faculty";
+			const isOwnerStudent = actorRole === "student" && Number(target.createdBy || 0) === actorId;
+
+			if (!isAdminOrFaculty && !isOwnerStudent) {
+				return res.status(403).json({ message: "Not allowed to delete this request" });
+			}
 		}
-	}
 
-	serviceRequests.splice(index, 1);
-	return res.json({ message: "Service request deleted", requestId });
+		await pool.query("DELETE FROM service_requests WHERE id = $1", [requestId]);
+		return res.json({ message: "Service request deleted", requestId });
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to delete service request", error: error.message });
+	}
 };
 
 const createGatepassRequest = async (req, res) => {

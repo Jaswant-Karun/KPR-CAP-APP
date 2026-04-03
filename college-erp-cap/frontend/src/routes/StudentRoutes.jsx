@@ -21,9 +21,16 @@ import MainGate from '../pages/student/MainGate';
 import FreeOuting from '../pages/student/FreeOuting';
 import Latecomers from '../pages/student/Latecomers';
 import LateralGatepass from '../pages/student/LateralGatepass';
-import NDC from '../pages/student/NDC';
+import NdcAchievementsPage from '../pages/ndc/NdcAchievementsPage';
+import BonafideApplicationsPage from '../pages/bonafide/BonafideApplicationsPage';
+import HostelApplicationsPage from '../pages/hostel/HostelApplicationsPage';
+import HostelAttendancePage from '../pages/hostel/HostelAttendancePage';
+import HostelStayPermissionPage from '../pages/hostel/HostelStayPermissionPage';
+import HostelUsersPage from '../pages/hostel/HostelUsersPage';
 import StudentService from '../pages/student/StudentService';
 import TimetableView from '../pages/student/TimetableView';
+import FeedbackReports from '../pages/student/FeedbackReports';
+import TakeFeedback from '../pages/student/TakeFeedback';
 import CourseRegistration from '../pages/CourseRegistration';
 import NominalRoll from '../pages/NominalRoll';
 import NominalRollCourses from '../pages/NominalRollCourses';
@@ -55,12 +62,20 @@ export default function StudentRoutes() {
         <Route path="coe" element={<COE />} />
         <Route path="common" element={<Common />} />
         <Route path="iqac" element={<IQAC />} />
+        <Route path="feedback-reports" element={<FeedbackReports />} />
+        <Route path="take-feedback" element={<TakeFeedback />} />
         <Route path="gatepass" element={<MainGate />} />
         <Route path="main-gate" element={<MainGate />} />
         <Route path="lateral-gatepass" element={<LateralGatepass />} />
         <Route path="free-outing" element={<FreeOuting />} />
         <Route path="latecomers" element={<Latecomers />} />
-        <Route path="ndc" element={<NDC />} />
+        <Route path="ndc" element={<NdcAchievementsPage />} />
+        <Route path="achievements" element={<NdcAchievementsPage />} />
+        <Route path="bonafide" element={<BonafideApplicationsPage />} />
+        <Route path="hostel-app" element={<HostelApplicationsPage />} />
+        <Route path="hostel-attendance" element={<HostelAttendancePage />} />
+        <Route path="hostel-permission" element={<HostelStayPermissionPage />} />
+        <Route path="users" element={<HostelUsersPage />} />
         <Route path="student-service" element={<StudentService />} />
         <Route path="user-service" element={<Profile />} />
         <Route path="timetable" element={<TimetableView />} />

@@ -80,3 +80,69 @@ export const escalateIdCardReissueRequest = (requestId, payload, token) =>
 
 export const deleteServiceRequest = (requestId, token) =>
   apiRequest(`/services/requests/${requestId}`, "DELETE", null, token);
+
+export const createBonafideRequest = (payload, token) =>
+  apiRequest("/services/requests", "POST", {
+    title: payload.title,
+    category: "bonafide",
+    description: payload.description,
+    metadata: payload.metadata || {},
+  }, token);
+
+export const getBonafideRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  params.set("category", "bonafide");
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/requests${query}`, "GET", null, token);
+};
+
+export const updateBonafideStatus = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/status`, "PATCH", payload, token);
+
+export const createHostelApplicationRequest = (payload, token) =>
+  apiRequest("/services/requests", "POST", {
+    title: payload.title,
+    category: "hostel-app",
+    description: payload.description,
+    metadata: payload.metadata || {},
+  }, token);
+
+export const getHostelApplicationRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  params.set("category", "hostel-app");
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/requests${query}`, "GET", null, token);
+};
+
+export const updateHostelApplicationStatus = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/status`, "PATCH", payload, token);
+
+export const createHostelPermissionRequest = (payload, token) =>
+  apiRequest("/services/requests", "POST", {
+    title: payload.title,
+    category: "hostel-permission",
+    description: payload.description,
+    metadata: payload.metadata || {},
+  }, token);
+
+export const getHostelPermissionRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  params.set("category", "hostel-permission");
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/requests${query}`, "GET", null, token);
+};
+
+export const updateHostelPermissionStatus = (requestId, payload, token) =>
+  apiRequest(`/services/requests/${requestId}/status`, "PATCH", payload, token);
+
+export const getHostelAttendanceRequests = (token, filters = {}) => {
+  const params = new URLSearchParams();
+  params.set("category", "hostel-attendance");
+  if (filters.status && filters.status !== "all") params.set("status", filters.status);
+  if (filters.date) params.set("date", filters.date);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/services/requests${query}`, "GET", null, token);
+};

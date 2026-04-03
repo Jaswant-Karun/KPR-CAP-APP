@@ -1,0 +1,99 @@
+@import "./HostelShared.css";
+
+.ha-toolbar input,
+.ha-toolbar select {
+  border: 1px solid var(--border-secondary);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-radius: 0.3rem;
+  padding: 0.34rem 0.5rem;
+  min-height: 1.95rem;
+}
+
+.ha-search {
+  min-width: 190px;
+}
+
+.ha-card-list {
+  display: none;
+  gap: 0.55rem;
+}
+
+.ha-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.4rem;
+  background: var(--bg-input);
+  padding: 0.62rem;
+  display: grid;
+  gap: 0.62rem;
+}
+
+.ha-card-empty {
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.ha-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ha-card-top strong {
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.ha-card-top span {
+  color: var(--text-secondary);
+  font-size: 0.74rem;
+}
+
+.ha-card-body {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ha-card-body p {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ha-card-body p span {
+  color: var(--text-tertiary);
+  font-size: 0.67rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ha-card-body p strong {
+  color: var(--text-primary);
+  font-size: 0.79rem;
+}
+
+@media (max-width: 900px) {
+  .ha-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ha-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .ha-search {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 1200px) {
+  .ha-table-wrap {
+    display: none;
+  }
+
+  .ha-card-list {
+    display: grid;
+  }
+}

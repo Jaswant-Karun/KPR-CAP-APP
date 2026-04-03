@@ -1,10 +1,31 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { FaSearch, FaCheck, FaTimes, FaComment } from "react-icons/fa";
+import { getServiceRequests, updateServiceRequestStatus } from "../../services/bookingService";
 import "./ServiceRequestsApproval.css";
 
 const REQUEST_TYPES = ["AO Service", "Student Service", "Common Services"];
 const STATUSES = ["pending", "approved", "rejected"];
+
+const mapCategoryToType = (category) => {
+  const value = String(category || "").toLowerCase();
+  if (["ao-service", "ao", "ao-booking"].includes(value)) return "AO Service";
+  if (["student-service", "bonafide", "hostel-app", "hostel-permission", "ndc", "ndc-upload"].includes(value)) return "Student Service";
+  return "Common Services";
+};
+
+const mapRequestRow = (row) => ({
+  id: row.id,
+  ticket: `REQ-${String(row.id || 0).padStart(4, "0")}`,
+  student: row.createdByName || row.createdByEmail || "-",
+  rollNo: row.createdByRollNo || "-",
+  type: mapCategoryToType(row.category),
+  subject: row.title || "Service Request",
+  status: String(row.status || "pending").toLowerCase() === "open" ? "pending" : String(row.status || "pending").toLowerCase(),
+  createdAt: row.createdAt,
+  description: row.description || "-",
+  remark: row.remarks || "",
+});
 
 export default function ServiceRequestsApproval() {
   const { user, token } = useAuth();
@@ -18,53 +39,23 @@ export default function ServiceRequestsApproval() {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [approvalRemark, setApprovalRemark] = useState("");
 
-  // Mock data
-  const mockRequests = [
-    {
-      id: 1,
-      ticket: "REQ-001",
-      student: "Arun Kumar",
-      rollNo: "CB001",
-      type: "AO Service",
-      subject: "Infrastructure Request",
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      description: "Need access to computer lab for project work",
-      remark: "",
-    },
-    {
-      id: 2,
-      ticket: "REQ-002",
-      student: "Priya Singh",
-      rollNo: "CB002",
-      type: "Student Service",
-      subject: "Certificate Request",
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      description: "Bonafide certificate required for bank opening",
-      remark: "",
-    },
-    {
-      id: 3,
-      ticket: "REQ-003",
-      student: "Rajesh Patel",
-      rollNo: "CB003",
-      type: "Common Services",
-      subject: "Hostel Support",
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      description: "Room transfer request",
-      remark: "",
-    },
-  ];
-
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setRequests(mockRequests);
-      setLoading(false);
-    }, 300);
-  }, [token]);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const response = await getServiceRequests(token, { status: statusFilter });
+        const rows = Array.isArray(response?.requests) ? response.requests : [];
+        setRequests(rows.map(mapRequestRow));
+      } catch (error) {
+        setMessage(error?.message || "Failed to load service requests");
+        setMessageType("error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) load();
+  }, [token, statusFilter]);
 
   const filteredRequests = useMemo(() => {
     let filtered = requests;
@@ -94,19 +85,14 @@ export default function ServiceRequestsApproval() {
   const handleApprove = async (requestId) => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // await approveRequest(requestId, { remark: approvalRemark }, token);
-      setRequests(
-        requests.map((r) =>
-          r.id === requestId
-            ? { ...r, status: "approved", remark: approvalRemark }
-            : r
-        )
-      );
+      await updateServiceRequestStatus(requestId, { status: "approved", remarks: approvalRemark }, token);
       setMessage("✓ Request approved successfully");
       setMessageType("success");
       setSelectedRequest(null);
       setApprovalRemark("");
+      const response = await getServiceRequests(token, { status: statusFilter });
+      const rows = Array.isArray(response?.requests) ? response.requests : [];
+      setRequests(rows.map(mapRequestRow));
     } catch (error) {
       setMessage(error?.message || "Failed to approve request");
       setMessageType("error");
@@ -123,19 +109,14 @@ export default function ServiceRequestsApproval() {
         setMessageType("error");
         return;
       }
-      // TODO: Replace with actual API call
-      // await rejectRequest(requestId, { reason: approvalRemark }, token);
-      setRequests(
-        requests.map((r) =>
-          r.id === requestId
-            ? { ...r, status: "rejected", remark: approvalRemark }
-            : r
-        )
-      );
+      await updateServiceRequestStatus(requestId, { status: "rejected", remarks: approvalRemark }, token);
       setMessage("✓ Request rejected");
       setMessageType("success");
       setSelectedRequest(null);
       setApprovalRemark("");
+      const response = await getServiceRequests(token, { status: statusFilter });
+      const rows = Array.isArray(response?.requests) ? response.requests : [];
+      setRequests(rows.map(mapRequestRow));
     } catch (error) {
       setMessage(error?.message || "Failed to reject request");
       setMessageType("error");

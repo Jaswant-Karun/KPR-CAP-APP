@@ -166,7 +166,7 @@ const getInternalMarksRows = async (registrationId) => {
 
 const getAllowedStudentIdsForFaculty = async (facultyId) => {
 	const cb001Roster = await resolveCb001RosterStudentIds(pool, facultyId);
-  const controlMap = getFacultyControlMap(facultyId);
+  const controlMap = await getFacultyControlMap(facultyId);
   const mappedStudentIds = controlMap && Array.isArray(controlMap.studentIds)
     ? controlMap.studentIds.map((id) => Number(id)).filter((id) => id > 0)
     : [];
