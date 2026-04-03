@@ -1,9 +1,33 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { FaSearch, FaCheck, FaTimes, FaFile, FaImage } from "react-icons/fa";
+import { getServiceRequests, updateServiceRequestStatus } from "../../services/bookingService";
 import "./StudentUploadsApproval.css";
 
 const UPLOAD_TYPES = ["ID Card", "Certificate", "Document", "Project"];
+
+const mapUploadType = (row) => {
+  const metaType = String(row?.metadata?.uploadType || row?.metadata?.fileType || "").trim();
+  if (metaType) return metaType;
+  const category = String(row?.category || "").toLowerCase();
+  if (category === "idcard-reissue") return "ID Card";
+  if (category.includes("ndc")) return "Certificate";
+  return "Document";
+};
+
+const mapUploadRow = (row) => ({
+  id: row.id,
+  uploadId: `UPL-${String(row.id || 0).padStart(4, "0")}`,
+  student: row.createdByName || row.createdByEmail || "-",
+  rollNo: row.createdByRollNo || "-",
+  type: mapUploadType(row),
+  filename: row?.metadata?.fileName || row?.metadata?.certificateName || row.title || "attachment",
+  fileUrl: row?.metadata?.fileUrl || row?.metadata?.certificateUrl || row?.metadata?.attachmentUrl || "",
+  uploadedAt: row.createdAt,
+  status: String(row.status || "pending").toLowerCase() === "open" ? "pending" : String(row.status || "pending").toLowerCase(),
+  description: row.description || "-",
+  remark: row.remarks || "",
+});
 
 export default function StudentUploadsApproval() {
   const { user, token } = useAuth();
@@ -17,56 +41,23 @@ export default function StudentUploadsApproval() {
   const [selectedUpload, setSelectedUpload] = useState(null);
   const [approvalRemark, setApprovalRemark] = useState("");
 
-  // Mock data
-  const mockUploads = [
-    {
-      id: 1,
-      uploadId: "UPL-001",
-      student: "Arun Kumar",
-      rollNo: "CB001",
-      type: "ID Card",
-      filename: "ArunKumar_IDCard.jpg",
-      fileUrl: "/uploads/sample.jpg",
-      uploadedAt: new Date().toISOString(),
-      status: "pending",
-      description: "Student ID card for verification",
-      remark: "",
-    },
-    {
-      id: 2,
-      uploadId: "UPL-002",
-      student: "Priya Singh",
-      rollNo: "CB002",
-      type: "Certificate",
-      filename: "PriyaSingh_Certificate.pdf",
-      fileUrl: "/uploads/sample.pdf",
-      uploadedAt: new Date().toISOString(),
-      status: "pending",
-      description: "12th standard marksheet certificate",
-      remark: "",
-    },
-    {
-      id: 3,
-      uploadId: "UPL-003",
-      student: "Rajesh Patel",
-      rollNo: "CB003",
-      type: "Document",
-      filename: "RajeshPatel_AdmitCard.pdf",
-      fileUrl: "/uploads/sample.pdf",
-      uploadedAt: new Date().toISOString(),
-      status: "pending",
-      description: "Entrance exam admit card",
-      remark: "",
-    },
-  ];
-
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setUploads(mockUploads);
-      setLoading(false);
-    }, 300);
-  }, [token]);
+    const load = async () => {
+      try {
+        setLoading(true);
+        const response = await getServiceRequests(token, { status: statusFilter });
+        const rows = Array.isArray(response?.requests) ? response.requests : [];
+        setUploads(rows.map(mapUploadRow));
+      } catch (error) {
+        setMessage(error?.message || "Failed to load uploads");
+        setMessageType("error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) load();
+  }, [token, statusFilter]);
 
   const filteredUploads = useMemo(() => {
     let filtered = uploads;
@@ -96,19 +87,14 @@ export default function StudentUploadsApproval() {
   const handleApprove = async (uploadId) => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API call
-      // await approveUpload(uploadId, { remark: approvalRemark }, token);
-      setUploads(
-        uploads.map((u) =>
-          u.id === uploadId
-            ? { ...u, status: "approved", remark: approvalRemark }
-            : u
-        )
-      );
+      await updateServiceRequestStatus(uploadId, { status: "approved", remarks: approvalRemark }, token);
       setMessage("✓ Upload approved successfully");
       setMessageType("success");
       setSelectedUpload(null);
       setApprovalRemark("");
+      const response = await getServiceRequests(token, { status: statusFilter });
+      const rows = Array.isArray(response?.requests) ? response.requests : [];
+      setUploads(rows.map(mapUploadRow));
     } catch (error) {
       setMessage(error?.message || "Failed to approve upload");
       setMessageType("error");
@@ -125,19 +111,14 @@ export default function StudentUploadsApproval() {
         setMessageType("error");
         return;
       }
-      // TODO: Replace with actual API call
-      // await rejectUpload(uploadId, { reason: approvalRemark }, token);
-      setUploads(
-        uploads.map((u) =>
-          u.id === uploadId
-            ? { ...u, status: "rejected", remark: approvalRemark }
-            : u
-        )
-      );
+      await updateServiceRequestStatus(uploadId, { status: "rejected", remarks: approvalRemark }, token);
       setMessage("✓ Upload rejected");
       setMessageType("success");
       setSelectedUpload(null);
       setApprovalRemark("");
+      const response = await getServiceRequests(token, { status: statusFilter });
+      const rows = Array.isArray(response?.requests) ? response.requests : [];
+      setUploads(rows.map(mapUploadRow));
     } catch (error) {
       setMessage(error?.message || "Failed to reject upload");
       setMessageType("error");
@@ -297,7 +278,7 @@ export default function StudentUploadsApproval() {
 
               <div className="file-preview">
                 <label>File Preview:</label>
-                {selectedUpload.filename.toLowerCase().includes(".pdf") ? (
+                {selectedUpload.fileUrl && selectedUpload.filename.toLowerCase().includes(".pdf") ? (
                   <div className="pdf-preview">
                     <FaFile className="pdf-icon" />
                     <p>PDF File</p>
@@ -305,12 +286,17 @@ export default function StudentUploadsApproval() {
                       Open PDF
                     </a>
                   </div>
-                ) : (
+                ) : selectedUpload.fileUrl ? (
                   <img
                     src={selectedUpload.fileUrl}
                     alt="Upload preview"
                     className="image-preview"
                   />
+                ) : (
+                  <div className="pdf-preview">
+                    <FaFile className="pdf-icon" />
+                    <p>No preview available</p>
+                  </div>
                 )}
               </div>
 

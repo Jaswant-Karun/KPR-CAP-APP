@@ -76,7 +76,7 @@ const getStudentsForFaculty = async (req, res) => {
 		const facultyId = Number(req.params.facultyId || req.user?.id);
 		const cb001Roster = await resolveCb001RosterStudentIds(pool, facultyId);
 		const department = cb001Roster.department;
-		const controlMap = getFacultyControlMap(facultyId);
+		const controlMap = await getFacultyControlMap(facultyId);
 
 		const departmentStudents = await pool.query(
 			`SELECT id, name, email, roll_no, department FROM users WHERE role = 'student' AND ($1::text IS NULL OR department = $1) ORDER BY COALESCE(roll_no, ''), name ASC`,

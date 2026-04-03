@@ -13,6 +13,29 @@ const { getOrCreateSystemSettings } = require("../services/systemSettings.servic
 
 const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
 
+const buildAuthSuccess = (user, message = "Login successful") => {
+  const token = signToken({
+    id: user.id,
+    role: user.role,
+    email: user.email,
+    residentType: user.resident_type || "day-scholar",
+  });
+
+  return {
+    message,
+    token,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      rollNo: user.roll_no,
+      department: user.department,
+      residentType: user.resident_type || "day-scholar",
+    },
+  };
+};
+
 router.post("/signup", async (req, res) => {
   try {
     const { name, email, password, role = "student", rollNo, department } = req.body;
@@ -143,25 +166,7 @@ router.post("/login", async (req, res) => {
       return res.status(503).json({ message: "System is under maintenance. Please try again later." });
     }
 
-    const token = signToken({
-      id: user.id,
-      role: user.role,
-      email: user.email,
-      residentType: user.resident_type || "day-scholar",
-    });
-
-    return res.json({
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        rollNo: user.roll_no,
-        department: user.department,
-        residentType: user.resident_type || "day-scholar",
-      },
-    });
+    return res.json(buildAuthSuccess(user));
   } catch (error) {
     return res.status(500).json({ message: "Login failed", error: error.message });
   }

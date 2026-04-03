@@ -213,7 +213,7 @@ const getFacultyControlledStudents = async (req, res) => {
     }
 
     const faculty = facultyResult.rows[0];
-    const controlMap = getFacultyControlMap(facultyId);
+    const controlMap = await getFacultyControlMap(facultyId);
 
     let studentsResult;
     if (controlMap && controlMap.studentIds.length > 0) {
@@ -258,7 +258,7 @@ const getFacultyControlMapForAdmin = async (req, res) => {
 
     return res.json({
       faculty: faculty.rows[0],
-      mapping: getFacultyControlMap(facultyId),
+      mapping: await getFacultyControlMap(facultyId),
     });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch faculty control map", error: error.message });
@@ -283,7 +283,7 @@ const setFacultyControlMapForAdmin = async (req, res) => {
       return res.status(400).json({ message: "studentIds must be a non-empty array" });
     }
 
-    const saved = setFacultyControlMap({
+    const saved = await setFacultyControlMap({
       facultyId,
       batch,
       section,

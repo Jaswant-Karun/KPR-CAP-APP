@@ -1,6 +1,9 @@
 import { createContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login as loginService, signup as signupService } from "../services/authService";
+import {
+  login as loginService,
+  signup as signupService,
+} from "../services/authService";
 
 export const AuthContext = createContext();
 
@@ -13,24 +16,27 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem("token"));
   const [loading, setLoading] = useState(false);
 
+  const applyAuthData = (data) => {
+    setUser(data?.user || null);
+    setToken(data?.token || null);
+
+    if (data?.token) localStorage.setItem("token", data.token);
+    if (data?.user) localStorage.setItem("user", JSON.stringify(data.user));
+
+    if (data?.user?.role === "student") {
+      navigate("/student/dashboard");
+    } else if (data?.user?.role === "faculty") {
+      navigate("/faculty/dashboard");
+    } else if (data?.user?.role === "admin") {
+      navigate("/admin/dashboard");
+    }
+  };
+
   const login = async (credentials) => {
     setLoading(true);
     try {
       const data = await loginService(credentials);
-
-      setUser(data?.user || null);
-      setToken(data?.token || null);
-
-      if (data?.token) localStorage.setItem("token", data.token);
-      if (data?.user) localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (data?.user?.role === "student") {
-        navigate("/student/dashboard");
-      } else if (data?.user?.role === "faculty") {
-        navigate("/faculty/dashboard");
-      } else if (data?.user?.role === "admin") {
-        navigate("/admin/dashboard");
-      }
+      applyAuthData(data);
     } catch (err) {
       console.error(err);
       alert(err?.message || "Invalid Login");
@@ -43,20 +49,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       const data = await signupService(payload);
-
-      setUser(data?.user || null);
-      setToken(data?.token || null);
-
-      if (data?.token) localStorage.setItem("token", data.token);
-      if (data?.user) localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (data?.user?.role === "student") {
-        navigate("/student/dashboard");
-      } else if (data?.user?.role === "faculty") {
-        navigate("/faculty/dashboard");
-      } else {
-        navigate("/admin/dashboard");
-      }
+      applyAuthData(data);
     } catch (err) {
       console.error(err);
       alert(err?.message || "Signup failed");

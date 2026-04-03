@@ -25,6 +25,11 @@ import GymSubscription from "../pages/student/GymSubscription";
 import IBoxComplaints from "../pages/student/IBoxComplaints";
 import IdCardReissueRequests from "../pages/student/IdCardReissueRequests";
 import WiFiRequests from "../pages/student/WiFiRequests";
+import FeedbackUsers from "../pages/feedback/FeedbackUsers";
+import NdcAchievementsPage from "../pages/ndc/NdcAchievementsPage";
+import BonafideApplicationsPage from "../pages/bonafide/BonafideApplicationsPage";
+import HostelApplicationsPage from "../pages/hostel/HostelApplicationsPage";
+import HostelStayPermissionPage from "../pages/hostel/HostelStayPermissionPage";
 
 export default function AdminRoutes() {
   return (
@@ -43,7 +48,7 @@ export default function AdminRoutes() {
         <Route path="iqac-feedback-requests" element={<ServiceRequestsApproval />} />
         <Route path="main-gate-requests" element={<GatepassApprovals />} />
         <Route path="latecomer-approvals" element={<LatecomerApprovals />} />
-        <Route path="ndc-upload-reviews" element={<StudentUploadsApproval />} />
+        <Route path="ndc-upload-reviews" element={<NdcAchievementsPage />} />
         <Route path="student-service-requests" element={<ServiceRequestsApproval />} />
         <Route path="user-service-requests" element={<ServiceRequestsApproval />} />
         <Route path="academics-attendance-control" element={<AttendanceManage />} />
@@ -55,11 +60,11 @@ export default function AdminRoutes() {
         <Route path="waiver-approvals" element={<Waiver />} />
         <Route path="hall-ticket-control" element={<HallTicket mode="admin" />} />
         <Route path="common-service-approvals" element={<ServiceRequestsApproval />} />
-        <Route path="feedback-approvals" element={<ServiceRequestsApproval />} />
-        <Route path="ndc-achievement-approvals" element={<StudentUploadsApproval />} />
-        <Route path="bonafide-approvals" element={<ServiceRequestsApproval />} />
-        <Route path="hostel-app-approvals" element={<ServiceRequestsApproval />} />
-        <Route path="hostel-permission-approvals" element={<ServiceRequestsApproval />} />
+        <Route path="feedback-approvals" element={<FeedbackUsers />} />
+        <Route path="ndc-achievement-approvals" element={<NdcAchievementsPage />} />
+        <Route path="bonafide-approvals" element={<BonafideApplicationsPage />} />
+        <Route path="hostel-app-approvals" element={<HostelApplicationsPage />} />
+        <Route path="hostel-permission-approvals" element={<HostelStayPermissionPage />} />
         <Route path="digital-assets" element={<DigitalAssets />} />
         <Route path="events" element={<Events />} />
         <Route path="gym" element={<GymSubscription />} />

@@ -1,0 +1,84 @@
+@import "./HostelShared.css";
+
+.hu-page {
+  --hu-role-accent: #ea580c;
+  --hu-active-text: #16a34a;
+}
+
+.hu-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.hu-search {
+  flex: 1;
+  min-width: 250px;
+  max-width: 540px;
+}
+
+.hu-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.hu-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.hu-user-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.1rem;
+}
+
+.hu-roll-badge,
+.hu-role-tag,
+.hu-pill,
+.hu-active-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08rem 0.38rem;
+  border-radius: 0.28rem;
+  font-size: 0.66rem;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card);
+}
+
+.hu-role-tag {
+  color: var(--hu-role-accent);
+}
+
+.hu-active-pill {
+  color: var(--hu-active-text);
+  border-color: rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.hu-pill-group,
+.hu-action-group {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+@media (max-width: 900px) {
+  .hu-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hu-search {
+    min-width: 0;
+    max-width: none;
+  }
+}

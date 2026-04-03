@@ -212,6 +212,7 @@ export default function Signup() {
           <button type="submit" className="login-btn" disabled={loading}>
             {loading ? "Creating account..." : "Create Account"} <FaArrowRight />
           </button>
+
         </form>
 
         <p className="auth-switch">

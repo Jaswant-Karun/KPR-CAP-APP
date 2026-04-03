@@ -1,0 +1,115 @@
+.take-feedback-page {
+  display: grid;
+  gap: 0.9rem;
+  color: var(--text-primary);
+}
+
+.take-feedback-header {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+  background: var(--gradient-primary);
+}
+
+.take-feedback-header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.take-feedback-header p {
+  margin: 0.2rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.take-feedback-msg {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.7rem;
+  padding: 0.62rem 0.75rem;
+}
+
+.take-feedback-msg.success {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.take-feedback-msg.error {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.take-feedback-form-wrap {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.take-feedback-card {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.82rem;
+  padding: 0.78rem;
+  background: var(--gradient-primary);
+}
+
+.take-feedback-card.success {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.take-feedback-card h2,
+.take-feedback-card h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.take-feedback-card p {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.take-feedback-question-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.take-feedback-question-item {
+  border: 1px solid var(--border-primary);
+  border-radius: 0.65rem;
+  padding: 0.55rem;
+  background: var(--bg-card);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.take-feedback-stars {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.take-feedback-stars button {
+  border: 1px solid var(--border-primary);
+  background: var(--bg-input);
+  color: var(--text-tertiary);
+  border-radius: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.take-feedback-stars button.active {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.submit-feedback-btn {
+  border: 1px solid var(--border-secondary);
+  background: var(--button-bg);
+  color: var(--button-text);
+  border-radius: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+}
+
+.submit-feedback-btn:hover {
+  background: var(--button-bg-hover);
+}
