@@ -1,7 +1,7 @@
 services:
   - type: web
     name: college-erp-backend
-    env: node
+    runtime: node
     rootDir: college-erp-cap/backend
     buildCommand: npm install
     startCommand: npm start
