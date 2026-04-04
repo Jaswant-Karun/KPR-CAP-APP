@@ -4,6 +4,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node scripts/ensurePortFree.js 5004 && nodemon src/server.js",
+    "start": "node src/server.js",
     "initdb": "node initdb.js"
   },
   "dependencies": {

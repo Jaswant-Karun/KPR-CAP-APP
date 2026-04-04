@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: college-erp-backend
+    runtime: node
+    rootDir: college-erp-cap/backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
