@@ -1,10 +1,14 @@
 const path = require("path");
 const dotenv = require("dotenv");
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env"), override: true });
+const nodeEnv = process.env.NODE_ENV || "development";
+
+if (nodeEnv !== "production") {
+	dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+}
 
 const env = {
-	NODE_ENV: process.env.NODE_ENV || "development",
+	NODE_ENV: nodeEnv,
 	PORT: Number(process.env.PORT || 5000),
 	JWT_SECRET: process.env.JWT_SECRET || "dev-secret",
 	DATABASE_URL: process.env.DATABASE_URL || "",
@@ -18,10 +22,11 @@ const env = {
 	CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || "",
 	CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || "",
 	GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+	APP_BASE_URL: process.env.APP_BASE_URL || "",
 };
 
 const getMissingEnv = () => {
-	const requiredInProduction = ["JWT_SECRET"];
+	const requiredInProduction = ["JWT_SECRET", "DATABASE_URL"];
 	return requiredInProduction.filter((key) => !String(env[key] || "").trim());
 };
 

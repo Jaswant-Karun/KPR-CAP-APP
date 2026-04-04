@@ -24,7 +24,9 @@ const saveToLocalDisk = async ({ buffer, filename, folder }) => {
 	await fs.writeFile(absoluteFilePath, buffer);
 
 	const publicId = [...safeFolderParts, stampedFilename].join("/");
-	const secureUrl = `http://localhost:${env.PORT || 5000}/uploads/${publicId}`;
+	const defaultBaseUrl = `http://localhost:${env.PORT || 5000}`;
+	const baseUrl = String(env.APP_BASE_URL || defaultBaseUrl).replace(/\/+$/, "");
+	const secureUrl = `${baseUrl}/uploads/${publicId}`;
 
 	return {
 		provider: "local-disk",
