@@ -12,6 +12,8 @@ const { signToken } = require("../utils/jwt");
 const { getOrCreateSystemSettings } = require("../services/systemSettings.service");
 
 const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
+const UNIQUE_ADMIN_PASSWORD = "Kprietuser@37";
+const UNIQUE_ADMIN_NAME = "KPRIET Admin";
 
 const buildAuthSuccess = (user, message = "Login successful") => {
   const token = signToken({
@@ -41,17 +43,34 @@ router.post("/signup", async (req, res) => {
     const { name, email, password, role = "student", rollNo, department } = req.body;
     const systemSettings = await getOrCreateSystemSettings();
 
-    if (!name || !email || !password) {
+    const allowedRoles = ["student", "faculty", "admin"];
+    let safeRole = allowedRoles.includes(role) ? role : "student";
+
+    let normalizedEmail = normalizeEmail(email);
+    let effectivePassword = password;
+    let effectiveName = String(name || "").trim();
+    let effectiveRollNo = rollNo ? String(rollNo).trim() : null;
+    let effectiveDepartment = department ? String(department).trim() : null;
+
+    // Admin signup always uses a single permanent identity.
+    if (safeRole === "admin") {
+      normalizedEmail = UNIQUE_ADMIN_EMAIL;
+      effectivePassword = UNIQUE_ADMIN_PASSWORD;
+      effectiveName = UNIQUE_ADMIN_NAME;
+      effectiveRollNo = null;
+      effectiveDepartment = null;
+    }
+
+    if (!effectiveName || !normalizedEmail || !effectivePassword) {
       return res.status(400).json({ message: "Name, email and password are required" });
     }
 
-    if (systemSettings.enforceStrongPassword && !hasStrongPassword(password)) {
+    if (systemSettings.enforceStrongPassword && !hasStrongPassword(effectivePassword)) {
       return res.status(400).json({
         message: "Password must be at least 8 characters and include uppercase, lowercase, number and special character",
       });
     }
 
-    const normalizedEmail = normalizeEmail(email);
     if (!isAllowedCollegeEmail(normalizedEmail)) {
       return res.status(400).json({ message: "Only @kpriet.ac.in email is allowed" });
     }
@@ -61,22 +80,12 @@ router.post("/signup", async (req, res) => {
       return res.status(409).json({ message: "User already exists with this email" });
     }
 
-    const allowedRoles = ["student", "faculty", "admin"];
-    let safeRole = allowedRoles.includes(role) ? role : "student";
-
     if (safeRole === "student" && !systemSettings.allowStudentSignup) {
       return res.status(403).json({ message: "Student signup is currently disabled by admin" });
     }
 
     if (safeRole === "faculty" && !systemSettings.allowFacultySignup) {
       return res.status(403).json({ message: "Faculty signup is currently disabled by admin" });
-    }
-
-    // Enforce a single unique admin login identity.
-    if (safeRole === "admin" && normalizedEmail !== UNIQUE_ADMIN_EMAIL) {
-      return res.status(403).json({
-        message: `Only ${UNIQUE_ADMIN_EMAIL} can be registered as admin`,
-      });
     }
 
     if (normalizedEmail === UNIQUE_ADMIN_EMAIL) {
@@ -88,20 +97,20 @@ router.post("/signup", async (req, res) => {
     }
 
     const localPart = normalizedEmail.split("@")[0];
-    if (rollNo && localPart !== String(rollNo).trim().toLowerCase()) {
+    if (safeRole !== "admin" && effectiveRollNo && localPart !== String(effectiveRollNo).trim().toLowerCase()) {
       return res.status(400).json({
         message: "Email username must match roll number (example: 24cb023@kpriet.ac.in)",
       });
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(effectivePassword, 10);
     const createdUser = await createUser({
-      name: String(name).trim(),
+      name: effectiveName,
       email: normalizedEmail,
       passwordHash,
       role: safeRole,
-      rollNo: rollNo ? String(rollNo).trim() : null,
-      department: department ? String(department).trim() : null,
+      rollNo: effectiveRollNo,
+      department: effectiveDepartment,
       residentType: "day-scholar",
     });
 
