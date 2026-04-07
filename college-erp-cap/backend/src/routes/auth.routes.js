@@ -44,7 +44,8 @@ router.post("/signup", async (req, res) => {
     const systemSettings = await getOrCreateSystemSettings();
 
     const allowedRoles = ["student", "faculty", "admin"];
-    let safeRole = allowedRoles.includes(role) ? role : "student";
+    const normalizedRole = String(role || "student").trim().toLowerCase();
+    let safeRole = allowedRoles.includes(normalizedRole) ? normalizedRole : "student";
 
     let normalizedEmail = normalizeEmail(email);
     let effectivePassword = password;

@@ -49,9 +49,10 @@ export default function Signup() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const isAdmin = role === "admin";
     const normalizedEmail = (role === "admin" ? PERMANENT_ADMIN_EMAIL : form.email).trim().toLowerCase();
     const normalizedRoll = form.rollNo.trim().toLowerCase();
-    const resolvedPassword = role === "admin" ? PERMANENT_ADMIN_PASSWORD : form.password;
+    const resolvedPassword = isAdmin ? PERMANENT_ADMIN_PASSWORD : form.password;
 
     if (!isCollegeEmail(normalizedEmail)) {
       setError("Only @kpriet.ac.in email is allowed");
@@ -84,12 +85,12 @@ export default function Signup() {
 
     setError("");
     await signup({
-      name: role === "admin" ? "" : form.name.trim(),
-      rollNo: role === "admin" ? "" : form.rollNo.trim(),
-      department: role === "admin" ? "" : form.department.trim(),
+      name: isAdmin ? "KPRIET Admin" : form.name.trim(),
+      rollNo: isAdmin ? "ADM001" : form.rollNo.trim(),
+      department: isAdmin ? "Administration" : form.department.trim(),
       email: normalizedEmail,
       password: resolvedPassword,
-      role,
+      role: String(role || "student").toLowerCase(),
     });
   };
 
