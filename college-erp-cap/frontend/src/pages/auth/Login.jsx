@@ -1,7 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { FaUserGraduate, FaChalkboardTeacher, FaUserShield, FaEnvelope, FaLock, FaArrowRight } from "react-icons/fa";
+import {
+  FaUserGraduate,
+  FaChalkboardTeacher,
+  FaUserShield,
+  FaEnvelope,
+  FaLock,
+  FaArrowRight,
+  FaEye,
+  FaEyeSlash,
+} from "react-icons/fa";
 import "./AuthPage.css";
 
 export default function Login() {
@@ -9,6 +18,7 @@ export default function Login() {
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const isCollegeEmail = (value) => /^[a-zA-Z0-9._%+-]+@kpriet\.ac\.in$/i.test(value);
@@ -81,13 +91,22 @@ export default function Login() {
           <div className="input-group">
             <FaLock className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="login-input"
+              className="login-input with-toggle"
             />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
 
           {error && <p className="auth-error">{error}</p>}

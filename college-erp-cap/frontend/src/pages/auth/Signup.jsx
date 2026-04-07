@@ -5,6 +5,8 @@ import { usePublicSettings } from "../../hooks/usePublicSettings";
 import {
   FaArrowRight,
   FaBuilding,
+  FaEye,
+  FaEyeSlash,
   FaEnvelope,
   FaIdCard,
   FaLock,
@@ -28,6 +30,7 @@ export default function Signup() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const isCollegeEmail = (value) => /^[a-zA-Z0-9._%+-]+@kpriet\.ac\.in$/i.test(value);
@@ -199,15 +202,24 @@ export default function Signup() {
           <div className="input-group">
             <FaLock className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={role === "admin" ? PERMANENT_ADMIN_PASSWORD : form.password}
               onChange={handleChange}
-              className="login-input"
+              className="login-input with-toggle"
               readOnly={role === "admin"}
               required
             />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
 
           {error && <p className="auth-error">{error}</p>}

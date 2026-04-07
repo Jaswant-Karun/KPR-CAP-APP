@@ -171,6 +171,32 @@
   box-shadow: 0 0 0 4px rgba(11, 110, 140, 0.12);
 }
 
+.login-input.with-toggle {
+  padding-right: 52px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #547188;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.password-toggle:hover {
+  background: rgba(11, 110, 140, 0.08);
+  color: #0f5f7a;
+}
+
 .auth-help {
   color: #4f6478;
   font-size: 0.86rem;
