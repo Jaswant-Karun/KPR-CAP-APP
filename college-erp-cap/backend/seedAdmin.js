@@ -15,7 +15,7 @@ const pool = new Pool({
 const seedAdminUser = async () => {
   try {
     const adminEmail = "kpr0123@kpriet.ac.in";
-    const adminPassword = "Kprietuser";
+    const adminPassword = "Kprietuser@37";
     const adminName = "KPR Admin";
 
     // Hash the password
