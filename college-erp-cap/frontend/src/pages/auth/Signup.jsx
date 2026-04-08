@@ -5,6 +5,8 @@ import { usePublicSettings } from "../../hooks/usePublicSettings";
 import {
   FaArrowRight,
   FaBuilding,
+  FaEye,
+  FaEyeSlash,
   FaEnvelope,
   FaIdCard,
   FaLock,
@@ -28,6 +30,7 @@ export default function Signup() {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const isCollegeEmail = (value) => /^[a-zA-Z0-9._%+-]+@kpriet\.ac\.in$/i.test(value);
@@ -49,9 +52,10 @@ export default function Signup() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const isAdmin = role === "admin";
     const normalizedEmail = (role === "admin" ? PERMANENT_ADMIN_EMAIL : form.email).trim().toLowerCase();
     const normalizedRoll = form.rollNo.trim().toLowerCase();
-    const resolvedPassword = role === "admin" ? PERMANENT_ADMIN_PASSWORD : form.password;
+    const resolvedPassword = isAdmin ? PERMANENT_ADMIN_PASSWORD : form.password;
 
     if (!isCollegeEmail(normalizedEmail)) {
       setError("Only @kpriet.ac.in email is allowed");
@@ -84,12 +88,12 @@ export default function Signup() {
 
     setError("");
     await signup({
-      name: role === "admin" ? "" : form.name.trim(),
-      rollNo: role === "admin" ? "" : form.rollNo.trim(),
-      department: role === "admin" ? "" : form.department.trim(),
+      name: isAdmin ? "KPRIET Admin" : form.name.trim(),
+      rollNo: isAdmin ? "ADM001" : form.rollNo.trim(),
+      department: isAdmin ? "Administration" : form.department.trim(),
       email: normalizedEmail,
       password: resolvedPassword,
-      role,
+      role: String(role || "student").toLowerCase(),
     });
   };
 
@@ -198,15 +202,24 @@ export default function Signup() {
           <div className="input-group">
             <FaLock className="input-icon" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={role === "admin" ? PERMANENT_ADMIN_PASSWORD : form.password}
               onChange={handleChange}
-              className="login-input"
+              className="login-input with-toggle"
               readOnly={role === "admin"}
               required
             />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </button>
           </div>
 
           {error && <p className="auth-error">{error}</p>}

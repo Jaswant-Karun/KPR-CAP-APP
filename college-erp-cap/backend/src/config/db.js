@@ -577,10 +577,13 @@ const createSchema = async () => {
   `);
 };
 
+const UNIQUE_ADMIN_EMAIL = (process.env.UNIQUE_ADMIN_EMAIL || "kpr0123@kpriet.ac.in").trim().toLowerCase();
+const UNIQUE_ADMIN_PASSWORD = (process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser@37").trim();
+
 const defaultUsers = [
   {
     name: "Admin User",
-    email: "kpr0123@kpriet.ac.in",
+    email: UNIQUE_ADMIN_EMAIL,
     role: "admin",
     roll_no: "ADM001",
     department: "Administration",
@@ -606,12 +609,12 @@ const defaultUsers = [
 
 const seedDefaults = async () => {
   const seedPassword = process.env.DEFAULT_USER_PASSWORD || "Password@123";
-  const uniqueAdminPassword = process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser";
+  const uniqueAdminPassword = UNIQUE_ADMIN_PASSWORD;
   const passwordHash = await bcrypt.hash(seedPassword, 10);
   const uniqueAdminPasswordHash = await bcrypt.hash(uniqueAdminPassword, 10);
 
   for (const user of defaultUsers) {
-    const userPasswordHash = user.email === "kpr0123@kpriet.ac.in"
+    const userPasswordHash = user.email === UNIQUE_ADMIN_EMAIL
       ? uniqueAdminPasswordHash
       : passwordHash;
 
@@ -633,6 +636,29 @@ const seedDefaults = async () => {
       ]
     );
   }
+
+  // Self-heal the permanent admin account on every startup.
+  // This keeps production consistent even if an older deployment seeded a different password hash.
+  await pool.query(
+    `
+      INSERT INTO users (name, email, password_hash, role, roll_no, department, resident_type)
+      VALUES ($1, $2, $3, 'admin', $4, $5, 'day-scholar')
+      ON CONFLICT (email)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        role = 'admin',
+        password_hash = EXCLUDED.password_hash,
+        roll_no = EXCLUDED.roll_no,
+        department = EXCLUDED.department;
+    `,
+    [
+      "KPRIET Admin",
+      UNIQUE_ADMIN_EMAIL,
+      uniqueAdminPasswordHash,
+      "ADM001",
+      "Administration",
+    ]
+  );
 
   await pool.query(
     `

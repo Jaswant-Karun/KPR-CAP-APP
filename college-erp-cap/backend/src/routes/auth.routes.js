@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const bcrypt = require("bcryptjs");
-const { getUserByEmail, createUser } = require("../config/db");
+const { getUserByEmail, createUser, pool } = require("../config/db");
 const auth = require("../middleware/auth.middleware");
 const { getCurrentUser, logout } = require("../controllers/authController");
 const {
@@ -11,8 +11,8 @@ const {
 const { signToken } = require("../utils/jwt");
 const { getOrCreateSystemSettings } = require("../services/systemSettings.service");
 
-const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
-const UNIQUE_ADMIN_PASSWORD = "Kprietuser@37";
+const UNIQUE_ADMIN_EMAIL = (process.env.UNIQUE_ADMIN_EMAIL || "kpr0123@kpriet.ac.in").trim().toLowerCase();
+const UNIQUE_ADMIN_PASSWORD = (process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser@37").trim();
 const UNIQUE_ADMIN_NAME = "KPRIET Admin";
 
 const buildAuthSuccess = (user, message = "Login successful") => {
@@ -44,7 +44,8 @@ router.post("/signup", async (req, res) => {
     const systemSettings = await getOrCreateSystemSettings();
 
     const allowedRoles = ["student", "faculty", "admin"];
-    let safeRole = allowedRoles.includes(role) ? role : "student";
+    const normalizedRole = String(role || "student").trim().toLowerCase();
+    let safeRole = allowedRoles.includes(normalizedRole) ? normalizedRole : "student";
 
     let normalizedEmail = normalizeEmail(email);
     let effectivePassword = password;
@@ -162,12 +163,27 @@ router.post("/login", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const match = await bcrypt.compare(password, user.password_hash);
+    const requestedRole = role ? String(role).trim().toLowerCase() : "";
+    let match = await bcrypt.compare(password, user.password_hash);
+
+    // Keep the single admin account usable even if an older hash exists in production.
+    if (!match && normalizedEmail === UNIQUE_ADMIN_EMAIL && password === UNIQUE_ADMIN_PASSWORD) {
+      const updatedHash = await bcrypt.hash(UNIQUE_ADMIN_PASSWORD, 10);
+      await pool.query(
+        `UPDATE users SET password_hash = $1, role = 'admin', name = $2 WHERE email = $3`,
+        [updatedHash, UNIQUE_ADMIN_NAME, UNIQUE_ADMIN_EMAIL]
+      );
+      user.password_hash = updatedHash;
+      user.role = "admin";
+      user.name = UNIQUE_ADMIN_NAME;
+      match = true;
+    }
+
     if (!match) {
       return res.status(401).json({ message: "Invalid password" });
     }
 
-    if (role && user.role !== role) {
+    if (requestedRole && user.role !== requestedRole) {
       return res.status(401).json({ message: "Role mismatch" });
     }
 
