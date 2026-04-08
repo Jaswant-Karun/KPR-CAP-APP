@@ -11,10 +11,6 @@ const {
 const { signToken } = require("../utils/jwt");
 const { getOrCreateSystemSettings } = require("../services/systemSettings.service");
 
-const UNIQUE_ADMIN_EMAIL = (process.env.UNIQUE_ADMIN_EMAIL || "kpr0123@kpriet.ac.in").trim().toLowerCase();
-const UNIQUE_ADMIN_PASSWORD = (process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser@37").trim();
-const UNIQUE_ADMIN_NAME = "KPRIET Admin";
-
 const buildAuthSuccess = (user, message = "Login successful") => {
   const token = signToken({
     id: user.id,
@@ -53,15 +49,6 @@ router.post("/signup", async (req, res) => {
     let effectiveRollNo = rollNo ? String(rollNo).trim() : null;
     let effectiveDepartment = department ? String(department).trim() : null;
 
-    // Admin signup always uses a single permanent identity.
-    if (safeRole === "admin") {
-      normalizedEmail = UNIQUE_ADMIN_EMAIL;
-      effectivePassword = UNIQUE_ADMIN_PASSWORD;
-      effectiveName = UNIQUE_ADMIN_NAME;
-      effectiveRollNo = null;
-      effectiveDepartment = null;
-    }
-
     if (!effectiveName || !normalizedEmail || !effectivePassword) {
       return res.status(400).json({ message: "Name, email and password are required" });
     }
@@ -87,14 +74,6 @@ router.post("/signup", async (req, res) => {
 
     if (safeRole === "faculty" && !systemSettings.allowFacultySignup) {
       return res.status(403).json({ message: "Faculty signup is currently disabled by admin" });
-    }
-
-    if (normalizedEmail === UNIQUE_ADMIN_EMAIL) {
-      safeRole = "admin";
-    }
-
-    if (systemSettings.maintenanceMode && safeRole !== "admin") {
-      return res.status(503).json({ message: "System is under maintenance. Signup is temporarily unavailable." });
     }
 
     const localPart = normalizedEmail.split("@")[0];
@@ -165,19 +144,6 @@ router.post("/login", async (req, res) => {
 
     const requestedRole = role ? String(role).trim().toLowerCase() : "";
     let match = await bcrypt.compare(password, user.password_hash);
-
-    // Keep the single admin account usable even if an older hash exists in production.
-    if (!match && normalizedEmail === UNIQUE_ADMIN_EMAIL && password === UNIQUE_ADMIN_PASSWORD) {
-      const updatedHash = await bcrypt.hash(UNIQUE_ADMIN_PASSWORD, 10);
-      await pool.query(
-        `UPDATE users SET password_hash = $1, role = 'admin', name = $2 WHERE email = $3`,
-        [updatedHash, UNIQUE_ADMIN_NAME, UNIQUE_ADMIN_EMAIL]
-      );
-      user.password_hash = updatedHash;
-      user.role = "admin";
-      user.name = UNIQUE_ADMIN_NAME;
-      match = true;
-    }
 
     if (!match) {
       return res.status(401).json({ message: "Invalid password" });
