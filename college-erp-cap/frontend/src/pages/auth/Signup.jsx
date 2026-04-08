@@ -135,6 +135,8 @@ export default function Signup() {
               className={`role-btn ${role === "admin" ? "active" : ""}`}
               onClick={() => setRole("admin")}
               type="button"
+              disabled
+              title="Admin account creation is disabled. Contact system administrator."
             >
               <FaUserShield className="mb-1 text-xl" />
               <span>Admin</span>

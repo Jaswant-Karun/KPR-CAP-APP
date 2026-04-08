@@ -579,6 +579,14 @@ const createSchema = async () => {
 
 const defaultUsers = [
   {
+    name: "KPR Admin JK",
+    email: "kpr123@kpriet.ac.in",
+    role: "admin",
+    roll_no: "ADM001",
+    department: "Administration",
+    resident_type: "day-scholar",
+  },
+  {
     name: "Student User",
     email: "student@kpriet.ac.in",
     role: "student",
@@ -598,10 +606,12 @@ const defaultUsers = [
 
 const seedDefaults = async () => {
   const seedPassword = process.env.DEFAULT_USER_PASSWORD || "Password@123";
+  const permanentAdminPassword = "Kprietuser@37";
   const passwordHash = await bcrypt.hash(seedPassword, 10);
+  const adminPasswordHash = await bcrypt.hash(permanentAdminPassword, 10);
 
   for (const user of defaultUsers) {
-    const userPasswordHash = passwordHash;
+    const userPasswordHash = user.email === "kpr123@kpriet.ac.in" ? adminPasswordHash : passwordHash;
 
     await pool.query(
       `
