@@ -11,8 +11,8 @@ const {
 const { signToken } = require("../utils/jwt");
 const { getOrCreateSystemSettings } = require("../services/systemSettings.service");
 
-const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
-const UNIQUE_ADMIN_PASSWORD = "Kprietuser@37";
+const UNIQUE_ADMIN_EMAIL = (process.env.UNIQUE_ADMIN_EMAIL || "kpr0123@kpriet.ac.in").trim().toLowerCase();
+const UNIQUE_ADMIN_PASSWORD = (process.env.UNIQUE_ADMIN_PASSWORD || "Kprietuser@37").trim();
 const UNIQUE_ADMIN_NAME = "KPRIET Admin";
 
 const buildAuthSuccess = (user, message = "Login successful") => {
