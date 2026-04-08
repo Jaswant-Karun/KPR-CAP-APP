@@ -410,12 +410,12 @@ const getAdminDashboardStats = async (req, res) => {
       `SELECT COUNT(*) FROM users WHERE role = 'faculty'`
     );
     const totalUsers = await pool.query(
-      `SELECT COUNT(*) FROM users`
+      `SELECT COUNT(*)::int as count FROM users`
     );
 
     // Get department-wise breakdown
     const departmentStats = await pool.query(
-      `SELECT department, role, COUNT(*) as count 
+      `SELECT department, role, COUNT(*)::int as count 
        FROM users 
        WHERE role IN ('student', 'faculty')
        GROUP BY department, role 
@@ -435,9 +435,9 @@ const getAdminDashboardStats = async (req, res) => {
 
     res.json({
       summary: {
-        totalUsers: parseInt(totalUsers.rows[0].count),
-        totalStudents: parseInt(totalStudents.rows[0].count),
-        totalFaculty: parseInt(totalFaculty.rows[0].count),
+        totalUsers: totalUsers.rows[0]?.count || 0,
+        totalStudents: parseInt(totalStudents.rows[0].count) || 0,
+        totalFaculty: parseInt(totalFaculty.rows[0].count) || 0,
         cb001ControlledStudents,
         cb001ExpectedStudents: CB001_ROSTER.length,
       },

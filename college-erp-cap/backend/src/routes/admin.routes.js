@@ -19,7 +19,7 @@ const {
 	updateSystemSettings,
 } = require("../controllers/adminController");
 
-const UNIQUE_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
+const UNIQUE_ADMIN_EMAIL = "kpr123@kpriet.ac.in";
 
 const enforceUniqueAdminEmail = (req, res, next) => {
 	if (!req.user || req.user.email !== UNIQUE_ADMIN_EMAIL) {
