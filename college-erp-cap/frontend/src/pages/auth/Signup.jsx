@@ -18,8 +18,6 @@ import {
 import "./AuthPage.css";
 
 export default function Signup() {
-  const PERMANENT_ADMIN_EMAIL = "kpr0123@kpriet.ac.in";
-  const PERMANENT_ADMIN_PASSWORD = "Kprietuser@37";
   const { signup, loading } = useAuth();
   const { settings } = usePublicSettings();
   const [role, setRole] = useState("student");
@@ -53,16 +51,21 @@ export default function Signup() {
     event.preventDefault();
 
     const isAdmin = role === "admin";
-    const normalizedEmail = (role === "admin" ? PERMANENT_ADMIN_EMAIL : form.email).trim().toLowerCase();
+    const normalizedEmail = form.email.trim().toLowerCase();
     const normalizedRoll = form.rollNo.trim().toLowerCase();
-    const resolvedPassword = isAdmin ? PERMANENT_ADMIN_PASSWORD : form.password;
+    const resolvedPassword = form.password;
 
     if (!isCollegeEmail(normalizedEmail)) {
       setError("Only @kpriet.ac.in email is allowed");
       return;
     }
 
-    if (role !== "admin" && normalizedEmail.split("@")[0] !== normalizedRoll) {
+    if (isAdmin) {
+      if (!form.name.trim()) {
+        setError("Admin name is required");
+        return;
+      }
+    } else if (normalizedEmail.split("@")[0] !== normalizedRoll) {
       setError("Email username must match roll number. Example: 24cb023@kpriet.ac.in");
       return;
     }
@@ -88,9 +91,9 @@ export default function Signup() {
 
     setError("");
     await signup({
-      name: isAdmin ? "KPRIET Admin" : form.name.trim(),
-      rollNo: isAdmin ? "ADM001" : form.rollNo.trim(),
-      department: isAdmin ? "Administration" : form.department.trim(),
+      name: form.name.trim(),
+      rollNo: isAdmin ? null : form.rollNo.trim(),
+      department: isAdmin ? null : form.department.trim(),
       email: normalizedEmail,
       password: resolvedPassword,
       role: String(role || "student").toLowerCase(),
@@ -140,49 +143,49 @@ export default function Signup() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {role !== "admin" && (
-            <>
-              <div className="auth-grid-two">
-                <div className="input-group">
-                  <FaUser className="input-icon" />
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Full Name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="login-input"
-                    required
-                  />
-                </div>
+          <div className="auth-grid-two">
+            <div className="input-group">
+              <FaUser className="input-icon" />
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={form.name}
+                onChange={handleChange}
+                className="login-input"
+                required
+              />
+            </div>
 
-                <div className="input-group">
-                  <FaIdCard className="input-icon" />
-                  <input
-                    type="text"
-                    name="rollNo"
-                    placeholder="Roll No / ID"
-                    value={form.rollNo}
-                    onChange={handleChange}
-                    className="login-input"
-                    required
-                  />
-                </div>
-              </div>
-
+            {role !== "admin" && (
               <div className="input-group">
-                <FaBuilding className="input-icon" />
+                <FaIdCard className="input-icon" />
                 <input
                   type="text"
-                  name="department"
-                  placeholder="Department"
-                  value={form.department}
+                  name="rollNo"
+                  placeholder="Roll No / ID"
+                  value={form.rollNo}
                   onChange={handleChange}
                   className="login-input"
                   required
                 />
               </div>
-            </>
+            )}
+          </div>
+
+          {role !== "admin" && (
+            <div className="input-group">
+              <FaBuilding className="input-icon" />
+              <input
+                type="text"
+                name="department"
+                placeholder="Department"
+                value={form.department}
+                onChange={handleChange}
+                className="login-input"
+                required
+              />
+            </div>
           )}
 
           <div className="input-group">
@@ -190,11 +193,10 @@ export default function Signup() {
             <input
               type="email"
               name="email"
-              placeholder="rollno@kpriet.ac.in"
-              value={role === "admin" ? PERMANENT_ADMIN_EMAIL : form.email}
+              placeholder={role === "admin" ? "admin@kpriet.ac.in" : "rollno@kpriet.ac.in"}
+              value={form.email}
               onChange={handleChange}
               className="login-input"
-              readOnly={role === "admin"}
               required
             />
           </div>
@@ -205,10 +207,9 @@ export default function Signup() {
               type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
-              value={role === "admin" ? PERMANENT_ADMIN_PASSWORD : form.password}
+              value={form.password}
               onChange={handleChange}
               className="login-input with-toggle"
-              readOnly={role === "admin"}
               required
             />
             <button
@@ -226,7 +227,7 @@ export default function Signup() {
 
           <p className="auth-help">
             {role === "admin"
-              ? "Admin signup uses permanent credentials. Name, Roll No/ID and Department are not required."
+              ? "Create your own admin account with your preferred email and password."
               : "Mail must end with @kpriet.ac.in and should begin with the same value as Roll No."}
             {(settings?.enforceStrongPassword ?? true)
               ? " Password must include uppercase, lowercase, number and special character."
