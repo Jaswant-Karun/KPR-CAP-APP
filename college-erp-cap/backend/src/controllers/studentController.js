@@ -73,21 +73,21 @@ const buildProfileData = (authUser = {}) => {
 		mentorDetails: {
 			mentor: {
 				name: "SIVASANKARI S",
-				code: "CB005",
+				code: "CB003",
 				phone: "9600046619",
-				email: "sivasankari.s@kpriet.ac.in",
+				email: "cb003@kpriet.ac.in",
 			},
 			chiefMentor: {
-				name: "SIVASANKARI S",
-				code: "CB005",
-				phone: "9600046619",
-				email: "sivasankari.s@kpriet.ac.in",
+				name: "Shanmugapriya",
+				code: "CB001",
+				phone: "",
+				email: "cb001@kpriet.ac.in",
 			},
 			sectionHead: {
 				name: "SIVASANKARI S",
-				code: "CB005",
+				code: "CB003",
 				phone: "9600046619",
-				email: "sivasankari.s@kpriet.ac.in",
+				email: "cb003@kpriet.ac.in",
 			},
 		},
 		systemDetails: {

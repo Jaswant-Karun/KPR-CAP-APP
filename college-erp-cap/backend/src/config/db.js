@@ -12,15 +12,19 @@ const adminPool = new Pool({
   ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
 });
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  host: process.env.PG_HOST || "localhost",
-  port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
-  user: process.env.PG_USER || "postgres",
-  password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "kpr_erp",
-  ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
-});
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
+    })
+  : new Pool({
+      host: process.env.PG_HOST || "localhost",
+      port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
+      user: process.env.PG_USER || "postgres",
+      password: process.env.PG_PASSWORD || "postgres",
+      database: process.env.PG_DATABASE || "kpr_erp",
+      ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
+    });
 
 const dbState = {
   mode: "postgres",
@@ -602,23 +606,152 @@ const defaultUsers = [
     department: "CSE",
     resident_type: "day-scholar",
   },
+  {
+    name: "SIVASANKARI S",
+    email: "cb003@kpriet.ac.in",
+    role: "faculty",
+    roll_no: "CB003",
+    department: "CSB",
+    resident_type: "day-scholar",
+  },
+  {
+    name: "Shanmugapriya",
+    email: "cb001@kpriet.ac.in",
+    role: "faculty",
+    roll_no: "CB001",
+    department: "CSB",
+    resident_type: "day-scholar",
+  },
 ];
+
+const SIVASANKARI_SEEDED_TIMETABLE = [
+  // Monday
+  { dayOfWeek: 1, periodNo: 1, subjectName: "U21CB502 - Formal Language and Automata Theory", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "RH" },
+  { dayOfWeek: 1, periodNo: 2, subjectName: "U21CB501 - Fundamentals of Management", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "RMLS" },
+  { dayOfWeek: 1, periodNo: 3, subjectName: "U21CB503 - Software Engineering Methodologies", startTime: "11:05", endTime: "12:00", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 1, periodNo: 4, subjectName: "U21CBP03 - PE I: E-Business Management", startTime: "12:00", endTime: "12:55", room: "II CB", facultyName: "SRM" },
+  { dayOfWeek: 1, periodNo: 5, subjectName: "OE", startTime: "13:45", endTime: "14:35", room: "II CB", facultyName: "OE" },
+  { dayOfWeek: 1, periodNo: 6, subjectName: "U21CB501 - Fundamentals of Management", startTime: "14:35", endTime: "15:25", room: "II CB", facultyName: "RMLS" },
+  { dayOfWeek: 1, periodNo: 7, subjectName: "HM2", startTime: "15:25", endTime: "16:15", room: "II CB", facultyName: "HM2" },
+
+  // Tuesday
+  { dayOfWeek: 2, periodNo: 1, subjectName: "U21CBP03 - PE I: E-Business Management", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "SRM" },
+  { dayOfWeek: 2, periodNo: 2, subjectName: "U21AMP02 - PE II: Soft Computing", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "ABB" },
+  { dayOfWeek: 2, periodNo: 3, subjectName: "U21CB501 - Fundamentals of Management", startTime: "11:05", endTime: "12:00", room: "II CB", facultyName: "RMLS" },
+  { dayOfWeek: 2, periodNo: 4, subjectName: "U21CB502 - Formal Language and Automata Theory", startTime: "12:00", endTime: "12:55", room: "II CB", facultyName: "RH" },
+  { dayOfWeek: 2, periodNo: 5, subjectName: "GATE", startTime: "13:45", endTime: "14:35", room: "II CB", facultyName: "KD" },
+  { dayOfWeek: 2, periodNo: 6, subjectName: "U21CBP03 - PE I: E-Business Management", startTime: "14:35", endTime: "15:25", room: "II CB", facultyName: "SRM" },
+  { dayOfWeek: 2, periodNo: 7, subjectName: "HM1", startTime: "15:25", endTime: "16:15", room: "II CB", facultyName: "HM1" },
+
+  // Wednesday
+  { dayOfWeek: 3, periodNo: 1, subjectName: "U21CB503 - Software Engineering Methodologies", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 3, periodNo: 2, subjectName: "U21AMP02 - PE II: Soft Computing", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "ABB" },
+  { dayOfWeek: 3, periodNo: 3, subjectName: "U21CB504 Lab - Software Engineering Methodologies Lab", startTime: "11:05", endTime: "12:00", room: "Lab", facultyName: "TC/RK/NF2" },
+  { dayOfWeek: 3, periodNo: 4, subjectName: "U21CB504 Lab - Software Engineering Methodologies Lab", startTime: "12:00", endTime: "12:55", room: "Lab", facultyName: "TC/RK/NF2" },
+  { dayOfWeek: 3, periodNo: 5, subjectName: "OE", startTime: "13:45", endTime: "14:35", room: "II CB", facultyName: "OE" },
+  { dayOfWeek: 3, periodNo: 6, subjectName: "HM2", startTime: "14:35", endTime: "15:25", room: "II CB", facultyName: "HM2" },
+  { dayOfWeek: 3, periodNo: 7, subjectName: "U21CB501 - Fundamentals of Management", startTime: "15:25", endTime: "16:15", room: "II CB", facultyName: "RMLS" },
+
+  // Thursday
+  { dayOfWeek: 4, periodNo: 1, subjectName: "U21CB502 - Formal Language and Automata Theory", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "RH" },
+  { dayOfWeek: 4, periodNo: 2, subjectName: "U21AMP02 - PE II: Soft Computing", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "ABB" },
+  { dayOfWeek: 4, periodNo: 3, subjectName: "U21CB503 - Software Engineering Methodologies", startTime: "11:05", endTime: "12:00", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 4, periodNo: 4, subjectName: "U21CBP03 - PE I: E-Business Management", startTime: "12:00", endTime: "12:55", room: "II CB", facultyName: "SRM" },
+  { dayOfWeek: 4, periodNo: 5, subjectName: "HM1", startTime: "13:45", endTime: "14:35", room: "II CB", facultyName: "HM1" },
+  { dayOfWeek: 4, periodNo: 6, subjectName: "GATE", startTime: "14:35", endTime: "15:25", room: "II CB", facultyName: "KD" },
+  { dayOfWeek: 4, periodNo: 7, subjectName: "MH", startTime: "15:25", endTime: "16:15", room: "II CB", facultyName: "TS/RMLS/NF2" },
+
+  // Friday
+  { dayOfWeek: 5, periodNo: 1, subjectName: "U21CB502 - Formal Language and Automata Theory", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "RH" },
+  { dayOfWeek: 5, periodNo: 2, subjectName: "HM1", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "HM1" },
+  { dayOfWeek: 5, periodNo: 3, subjectName: "U21CB504 Lab - Software Engineering Methodologies Lab", startTime: "11:05", endTime: "12:00", room: "Lab", facultyName: "TC/RK/NF2" },
+  { dayOfWeek: 5, periodNo: 4, subjectName: "U21CB504 Lab - Software Engineering Methodologies Lab", startTime: "12:00", endTime: "12:55", room: "Lab", facultyName: "TC/RK/NF2" },
+  { dayOfWeek: 5, periodNo: 5, subjectName: "OE", startTime: "13:45", endTime: "14:35", room: "II CB", facultyName: "OE" },
+  { dayOfWeek: 5, periodNo: 6, subjectName: "GATE", startTime: "14:35", endTime: "15:25", room: "II CB", facultyName: "RMLS/TS" },
+  { dayOfWeek: 5, periodNo: 7, subjectName: "HM2", startTime: "15:25", endTime: "16:15", room: "II CB", facultyName: "HM2" },
+
+  // Saturday
+  { dayOfWeek: 6, periodNo: 1, subjectName: "PT", startTime: "08:55", endTime: "09:50", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 6, periodNo: 2, subjectName: "PT", startTime: "09:50", endTime: "10:45", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 6, periodNo: 3, subjectName: "PT", startTime: "11:05", endTime: "12:00", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 6, periodNo: 4, subjectName: "PT", startTime: "12:00", endTime: "12:55", room: "II CB", facultyName: "TC" },
+  { dayOfWeek: 6, periodNo: 5, subjectName: "Activity", startTime: "13:45", endTime: "14:35", room: "Campus", facultyName: "Activity" },
+  { dayOfWeek: 6, periodNo: 6, subjectName: "Activity", startTime: "14:35", endTime: "15:25", room: "Campus", facultyName: "Activity" },
+  { dayOfWeek: 6, periodNo: 7, subjectName: "Activity", startTime: "15:25", endTime: "16:15", room: "Campus", facultyName: "Activity" },
+];
+
+const seedSivasankariTimetable = async () => {
+  const facultyResult = await pool.query(
+    "SELECT id FROM users WHERE role = 'faculty' AND LOWER(email) = $1 LIMIT 1",
+    ["cb003@kpriet.ac.in"]
+  );
+
+  if (facultyResult.rows.length === 0) {
+    return;
+  }
+
+  const facultyId = Number(facultyResult.rows[0].id);
+
+  for (const entry of SIVASANKARI_SEEDED_TIMETABLE) {
+    await pool.query(
+      `
+        INSERT INTO timetables
+          (audience_type, audience_id, day_of_week, period_no, subject_name, start_time, end_time, room, faculty_name, updated_at)
+        VALUES
+          ('faculty', $1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        ON CONFLICT (audience_type, audience_id, day_of_week, period_no)
+        DO UPDATE SET
+          subject_name = EXCLUDED.subject_name,
+          start_time = EXCLUDED.start_time,
+          end_time = EXCLUDED.end_time,
+          room = EXCLUDED.room,
+          faculty_name = EXCLUDED.faculty_name,
+          updated_at = NOW();
+      `,
+      [
+        facultyId,
+        entry.dayOfWeek,
+        entry.periodNo,
+        entry.subjectName,
+        entry.startTime,
+        entry.endTime,
+        entry.room,
+        entry.facultyName,
+      ]
+    );
+  }
+};
 
 const seedDefaults = async () => {
   const seedPassword = process.env.DEFAULT_USER_PASSWORD || "Password@123";
   const permanentAdminPassword = "Kprietuser@37";
+  const cb001Password = "Shanmugapriya@37";
   const passwordHash = await bcrypt.hash(seedPassword, 10);
   const adminPasswordHash = await bcrypt.hash(permanentAdminPassword, 10);
+  const cb001PasswordHash = await bcrypt.hash(cb001Password, 10);
 
   for (const user of defaultUsers) {
-    const userPasswordHash = user.email === "kpr123@kpriet.ac.in" ? adminPasswordHash : passwordHash;
+    let userPasswordHash;
+    if (user.email === "kpr123@kpriet.ac.in") {
+      userPasswordHash = adminPasswordHash;
+    } else if (user.email === "cb001@kpriet.ac.in") {
+      userPasswordHash = cb001PasswordHash;
+    } else {
+      userPasswordHash = passwordHash;
+    }
 
     await pool.query(
       `
         INSERT INTO users (name, email, password_hash, role, roll_no, department, resident_type)
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (email)
-        DO NOTHING;
+        DO UPDATE SET
+          name = EXCLUDED.name,
+          password_hash = CASE
+            WHEN users.email = 'cb001@kpriet.ac.in' THEN EXCLUDED.password_hash
+            WHEN users.email = 'kpr123@kpriet.ac.in' THEN EXCLUDED.password_hash
+            ELSE users.password_hash
+          END;
       `,
       [
         user.name,
@@ -641,6 +774,106 @@ const seedDefaults = async () => {
     `,
     ["global", JSON.stringify(DEFAULT_SYSTEM_SETTINGS)]
   );
+
+  await seedSivasankariTimetable();
+
+  // Seed courses from timetable
+  const coursesToSeed = [
+    {
+      code: "U21CB501",
+      name: "Fundamentals of Management",
+      credits: 3,
+      semester: 5,
+      category: "Theory",
+      faculty_name: "Ms. R. M. Lakshitha Shree",
+      department: "CSB",
+      capacity: 75,
+      description: "Fundamentals of Management - RMLS",
+    },
+    {
+      code: "U21CB502",
+      name: "Formal Language and Automata Theory",
+      credits: 3,
+      semester: 5,
+      category: "Theory",
+      faculty_name: "Ms. R. Haritha",
+      department: "CSB",
+      capacity: 75,
+      description: "Formal Language and Automata Theory - RH",
+    },
+    {
+      code: "U21CB503",
+      name: "Software Engineering Methodologies",
+      credits: 3,
+      semester: 5,
+      category: "Theory",
+      faculty_name: "Ms. Tanisha",
+      department: "CSB",
+      capacity: 75,
+      description: "Software Engineering Methodologies - TC",
+    },
+    {
+      code: "U21CB504",
+      name: "Software Engineering Methodologies Laboratory",
+      credits: 2,
+      semester: 5,
+      category: "Lab",
+      faculty_name: "Ms. Tanisha / Ms. R. Keerthy / New Faculty",
+      department: "CSB",
+      capacity: 75,
+      description: "Software Engineering Methodologies Lab - TC/RK/NF2",
+    },
+    {
+      code: "U21CBP03",
+      name: "PE I: E-Business Management",
+      credits: 3,
+      semester: 5,
+      category: "Professional Elective",
+      faculty_name: "Ms. S. R. Maheswari",
+      department: "CSB",
+      capacity: 75,
+      description: "PE I: E-Business Management - SRM",
+    },
+    {
+      code: "U21AMP02",
+      name: "PE II: Soft Computing",
+      credits: 3,
+      semester: 5,
+      category: "Professional Elective",
+      faculty_name: "Dr. A. Bazila Banu",
+      department: "CSB",
+      capacity: 75,
+      description: "PE II: Soft Computing - ABB",
+    },
+  ];
+
+  for (const course of coursesToSeed) {
+    await pool.query(
+      `INSERT INTO courses (code, name, credits, semester, category, faculty_name, department, capacity, description)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (code) DO UPDATE SET
+         name = EXCLUDED.name,
+         credits = EXCLUDED.credits,
+         semester = EXCLUDED.semester,
+         category = EXCLUDED.category,
+         faculty_name = EXCLUDED.faculty_name,
+         department = EXCLUDED.department,
+         capacity = EXCLUDED.capacity,
+         description = EXCLUDED.description,
+         updated_at = NOW();`,
+      [
+        course.code,
+        course.name,
+        course.credits,
+        course.semester,
+        course.category,
+        course.faculty_name,
+        course.department,
+        course.capacity,
+        course.description,
+      ]
+    );
+  }
 
   // Seed departments
   const departments = [
@@ -714,29 +947,30 @@ const seedDefaults = async () => {
 
 const connectDB = async () => {
   try {
-    const dbName = process.env.PG_DATABASE || "kpr_erp";
-    
-    // Step 1: Ensure the database exists
-    try {
-      const checkDb = await adminPool.query(
-        "SELECT 1 FROM pg_database WHERE datname = $1",
-        [dbName]
-      );
-      
-      if (checkDb.rows.length === 0) {
-        console.log(`📦 Creating database: ${dbName}...`);
-        await adminPool.query(`CREATE DATABASE ${dbName}`);
-        console.log(`✅ Database ${dbName} created`);
-      } else {
-        console.log(`✅ Database ${dbName} exists`);
-      }
-    } catch (dbCheckError) {
-      console.warn(`⚠️  Could not verify database existence: ${dbCheckError.message}`);
-    } finally {
+    // Step 1: Ensure the database exists (only for local PG, skip when using DATABASE_URL)
+    if (!process.env.DATABASE_URL) {
+      const dbName = process.env.PG_DATABASE || "kpr_erp";
       try {
-        await adminPool.end();
-      } catch (e) {
-        // Ignore error on pool close
+        const checkDb = await adminPool.query(
+          "SELECT 1 FROM pg_database WHERE datname = $1",
+          [dbName]
+        );
+        
+        if (checkDb.rows.length === 0) {
+          console.log(`📦 Creating database: ${dbName}...`);
+          await adminPool.query(`CREATE DATABASE ${dbName}`);
+          console.log(`✅ Database ${dbName} created`);
+        } else {
+          console.log(`✅ Database ${dbName} exists`);
+        }
+      } catch (dbCheckError) {
+        console.warn(`⚠️  Could not verify database existence: ${dbCheckError.message}`);
+      } finally {
+        try {
+          await adminPool.end();
+        } catch (e) {
+          // Ignore error on pool close
+        }
       }
     }
     

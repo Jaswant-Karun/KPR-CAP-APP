@@ -5,6 +5,7 @@ const {
   createCourse,
   getCoursesByDepartment,
   getCoursesByFaculty,
+  getAllCourses,
   enrollStudent,
   getStudentEnrollments,
   getStudentEnrollmentsForFaculty,
@@ -13,6 +14,9 @@ const {
 } = require("../controllers/courseController");
 
 router.use(auth);
+
+// Admin - view all courses across departments
+router.get("/admin/all", allowRoles(["admin"]), getAllCourses);
 
 // Faculty only - create and manage courses
 router.post("/", allowRoles(["faculty", "admin"]), createCourse);

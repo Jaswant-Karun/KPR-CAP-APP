@@ -6,11 +6,17 @@ const withFacultyQuery = (path, facultyId) => {
 	return `${path}?facultyId=${encodeURIComponent(facultyId)}`;
 };
 
-export const getWeeklyTimetable = (role, id, token, facultyId) =>
-	apiRequest(withFacultyQuery(`/${role}/${id}/timetable/week`, facultyId), "GET", null, token);
+export const getWeeklyTimetable = (role, id, token, facultyId) => {
+	const path = withFacultyQuery(`/${role}/${id}/timetable/week`, facultyId);
+	console.log("timetableService - getWeeklyTimetable calling:", { path, role, id, facultyId });
+	return apiRequest(path, "GET", null, token);
+};
 
-export const getTodayTimetable = (role, id, token, facultyId) =>
-	apiRequest(withFacultyQuery(`/${role}/${id}/timetable/today`, facultyId), "GET", null, token);
+export const getTodayTimetable = (role, id, token, facultyId) => {
+	const path = withFacultyQuery(`/${role}/${id}/timetable/today`, facultyId);
+	console.log("timetableService - getTodayTimetable calling:", { path, role, id, facultyId });
+	return apiRequest(path, "GET", null, token);
+};
 
 export const saveWeeklyTimetable = (payload, token) =>
 	apiRequest("/timetable/bulk-upsert", "POST", payload, token);

@@ -35,7 +35,7 @@ export default function Dashboard() {
       value: 'Editable',
       helper: 'Update period slots when needed',
       tone: 'editable',
-      to: '/faculty/timetable-scheduler',
+      to: '/faculty/schedule',
       cta: 'Edit Timetable',
       icon: FiCalendar,
     },
@@ -59,7 +59,7 @@ export default function Dashboard() {
     {
       title: 'Update Timetable',
       text: 'Adjust period allocations for special sessions and lab substitutions.',
-      to: '/faculty/timetable-scheduler',
+      to: '/faculty/schedule',
       cta: 'Open Timetable',
       icon: FiBookOpen,
     },

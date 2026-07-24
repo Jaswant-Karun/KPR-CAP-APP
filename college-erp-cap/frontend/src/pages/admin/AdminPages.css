@@ -210,3 +210,88 @@ html[data-theme="light"] .admin-table td {
   color: #2c527f;
   font-weight: 500;
 }
+
+/* ── Light mode: inputs, selects, table ── */
+html[data-theme="light"] .admin-input,
+html[data-theme="light"] .admin-select {
+  background: #ffffff;
+  border-color: #b4c9e3;
+  color: #173a67;
+}
+
+html[data-theme="light"] .admin-input::placeholder {
+  color: #7a9abf;
+}
+
+html[data-theme="light"] .admin-input:focus,
+html[data-theme="light"] .admin-select:focus {
+  border-color: #1f4f8a;
+  box-shadow: 0 0 0 2px rgba(31, 79, 138, 0.12);
+  outline: none;
+}
+
+html[data-theme="light"] .admin-btn {
+  background: #e7eef8;
+  border-color: #b4c9e3;
+  color: #1f4f8a;
+}
+
+html[data-theme="light"] .admin-btn:hover {
+  background: #d9e5f4;
+  border-color: #1f4f8a;
+}
+
+html[data-theme="light"] .admin-table th {
+  background: #eef4fb;
+}
+
+html[data-theme="light"] .admin-table tbody tr:hover {
+  background: #f0f6ff;
+}
+
+html[data-theme="light"] .admin-table td {
+  border-bottom-color: #d2deed;
+}
+
+html[data-theme="light"] .admin-message {
+  color: #1f4f8a;
+}
+
+html[data-theme="light"] .admin-panel {
+  background: linear-gradient(145deg, #fbfdff, #eef4fb);
+  border-color: #cbd8ea;
+}
+
+html[data-theme="light"] .admin-stat-card {
+  background: linear-gradient(145deg, #fdfefe, #f1f6fd);
+  border-color: #c6d6ea;
+}
+
+/* Ensure text in admin pages respects theme - override any stale inline colors */
+html[data-theme="light"] .admin-page p,
+html[data-theme="light"] .admin-page span,
+html[data-theme="light"] .admin-page td,
+html[data-theme="light"] .admin-page li {
+  color: #2c527f;
+}
+
+html[data-theme="light"] .admin-page h1,
+html[data-theme="light"] .admin-page h2,
+html[data-theme="light"] .admin-page h3 {
+  color: #173a67;
+}
+
+/* Active state for theme selector buttons */
+.admin-btn-active {
+  background: var(--button-bg-hover) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary) !important;
+  box-shadow: 0 0 0 2px rgba(0, 196, 255, 0.15);
+}
+
+html[data-theme="light"] .admin-btn-active {
+  background: #d9e5f4 !important;
+  border-color: #1f4f8a !important;
+  color: #1f4f8a !important;
+  box-shadow: 0 0 0 2px rgba(31, 79, 138, 0.15);
+}

@@ -8,6 +8,20 @@ import "./TimetableView.css";
 
 const DAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+const isSivasankariFaculty = (faculty = {}) => {
+  const name = String(faculty?.name || "").toLowerCase();
+  const email = String(faculty?.email || "").toLowerCase();
+  const code = String(faculty?.roll_no || "").toLowerCase();
+
+  return (
+    name.includes("sivasankari") ||
+    email.includes("cb003@kpriet.ac.in") ||
+    email.includes("sivasankari") ||
+    code.includes("cb003") ||
+    code.includes("cb005")
+  );
+};
+
 export default function TimetableView() {
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -15,7 +29,7 @@ export default function TimetableView() {
   const [weekRows, setWeekRows] = useState([]);
   const [facultyList, setFacultyList] = useState([]);
   const [selectedFacultyId, setSelectedFacultyId] = useState("");
-  const [viewMode, setViewMode] = useState("today");
+  const [viewMode, setViewMode] = useState("overall");
   const [currentDay, setCurrentDay] = useState(new Date().getDay());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,8 +41,10 @@ export default function TimetableView() {
         const res = await getFacultyDirectory(token);
         const list = res?.faculty || [];
         setFacultyList(list);
+
         if (!selectedFacultyId && list.length > 0) {
-          setSelectedFacultyId(String(list[0].id));
+          const preferredFaculty = list.find(isSivasankariFaculty) || list[0];
+          setSelectedFacultyId(String(preferredFaculty.id));
         }
       } catch {
         // keep timetable loading functional even if faculty directory fails
@@ -40,7 +56,14 @@ export default function TimetableView() {
 
   useEffect(() => {
     const fetchTimetable = async () => {
+      console.log("TimetableView - fetchTimetable called", {
+        userId: user?.id,
+        hasToken: !!token,
+        selectedFacultyId,
+      });
+
       if (!user?.id || !token) {
+        console.log("TimetableView - guard failed, skipping fetch");
         setLoading(false);
         return;
       }
@@ -49,15 +72,27 @@ export default function TimetableView() {
         setLoading(true);
         setError("");
 
+        console.log("TimetableView - fetching timetable", {
+          studentId: user.id,
+          facultyId: selectedFacultyId || "undefined (will use backend fallback)",
+        });
+
         const [todayRes, weekRes] = await Promise.all([
           getTodayTimetable("student", user.id, token, selectedFacultyId || undefined),
           getWeeklyTimetable("student", user.id, token, selectedFacultyId || undefined),
         ]);
 
+        console.log("TimetableView - API responses:", {
+          todayRes,
+          weekRes,
+          weekRowsCount: weekRes?.timetable?.length || 0,
+        });
+
         setCurrentDay(todayRes?.dayOfWeek ?? new Date().getDay());
         setTodayRows(todayRes?.periods || []);
         setWeekRows(weekRes?.timetable || []);
       } catch (err) {
+        console.error("TimetableView - fetch error:", err);
         setError(err?.message || "Unable to load timetable");
       } finally {
         setLoading(false);

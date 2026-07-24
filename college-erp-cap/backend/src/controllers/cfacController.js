@@ -60,19 +60,12 @@ const ensureCfacSchema = async () => {
 };
 
 const defaultCourseCodes = [
-  "U21AD401",
-  "U21AD405",
-  "U21CB401",
-  "U21CB402",
-  "U21CS401",
-  "U21CS403",
-  "U21CS404",
-  "U21ECX01",
-  "U21MA409",
-  "U21MYC04",
-  "U210CB04",
-  "U21SSG01",
-  "U21VCB03",
+  "U21CB501",
+  "U21CB502",
+  "U21CB503",
+  "U21CB504",
+  "U21CBP03",
+  "U21AMP02",
 ];
 
 const allowedRegistrationStatuses = new Set(["Approved", "Pending", "Rejected", "Draft"]);
@@ -202,7 +195,7 @@ const ensureStudentRegistration = async (studentId, studentRollNo, studentName) 
       INSERT INTO cfac_registrations
         (ticket_no, student_id, student_roll_no, student_name, status, acy, sem, courses, rmc, mcr, wcr, scr, acr, tcr, course_codes)
       VALUES
-        ($1, $2, $3, $4, 'Approved', '2025-26', 4, 13, 24, 24, 0, 0, 4, 28, $5)
+        ($1, $2, $3, $4, 'Approved', '2025-26', 5, 6, 17, 17, 0, 0, 0, 17, $5)
       RETURNING *
     `,
     [ticketNo, studentId, studentRollNo || null, studentName || null, defaultCourseCodes]

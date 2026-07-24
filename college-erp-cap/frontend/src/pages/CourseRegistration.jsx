@@ -6,16 +6,17 @@ import {
   enrollStudent,
   dropCourse,
 } from "../services/courseService";
-import { FiSearch, FiFilter, FiPlus, FiX, FiBook, FiUsers, FiTrash2, FiRefreshCw } from "react-icons/fi";
+import { FiSearch, FiPlus, FiX, FiBook, FiUsers, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import "./CourseRegistration.css";
 
-const CATEGORIES = ["all", "PCC", "EEC", "OEC", "BSC", "MOOC"];
+const CATEGORIES = ["all", "Theory", "Lab", "Professional Elective", "PCC", "EEC", "OEC", "BSC", "MOOC"];
 const SEMESTERS = ["all", 1, 2, 3, 4, 5, 6, 7, 8];
 
 const CourseRegistration = () => {
   const { user, token } = useAuth();
   const isStudent = user?.role === "student";
-  const isFaculty = user?.role === "faculty" || user?.role === "admin";
+  const isFaculty = user?.role === "faculty";
+  const isAdmin = user?.role === "admin";
 
   const [courses, setCourses] = useState([]);
   const [myEnrollments, setMyEnrollments] = useState([]);
@@ -23,31 +24,27 @@ const CourseRegistration = () => {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("info");
   const [searchQuery, setSearchQuery] = useState("");
+  // Default to semester 5 so timetable courses appear immediately
   const [selectedFilters, setSelectedFilters] = useState({
-    semester: "all",
+    semester: 5,
     category: "all",
     status: "all",
   });
 
   useEffect(() => {
-    loadData();
+    if (token && user) loadData();
   }, [token, user?.department]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      if (isStudent) {
-        // Load available courses for student's department
-        const coursesResp = await getCoursesByDepartment(user?.department, "", token);
-        setCourses(coursesResp?.courses || []);
+      const dept = user?.department || "";
+      const coursesResp = await getCoursesByDepartment(dept, "", token);
+      setCourses(coursesResp?.courses || []);
 
-        // Load student's enrollments
+      if (isStudent) {
         const enrollmentsResp = await getStudentEnrollments(token);
         setMyEnrollments(enrollmentsResp?.enrollments || []);
-      } else if (isFaculty) {
-        // Load all courses for the department
-        const coursesResp = await getCoursesByDepartment(user?.department, "", token);
-        setCourses(coursesResp?.courses || []);
       }
       setMessage("");
     } catch (error) {
@@ -81,7 +78,7 @@ const CourseRegistration = () => {
         setLoading(true);
         await dropCourse(enrollmentId, token);
         setMyEnrollments(myEnrollments.filter((e) => e.id !== enrollmentId));
-        setMessage("Successfully dropped course!");
+        setMessage("Course dropped successfully!");
         setMessageType("success");
       } catch (error) {
         setMessage(error?.message || "Failed to drop course");
@@ -92,45 +89,54 @@ const CourseRegistration = () => {
     }
   };
 
-  // Filter courses
   const filteredCourses = courses.filter((course) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch =
-      course.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (course.facultyName || "").toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      course.code.toLowerCase().includes(q) ||
+      course.name.toLowerCase().includes(q) ||
+      (course.facultyName || "").toLowerCase().includes(q);
 
     const matchesSemester =
-      selectedFilters.semester === "all" || course.semester === Number(selectedFilters.semester);
-    const matchesCategory =
-      selectedFilters.category === "all" || course.category === selectedFilters.category;
+      selectedFilters.semester === "all" ||
+      course.semester === Number(selectedFilters.semester);
 
-    let matchesStatus = true;
-    if (selectedFilters.status !== "all") {
-      matchesStatus = course.status === selectedFilters.status;
-    }
+    const matchesCategory =
+      selectedFilters.category === "all" ||
+      course.category === selectedFilters.category;
+
+    const matchesStatus =
+      selectedFilters.status === "all" ||
+      course.status === selectedFilters.status;
 
     return matchesSearch && matchesSemester && matchesCategory && matchesStatus;
   });
 
-  const enrolledCourseIds = myEnrollments.map((e) => e.courseId);
+  const enrolledCourseIds = new Set(myEnrollments.map((e) => e.courseId));
+
+  const setFilter = (key, value) =>
+    setSelectedFilters((prev) => ({ ...prev, [key]: value }));
 
   return (
     <div className="course-registration-container">
+      {/* Header */}
       <div className="course-header">
         <div className="course-header-info">
           <h1>Course Registration</h1>
           <p>
             {isStudent
-              ? `Available courses for ${user?.department || "CSE"} Department`
-              : "Manage course registrations"}
+              ? `Semester 5 courses for ${user?.department || ""} department`
+              : isAdmin
+              ? "All course registrations"
+              : `Courses for ${user?.department || ""} department`}
           </p>
         </div>
         <button onClick={loadData} className="refresh-btn" disabled={loading}>
-          <FiRefreshCw size={16} />
-          Refresh
+          <FiRefreshCw size={16} /> Refresh
         </button>
       </div>
 
+      {/* Message */}
       {message && (
         <div className={`message ${messageType}`}>
           {message}
@@ -140,6 +146,7 @@ const CourseRegistration = () => {
         </div>
       )}
 
+      {/* My Enrolled Courses (student only) */}
       {isStudent && myEnrollments.length > 0 && (
         <div className="my-enrollments-section">
           <h2>My Enrolled Courses ({myEnrollments.length})</h2>
@@ -153,8 +160,12 @@ const CourseRegistration = () => {
                   </div>
                   <div className="enrollment-meta">
                     <span className="badge-credits">{enrollment.credits} Credits</span>
-                    {enrollment.category && <span className="badge-category">{enrollment.category}</span>}
-                    <span className="faculty-name">Dr. {enrollment.facultyName}</span>
+                    {enrollment.category && (
+                      <span className="badge-category">{enrollment.category}</span>
+                    )}
+                    {enrollment.facultyName && (
+                      <span className="faculty-name">{enrollment.facultyName}</span>
+                    )}
                   </div>
                 </div>
                 <button
@@ -171,6 +182,7 @@ const CourseRegistration = () => {
         </div>
       )}
 
+      {/* Filters */}
       <div className="filters-section">
         <div className="search-box">
           <FiSearch size={16} />
@@ -186,9 +198,7 @@ const CourseRegistration = () => {
         <div className="filter-group">
           <select
             value={selectedFilters.semester}
-            onChange={(e) =>
-              setSelectedFilters({ ...selectedFilters, semester: e.target.value })
-            }
+            onChange={(e) => setFilter("semester", e.target.value)}
             disabled={loading}
           >
             {SEMESTERS.map((sem) => (
@@ -202,9 +212,7 @@ const CourseRegistration = () => {
         <div className="filter-group">
           <select
             value={selectedFilters.category}
-            onChange={(e) =>
-              setSelectedFilters({ ...selectedFilters, category: e.target.value })
-            }
+            onChange={(e) => setFilter("category", e.target.value)}
             disabled={loading}
           >
             {CATEGORIES.map((cat) => (
@@ -218,9 +226,7 @@ const CourseRegistration = () => {
         <div className="filter-group">
           <select
             value={selectedFilters.status}
-            onChange={(e) =>
-              setSelectedFilters({ ...selectedFilters, status: e.target.value })
-            }
+            onChange={(e) => setFilter("status", e.target.value)}
             disabled={loading}
           >
             <option value="all">All Status</option>
@@ -230,10 +236,11 @@ const CourseRegistration = () => {
         </div>
       </div>
 
+      {/* Available Courses */}
       <div className="courses-section">
         <h2>Available Courses ({filteredCourses.length})</h2>
 
-        {loading && filteredCourses.length === 0 ? (
+        {loading && courses.length === 0 ? (
           <div className="loading-state">Loading courses...</div>
         ) : filteredCourses.length > 0 ? (
           <div className="courses-table-wrapper">
@@ -261,21 +268,19 @@ const CourseRegistration = () => {
                     <td className="faculty-cell">{course.facultyName || "TBD"}</td>
                     <td className="credits-cell">{course.credits}</td>
                     <td className="category-cell">
-                      <span className={`badge badge-${course.category?.toLowerCase()}`}>
-                        {course.category}
+                      <span className={`badge badge-${(course.category || "").toLowerCase().replace(/\s+/g, "-")}`}>
+                        {course.category || "—"}
                       </span>
                     </td>
                     <td className="semester-cell">{course.semester || "-"}</td>
                     <td className="enrollment-cell">
                       <div className="enrollment-info-mini">
-                        <span>
-                          {course.enrolled}/{course.capacity}
-                        </span>
+                        <span>{course.enrolled}/{course.capacity}</span>
                         <div className="enrollment-bar">
                           <div
                             className="enrollment-fill"
                             style={{
-                              width: `${Math.round((course.enrolled / course.capacity) * 100)}%`,
+                              width: `${Math.min(100, Math.round((course.enrolled / course.capacity) * 100))}%`,
                             }}
                           />
                         </div>
@@ -288,18 +293,14 @@ const CourseRegistration = () => {
                     </td>
                     {isStudent && (
                       <td className="action-cell">
-                        {enrolledCourseIds.includes(course.id) ? (
+                        {enrolledCourseIds.has(course.id) ? (
                           <span className="enrolled-badge">Enrolled</span>
                         ) : (
                           <button
                             className="btn-enroll"
                             onClick={() => handleEnroll(course.id)}
                             disabled={loading || course.status === "full"}
-                            title={
-                              course.status === "full"
-                                ? "Course is full"
-                                : "Enroll in this course"
-                            }
+                            title={course.status === "full" ? "Course is full" : "Enroll in this course"}
                           >
                             <FiPlus size={14} /> Enroll
                           </button>

@@ -1,4 +1,4 @@
-const { Pool } = require("pg");
+const { pool } = require("../config/db");
 
 const GLOBAL_SETTINGS_KEY = "global";
 const DEFAULT_SYSTEM_SETTINGS = {
@@ -10,16 +10,6 @@ const DEFAULT_SYSTEM_SETTINGS = {
   appTheme: "dark",
   defaultDepartment: "CSE",
 };
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  host: process.env.PG_HOST || "localhost",
-  port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
-  user: process.env.PG_USER || "postgres",
-  password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "kpr_erp",
-  ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
-});
 
 const normalizeTheme = (themeValue) => (String(themeValue || "").toLowerCase() === "light" ? "light" : "dark");
 

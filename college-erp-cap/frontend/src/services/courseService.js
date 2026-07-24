@@ -28,3 +28,12 @@ export const getCourseEnrollments = (courseId, token) =>
 
 export const dropCourse = (enrollmentId, token) =>
   apiRequest(`/courses/enrollments/${enrollmentId}/drop`, "PATCH", {}, token);
+
+export const getAllCoursesAdmin = (token, { department, semester, search } = {}) => {
+  const params = new URLSearchParams();
+  if (department) params.set("department", department);
+  if (semester) params.set("semester", semester);
+  if (search) params.set("search", search);
+  const query = params.toString() ? `?${params.toString()}` : "";
+  return apiRequest(`/courses/admin/all${query}`, "GET", null, token);
+};

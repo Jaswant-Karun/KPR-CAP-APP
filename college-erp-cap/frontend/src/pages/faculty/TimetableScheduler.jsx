@@ -47,6 +47,9 @@ export default function TimetableScheduler() {
               facultyName: item.facultyName || "",
             }))
           );
+        } else {
+          setRows(FACULTY_DEFAULT_TIMETABLE.map((row) => ({ ...row })));
+          setMessage("Full timetable loaded. You can edit and save now.");
         }
       } catch (err) {
         setMessage(err?.message || "Could not load timetable");

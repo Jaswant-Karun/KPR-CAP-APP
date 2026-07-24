@@ -23,12 +23,12 @@ const facultyMenu = [
   {
     title: "Schedule",
     icon: "schedule",
-    children: [{ title: "Period Scheduling", path: "/faculty/schedule" }],
+    children: [{ title: "Schedule & Editable Timetable", path: "/faculty/schedule" }],
   },
   {
     title: "Timetable",
     icon: "timetable",
-    children: [{ title: "Editable Timetable", path: "/faculty/timetable-scheduler" }],
+    children: [{ title: "Editable Timetable", path: "/faculty/schedule" }],
   },
   {
     title: "Reports",

@@ -24,6 +24,13 @@ const sidebarMenu = [
     ]
   },
   {
+    title: 'Schedule',
+    icon: 'calendar',
+    children: [
+      { title: 'Class Timetable', path: '/student/schedule' }
+    ]
+  },
+  {
     title: 'Booking Service',
     icon: 'calendar',
     children: [

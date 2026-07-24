@@ -1,4 +1,4 @@
-const { Pool } = require("pg");
+const { pool } = require("../config/db");
 const { getFacultyControlMap, setFacultyControlMap } = require("../store/facultyControlStore");
 const { CB001_ROSTER } = require("../data/cb001Roster");
 const { resolveCb001RosterStudentIds } = require("../services/cb001Roster.service");
@@ -9,16 +9,6 @@ const {
 } = require("../services/systemSettings.service");
 
 const CB001_EMAIL = "cb001@kpriet.ac.in";
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  host: process.env.PG_HOST || "localhost",
-  port: process.env.PG_PORT ? Number(process.env.PG_PORT) : 5432,
-  user: process.env.PG_USER || "postgres",
-  password: process.env.PG_PASSWORD || "postgres",
-  database: process.env.PG_DATABASE || "kpr_erp",
-  ssl: process.env.PG_SSL === "true" ? { rejectUnauthorized: false } : false,
-});
 
 // ============================================
 // STUDENT MANAGEMENT
