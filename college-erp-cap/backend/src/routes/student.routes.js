@@ -8,10 +8,31 @@ const {
 	getWeekTimetable,
 } = require("../controllers/timetableController");
 
-const resolveFacultyAudienceId = (req) => {
+const resolveFacultyAudienceId = async (req) => {
 	const requested = Number(req.query.facultyId);
 	if (!Number.isNaN(requested) && requested > 0) {
 		return requested;
+	}
+
+	const tokenUserId = Number(req.user?.id || 0);
+	if (Number.isInteger(tokenUserId) && tokenUserId > 0) {
+		const mappedFaculty = await pool.query(
+			`SELECT faculty_id FROM faculty_control_maps WHERE student_ids @> ARRAY[$1]::int[] LIMIT 1`,
+			[tokenUserId]
+		);
+
+		if (mappedFaculty.rows.length > 0) {
+			return Number(mappedFaculty.rows[0].faculty_id);
+		}
+	}
+
+	const sivasankariFaculty = await pool.query(
+		`SELECT id FROM users WHERE role = 'faculty' AND LOWER(email) = $1 LIMIT 1`,
+		["cb003@kpriet.ac.in"]
+	);
+
+	if (sivasankariFaculty.rows.length > 0) {
+		return Number(sivasankariFaculty.rows[0].id);
 	}
 
 	const defaultFacultyId = Number(process.env.DEFAULT_FACULTY_ID || 3);
@@ -84,16 +105,24 @@ router.get("/:studentId/attendance", auth, async (req, res) => {
 
 router.get("/profile", auth, getStudentProfile);
 
-router.get("/:audienceId/timetable/today", auth, (req, res) => {
-	req.params.audienceType = "faculty";
-	req.params.audienceId = String(resolveFacultyAudienceId(req));
-	return getTodayTimetable(req, res);
+router.get("/:audienceId/timetable/today", auth, async (req, res) => {
+	try {
+		req.params.audienceType = "faculty";
+		req.params.audienceId = String(await resolveFacultyAudienceId(req));
+		return getTodayTimetable(req, res);
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to resolve timetable faculty", error: error.message });
+	}
 });
 
-router.get("/:audienceId/timetable/week", auth, (req, res) => {
-	req.params.audienceType = "faculty";
-	req.params.audienceId = String(resolveFacultyAudienceId(req));
-	return getWeekTimetable(req, res);
+router.get("/:audienceId/timetable/week", auth, async (req, res) => {
+	try {
+		req.params.audienceType = "faculty";
+		req.params.audienceId = String(await resolveFacultyAudienceId(req));
+		return getWeekTimetable(req, res);
+	} catch (error) {
+		return res.status(500).json({ message: "Failed to resolve timetable faculty", error: error.message });
+	}
 });
 
 module.exports = router;

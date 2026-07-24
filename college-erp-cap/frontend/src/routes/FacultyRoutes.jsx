@@ -3,7 +3,6 @@ import FacultyLayout from "../layouts/FacultyLayout";
 
 import Dashboard from "../pages/faculty/Dashboard";
 import AttendanceManage from "../pages/faculty/AttendanceManage";
-import PeriodScheduling from "../pages/faculty/PeriodScheduling";
 import Reports from "../pages/faculty/Reports";
 import TimetableScheduler from "../pages/faculty/TimetableScheduler";
 import GatepassApprovals from "../pages/faculty/GatepassApprovals";
@@ -41,7 +40,7 @@ export default function FacultyRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="attendance" element={<AttendanceManage />} />
-        <Route path="schedule" element={<PeriodScheduling />} />
+        <Route path="schedule" element={<TimetableScheduler />} />
         <Route path="timetable-scheduler" element={<TimetableScheduler />} />
         <Route path="reports" element={<Reports />} />
         <Route path="gatepass-approvals" element={<GatepassApprovals />} />

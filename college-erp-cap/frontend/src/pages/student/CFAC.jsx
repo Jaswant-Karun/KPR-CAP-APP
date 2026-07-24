@@ -42,7 +42,7 @@ export default function CFAC() {
     ticketNo: "",
     status: "Approved",
     acy: "2025-26",
-    sem: 4,
+    sem: 5,
     courseCodesText: "",
   });
 
@@ -195,7 +195,7 @@ export default function CFAC() {
       ticketNo: "",
       status: "Approved",
       acy: "2025-26",
-      sem: 4,
+      sem: 5,
       courseCodesText: "",
     });
     setFormOpen(true);
@@ -209,7 +209,7 @@ export default function CFAC() {
       ticketNo: row.ticket || "",
       status: row.status || "Approved",
       acy: row.acy || "2025-26",
-      sem: row.sem || 4,
+      sem: row.sem || 5,
       courseCodesText: Array.isArray(row.courseCodes) ? row.courseCodes.join(", ") : "",
     });
     setFormOpen(true);
@@ -274,7 +274,7 @@ export default function CFAC() {
         ticketNo: form.ticketNo || undefined,
         status: form.status,
         acy: form.acy,
-        sem: Number(form.sem) || 4,
+        sem: Number(form.sem) || 5,
         courseCodes,
       };
 

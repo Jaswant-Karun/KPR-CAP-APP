@@ -95,11 +95,23 @@ const getCoursesByDepartment = async (req, res) => {
     }
 
     if (dbState.mode === "postgres") {
+      // Match by short code (e.g. "CSB") OR full name (e.g. "Computer Science and Business Systems")
+      // Also resolve via departments table so short codes find courses stored under full names and vice versa
       const query = `
         SELECT c.*, COUNT(ce.id) as enrolled_count
         FROM courses c
         LEFT JOIN course_enrollments ce ON c.id = ce.course_id
-        WHERE c.department = $1
+        LEFT JOIN departments d ON (
+          LOWER(d.code) = LOWER($1) OR LOWER(d.name) = LOWER($1) OR LOWER(d.short_name) = LOWER($1)
+        )
+        WHERE (
+          LOWER(c.department) = LOWER($1)
+          OR (d.id IS NOT NULL AND (
+            LOWER(c.department) = LOWER(d.name)
+            OR LOWER(c.department) = LOWER(d.code)
+            OR LOWER(c.department) = LOWER(d.short_name)
+          ))
+        )
         ${semester ? "AND c.semester = $2" : ""}
         GROUP BY c.id
         ORDER BY c.created_at DESC
@@ -165,6 +177,9 @@ const getCoursesByFaculty = async (req, res) => {
          FROM courses c
          LEFT JOIN course_enrollments ce ON c.id = ce.course_id
          WHERE c.faculty_id = $1
+            OR (c.faculty_id IS NULL AND LOWER(c.faculty_name) LIKE '%' || LOWER((
+              SELECT name FROM users WHERE id = $1 LIMIT 1
+            )) || '%')
          GROUP BY c.id
          ORDER BY c.created_at DESC`,
         [facultyId]
@@ -425,11 +440,18 @@ const getCourseEnrollments = async (req, res) => {
     }
 
     if (dbState.mode === "postgres") {
+      // Allow if faculty owns course (by faculty_id) OR if admin, OR if course has no faculty_id (seeded courses)
+      const isAdmin = req.user?.role === "admin";
       const courseCk = await pool.query(
-        "SELECT * FROM courses WHERE id = $1 AND faculty_id = $2",
-        [courseId, facultyId]
+        "SELECT * FROM courses WHERE id = $1",
+        [courseId]
       );
       if (courseCk.rows.length === 0) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+      const course = courseCk.rows[0];
+      // Block only if course has an owner AND caller is not that owner AND not admin
+      if (course.faculty_id && course.faculty_id !== facultyId && !isAdmin) {
         return res.status(403).json({ message: "Not authorized to view this course enrollments" });
       }
 
@@ -516,10 +538,74 @@ const dropCourse = async (req, res) => {
   }
 };
 
+const getAllCourses = async (req, res) => {
+  try {
+    const { department, semester, search } = req.query;
+
+    if (dbState.mode === "postgres") {
+      let where = "WHERE 1=1";
+      const params = [];
+
+      if (department) {
+        params.push(department);
+        where += ` AND (LOWER(c.department) = LOWER($${params.length})
+          OR EXISTS (
+            SELECT 1 FROM departments d
+            WHERE (LOWER(d.code) = LOWER($${params.length}) OR LOWER(d.name) = LOWER($${params.length}) OR LOWER(d.short_name) = LOWER($${params.length}))
+              AND (LOWER(c.department) = LOWER(d.name) OR LOWER(c.department) = LOWER(d.code) OR LOWER(c.department) = LOWER(d.short_name))
+          ))`;
+      }
+      if (semester) {
+        params.push(Number(semester));
+        where += ` AND c.semester = $${params.length}`;
+      }
+      if (search) {
+        params.push(`%${search.toLowerCase()}%`);
+        where += ` AND (LOWER(c.code) LIKE $${params.length} OR LOWER(c.name) LIKE $${params.length} OR LOWER(c.faculty_name) LIKE $${params.length})`;
+      }
+
+      const result = await pool.query(
+        `SELECT c.*, COUNT(ce.id) as enrolled_count
+         FROM courses c
+         LEFT JOIN course_enrollments ce ON c.id = ce.course_id
+         ${where}
+         GROUP BY c.id
+         ORDER BY c.semester ASC NULLS LAST, c.code ASC`,
+        params
+      );
+
+      return res.json({
+        courses: result.rows.map((row) => ({
+          id: row.id,
+          code: row.code,
+          name: row.name,
+          credits: row.credits,
+          semester: row.semester,
+          category: row.category,
+          facultyId: row.faculty_id,
+          facultyName: row.faculty_name,
+          department: row.department,
+          capacity: row.capacity,
+          enrolled: Number(row.enrolled_count || 0),
+          status: Number(row.enrolled_count || 0) >= row.capacity ? "full" : "open",
+          description: row.description,
+          createdAt: row.created_at,
+        })),
+      });
+    }
+
+    return res.json({ courses });
+  } catch (error) {
+    console.error("Error getting all courses:", error);
+    return res.status(500).json({ message: "Failed to get courses" });
+  }
+};
+
 module.exports = {
   createCourse,
   getCoursesByDepartment,
   getCoursesByFaculty,
+  getAllCourses,
   enrollStudent,
   getStudentEnrollments,
   getStudentEnrollmentsForFaculty,

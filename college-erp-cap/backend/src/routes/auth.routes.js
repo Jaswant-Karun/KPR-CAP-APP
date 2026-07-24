@@ -138,12 +138,18 @@ router.post("/login", async (req, res) => {
     }
 
     const user = await getUserByEmail(normalizedEmail);
+    console.log(`[AUTH DEBUG] Login attempt for ${normalizedEmail}, User found: ${!!user}, Password provided: ${!!password}`);
+    
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
     const requestedRole = role ? String(role).trim().toLowerCase() : "";
-    let match = await bcrypt.compare(password, user.password_hash);
+    const passwordHash = user.password_hash;
+    console.log(`[AUTH DEBUG] Comparing password. Hash exists: ${!!passwordHash}, Hash starts with: ${String(passwordHash).substring(0, 30)}`);
+    
+    let match = await bcrypt.compare(password, passwordHash);
+    console.log(`[AUTH DEBUG] Password match result: ${match}`);
 
     if (!match) {
       return res.status(401).json({ message: "Invalid password" });

@@ -150,19 +150,17 @@ export default function SystemSettings() {
             <p className="admin-stat-label">Application Theme</p>
             <p className="admin-stat-value">{settings.appTheme.toUpperCase()}</p>
             <div style={{ display: "flex", gap: "0.4rem" }}>
-              <button 
-                className={`admin-btn ${settings.appTheme === "dark" ? "active" : ""}`} 
-                type="button" 
+              <button
+                className={`admin-btn${settings.appTheme === "dark" ? " admin-btn-active" : ""}`}
+                type="button"
                 onClick={() => changeTheme("dark")}
-                style={settings.appTheme === "dark" ? { background: "rgba(0, 196, 255, 0.25)", borderColor: "#00c4ff" } : {}}
               >
                 Dark
               </button>
-              <button 
-                className={`admin-btn ${settings.appTheme === "light" ? "active" : ""}`} 
-                type="button" 
+              <button
+                className={`admin-btn${settings.appTheme === "light" ? " admin-btn-active" : ""}`}
+                type="button"
                 onClick={() => changeTheme("light")}
-                style={settings.appTheme === "light" ? { background: "rgba(0, 196, 255, 0.25)", borderColor: "#00c4ff" } : {}}
               >
                 Light
               </button>

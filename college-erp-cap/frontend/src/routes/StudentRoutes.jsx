@@ -78,6 +78,7 @@ export default function StudentRoutes() {
         <Route path="users" element={<HostelUsersPage />} />
         <Route path="student-service" element={<StudentService />} />
         <Route path="user-service" element={<Profile />} />
+        <Route path="schedule" element={<TimetableView />} />
         <Route path="timetable" element={<TimetableView />} />
         <Route path="course-registration" element={<CourseRegistration />} />
         <Route path="nominal-roll" element={<NominalRoll />} />
